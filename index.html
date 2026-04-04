@@ -3569,6 +3569,25 @@ function submitSuggestion(){
   var olLink=confirmed&&suggestData?"https://openlibrary.org"+suggestData.olKey:"";
   var grLink="https://www.goodreads.com/search?q="+encodeURIComponent(finalTitle);
 
+  // Check if already in catalog
+  if(isInCatalog(finalTitle)){
+    msg.innerHTML="📚 <strong>This book is already in our library!</strong> Check the Catalog tab to find it.";
+    msg.style.background="#E1F5EE";msg.style.color="#0F6E56";
+    msg.style.display="block";
+    setTimeout(function(){msg.style.display="none";},5000);
+    return;
+  }
+
+  // Check if already suggested (pending)
+  var existing=loadSuggestions().filter(function(s){return !s.procured&&s.title.toLowerCase().trim()===finalTitle.toLowerCase().trim();});
+  if(existing.length>0){
+    msg.innerHTML="💛 <strong>Someone has already suggested this book!</strong> It's on our wishlist — we'll try to get it soon.";
+    msg.style.background="#FFFBEB";msg.style.color="#854F0B";
+    msg.style.display="block";
+    setTimeout(function(){msg.style.display="none";},5000);
+    return;
+  }
+
   // Save suggestion to Supabase + localStorage cache
   var newSug={
     id:"SUG"+Date.now(),
