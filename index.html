@@ -826,7 +826,7 @@ tr:hover td{background:#fafaf8;}
             <button class="btn btn-ghost" id="iss-override-btn" onclick="openOverrideModal()" style="display:none;border-color:#F59E0B;color:#854F0B">Override &amp; issue</button>
           </div>
         </div>
-        <div style="background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.5rem">
+        <div style="background:#EEF4FC;border:1px solid #B5D4F4;border-radius:12px;padding:1.5rem">
           <h3 style="font-size:15px;font-weight:700;margin-bottom:1rem;color:#185FA5">&#x21A9;  Return book</h3>
           <div class="field"><label>Member</label>
             <div style="position:relative">
@@ -849,16 +849,28 @@ tr:hover td{background:#fafaf8;}
             </div>
           </div>
           <div id="ret-msg" style="font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:.75rem;display:none"></div>
-          <button class="btn btn-ghost" onclick="returnBook()">Return book</button>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="returnBook()" style="background:#185FA5;color:white;border-color:#185FA5">Return book</button>
+            <button id="ret-today-btn" onclick="toggleReturnedToday()" style="font-size:12px;padding:6px 14px;border:1px solid var(--bd);border-radius:7px;background:transparent;color:var(--mt);cursor:pointer">📋 Returned today</button>
+          </div>
+          <!-- Returned today panel -->
+          <div id="ret-today-panel" style="display:none;margin-top:12px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:13px;font-weight:700;color:var(--tx)">✅ Returned today</div>
+              <button onclick="toggleReturnedToday()" style="background:transparent;border:none;font-size:16px;cursor:pointer;color:var(--mt);line-height:1">×</button>
+            </div>
+            <div id="ret-today-list" style="font-size:13px"></div>
+          </div>
         </div>
       </div>
       <div class="panel-hdr" style="margin-bottom:.75rem">
         <h2 style="font-size:16px">Currently issued</h2>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input type="text" id="issued-search" placeholder="Search by member, book or block..." 
             oninput="renderIssued()" 
-            style="padding:7px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;width:260px;background:var(--bg)"/>
-          <button onclick="document.getElementById('issued-search').value='';renderIssued()" 
+            style="padding:7px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;width:200px;background:var(--bg)"/>
+          <input type="date" id="issued-date-filter" onchange="renderIssued()" title="Filter by issue date" style="padding:6px 10px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);color:var(--tx);cursor:pointer"/>
+          <button onclick="document.getElementById('issued-search').value='';document.getElementById('issued-date-filter').value='';renderIssued()" 
             style="font-size:12px;color:var(--mt);background:transparent;border:1px solid var(--bd);border-radius:7px;padding:6px 10px;cursor:pointer">Clear</button>
         </div>
       </div>
@@ -1865,22 +1877,63 @@ function returnBook(){
   logTransaction_DB(rtxn2).catch(function(e){console.error("Return log failed:",e);});
   saveData();renderIssued();refreshDashboard();
   showMsg("ret-msg","Book returned successfully!",true);
+  // Refresh returned today panel if open
+  if(document.getElementById("ret-today-panel").style.display!=="none") renderReturnedToday();
   document.getElementById("ret-book").value="";document.getElementById("ret-book-search").value="";document.getElementById("ret-member").value="";document.getElementById("ret-member-search").value="";(function(){var _e=document.getElementById("return-dropdown");if(_e)_e.style.display="none"})();(function(){var _e=document.getElementById("return-member-dropdown");if(_e)_e.style.display="none"})();
+}
+function renderReturnedToday(){
+  var today=todayStr();
+  var returned=DB.transactions.filter(function(t){return t.type==="return"&&t.date===today;});
+  var list=document.getElementById("ret-today-list");
+  if(!list)return;
+  if(returned.length===0){
+    list.innerHTML="<div style='color:var(--mt);font-size:12px'>No books returned today yet.</div>";
+    return;
+  }
+  var html="<div style='display:flex;flex-direction:column;gap:8px'>";
+  returned.forEach(function(t){
+    var m=DB.members.find(function(x){return x.id===t.memberId;});
+    var blockFlat=m?([(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" · ")||""):"-";
+    html+="<div style='display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--bg);border:1px solid var(--bd);border-radius:7px'>"+
+      "<span style='font-size:16px'>✅</span>"+
+      "<div style='flex:1;min-width:0'>"+
+        "<div style='font-weight:600;font-size:13px;color:var(--tx)'>"+(t.bookTitle||t.bookId)+"</div>"+
+        "<div style='font-size:11px;color:var(--mt);margin-top:1px'>"+(m?m.fname+" "+m.lname:t.memberId||"")+
+          (blockFlat?" · "+blockFlat:"")+
+          (t.issuedBy?" · by "+t.issuedBy:"")+
+        "</div>"+
+      "</div>"+
+    "</div>";
+  });
+  html+="</div><div style='margin-top:8px;font-size:11px;color:var(--mt)'>"+returned.length+" book"+(returned.length!==1?"s":"")+" returned today</div>";
+  list.innerHTML=html;
+}
+function toggleReturnedToday(){
+  var panel=document.getElementById("ret-today-panel");
+  var open=panel.style.display!=="none";
+  panel.style.display=open?"none":"block";
+  var btn=document.getElementById("ret-today-btn");
+  if(btn) btn.style.color=open?"var(--mt)":"var(--ac)";
+  if(!open) renderReturnedToday();
 }
 function renderIssued(){
   var today=todayStr();
   var q=(document.getElementById("issued-search")?document.getElementById("issued-search").value:"").toLowerCase().trim();
+  var dateFilter=(document.getElementById("issued-date-filter")?document.getElementById("issued-date-filter").value:"");
   var list=DB.books.filter(function(b){
     if(b.status!=="checked") return false;
+    if(dateFilter&&b.issuedDate!==dateFilter) return false;
     if(!q) return true;
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
-    var mname=m?( m.fname+" "+m.lname).toLowerCase():"";
+    var mname=m?(m.fname+" "+m.lname).toLowerCase():"";
     var block=(m&&m.block?m.block:"").toLowerCase();
     var flat=(m&&m.flatNo?m.flatNo:"").toLowerCase();
     return b.title.toLowerCase().indexOf(q)>=0 || mname.indexOf(q)>=0 || block.indexOf(q)>=0 || flat.indexOf(q)>=0 || (b.issuedBy&&b.issuedBy.toLowerCase().indexOf(q)>=0) || (b.id&&b.id.toLowerCase().indexOf(q)>=0);
   });
+  // Sort by issued date descending — most recent first
+  list.sort(function(a,b){return (b.issuedDate||"").localeCompare(a.issuedDate||"");});
   var tbody=document.getElementById("issued-tbody");tbody.innerHTML="";
-  if(list.length===0){tbody.innerHTML="<tr><td colspan='8' class='empty'>"+(q?"No matching books: "+q:"No books currently issued")+"</td></tr>";return;}
+  if(list.length===0){tbody.innerHTML="<tr><td colspan='8' class='empty'>"+(dateFilter?"No books issued on "+fmtDate(dateFilter):q?"No matching books: "+q:"No books currently issued")+"</td></tr>";return;}
   list.forEach(function(b){
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
     var overdue=b.dueDate&&b.dueDate<today;
