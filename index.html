@@ -1214,7 +1214,7 @@ function loadFromSupabase() {
   if (loading) loading.style.display = "flex";
 
   Promise.all([
-    supaFetch("books?order=id"),
+    supaFetch("books?order=id&limit=5000"),
     supaFetch("members?order=id"),
     supaFetch("transactions?order=date")
   ]).then(function(results) {
