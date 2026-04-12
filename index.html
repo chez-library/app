@@ -5449,10 +5449,22 @@ function saveMember_DB(m){
   });
 }
 
+function barcodeToBookId(val){
+  // Convert barcode A000006 → A/6, C001977 → C/1977
+  var m = val.match(/^([A-Ea-e])0*([1-9][0-9]*)$/);
+  if(m) return m[1].toUpperCase()+"/"+m[2];
+  return val.toUpperCase();
+}
+
 function filterIssueByBookId(){
-  var id=document.getElementById("iss-book-id").value.trim();
-  if(!id)return;
-  var b=DB.books.find(function(x){return x.id.toLowerCase()===id.toLowerCase()&&x.status==="available";});
+  var raw=document.getElementById("iss-book-id").value.trim();
+  if(!raw)return;
+  var id=barcodeToBookId(raw);
+  // Update field to show converted ID
+  if(id!==raw) document.getElementById("iss-book-id").value=id;
+  var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="available";});
+  // Also try barcode lookup
+  if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="available";});
   if(b){
     document.getElementById("iss-book").value=b.id;
     document.getElementById("iss-book-search").value=b.title;
@@ -5462,13 +5474,17 @@ function filterIssueByBookId(){
 }
 
 function filterReturnByBookId(){
-  var id=document.getElementById("ret-book-id").value.trim();
-  if(!id)return;
-  var b=DB.books.find(function(x){return x.id.toLowerCase()===id.toLowerCase()&&x.status==="checked";});
+  var raw=document.getElementById("ret-book-id").value.trim();
+  if(!raw)return;
+  var id=barcodeToBookId(raw);
+  // Update field to show converted ID
+  if(id!==raw) document.getElementById("ret-book-id").value=id;
+  var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="checked";});
+  // Also try barcode lookup
+  if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="checked";});
   if(b){
     document.getElementById("ret-book").value=b.id;
     document.getElementById("ret-book-search").value=b.title;
-    // Auto-fill member
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
     if(m){
       document.getElementById("ret-member").value=m.id;
