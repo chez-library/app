@@ -765,6 +765,42 @@ tr:hover td{background:#fafaf8;}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
         <div style="background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.5rem">
           <h3 style="font-size:15px;font-weight:700;margin-bottom:1rem;color:var(--ac)">&#x2B;  Issue book</h3>
+
+          <!-- Book ID + Title + Scan row -->
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:.75rem">
+            <div style="width:130px;flex-shrink:0">
+              <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
+              <input type="text" id="iss-book-id" placeholder="B/112" autocomplete="off"
+                oninput="filterIssueByBookId()"
+                style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
+            </div>
+            <div style="position:relative;flex:1">
+              <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book title</label>
+              <input type="text" id="iss-book-search" placeholder="Type title to search available books..." autocomplete="off" oninput="filterBookDropdown()" onfocus="filterBookDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
+              <input type="hidden" id="iss-book"/>
+              <div id="book-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
+            </div>
+            <div style="flex-shrink:0">
+              <label style="font-size:11px;display:block;margin-bottom:4px;opacity:0">&nbsp;</label>
+              <button type="button" class="btn btn-ghost" onclick="openIssueBookScanner()" style="padding:8px 12px;white-space:nowrap;flex-shrink:0" title="Scan book barcode">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
+                Scan
+              </button>
+            </div>
+          </div>
+
+          <div id="iss-book-info" style="display:none;border-radius:10px;padding:10px 14px;margin-bottom:.875rem;border:1px solid var(--bd);background:var(--bg2)">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span id="iss-book-age-badge" style="font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600"></span>
+              <span id="iss-book-genre-badge" style="font-size:12px;padding:3px 10px;border-radius:20px;background:#E1F5EE;color:#0F6E56;font-weight:600"></span>
+              <span id="iss-book-isbn" style="font-size:11px;color:var(--mt);font-family:monospace"></span>
+            </div>
+            <div id="iss-book-age-warn" style="display:none;margin-top:8px;font-size:12px;padding:7px 10px;border-radius:7px;background:#FFF3CD;color:#854F0B;border:1px solid #F59E0B">
+              &#x26A0; Age note: This book is for <strong id="iss-book-age-text"></strong>. Please confirm it is appropriate for this member.
+            </div>
+          </div>
+
+          <!-- Member below -->
           <div class="field"><label>Member</label>
             <div style="position:relative">
               <input type="text" id="iss-member-search" placeholder="Type name to search..." autocomplete="off" oninput="filterMemberDropdown();if(!this.value)hideMemberCard();" onfocus="filterMemberDropdown()" style="width:100%"/>
@@ -792,29 +828,7 @@ tr:hover td{background:#fafaf8;}
               </button>
             </div>
           </div>
-          <div class="field"><label>Book</label>
-            <div style="display:flex;gap:8px;align-items:flex-start">
-              <div style="position:relative;flex:1">
-                <input type="text" id="iss-book-search" placeholder="Type title or Book ID (e.g. B/112)..." autocomplete="off" oninput="filterBookDropdown()" onfocus="filterBookDropdown()" style="width:100%"/>
-                <input type="hidden" id="iss-book"/>
-                <div id="book-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
-              </div>
-              <button type="button" class="btn btn-ghost" onclick="openIssueBookScanner()" style="padding:8px 12px;white-space:nowrap;flex-shrink:0;margin-top:1px" title="Scan book barcode">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
-                Scan
-              </button>
-            </div>
-          </div>
-          <div id="iss-book-info" style="display:none;border-radius:10px;padding:10px 14px;margin-bottom:.875rem;border:1px solid var(--bd);background:var(--bg2)">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <span id="iss-book-age-badge" style="font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600"></span>
-              <span id="iss-book-genre-badge" style="font-size:12px;padding:3px 10px;border-radius:20px;background:#E1F5EE;color:#0F6E56;font-weight:600"></span>
-              <span id="iss-book-isbn" style="font-size:11px;color:var(--mt);font-family:monospace"></span>
-            </div>
-            <div id="iss-book-age-warn" style="display:none;margin-top:8px;font-size:12px;padding:7px 10px;border-radius:7px;background:#FFF3CD;color:#854F0B;border:1px solid #F59E0B">
-              &#x26A0; Age note: This book is for <strong id="iss-book-age-text"></strong>. Please confirm it is appropriate for this member.
-            </div>
-          </div>
+
           <div class="field"><label>Due date <span style="font-size:11px;font-weight:400;color:var(--mt)">(auto: 10 days from today)</span></label><input type="date" id="iss-due" style="background:var(--bg2);cursor:default"/></div>
           <div id="iss-pending-warn" style="display:none;background:#FFF3CD;border:1.5px solid #F59E0B;border-radius:10px;padding:12px 14px;margin-bottom:.875rem">
             <div style="font-weight:700;font-size:13px;color:#854F0B;margin-bottom:6px">&#x26A0; Pending book(s) against this member</div>
@@ -828,26 +842,40 @@ tr:hover td{background:#fafaf8;}
         </div>
         <div style="background:#EEF4FC;border:1px solid #B5D4F4;border-radius:12px;padding:1.5rem">
           <h3 style="font-size:15px;font-weight:700;margin-bottom:1rem;color:#185FA5">&#x21A9;  Return book</h3>
-          <div class="field"><label>Member</label>
-            <div style="position:relative">
-              <input type="text" id="ret-member-search" placeholder="Type member name to filter..." autocomplete="off" oninput="filterReturnMemberDropdown()" onfocus="filterReturnMemberDropdown()" style="width:100%"/>
-              <input type="hidden" id="ret-member"/>
-              <div id="return-member-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
+
+          <!-- Book ID row -->
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:.75rem">
+            <div style="width:130px;flex-shrink:0">
+              <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
+              <input type="text" id="ret-book-id" placeholder="B/112" autocomplete="off"
+                oninput="filterReturnByBookId()"
+                style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
-          </div>
-          <div class="field"><label>Book to return</label>
-            <div style="display:flex;gap:8px;align-items:flex-start">
-              <div style="position:relative;flex:1">
-                <input type="text" id="ret-book-search" placeholder="Type title or Book ID (e.g. B/112)..." autocomplete="off" oninput="filterReturnDropdown()" onfocus="filterReturnDropdown()" style="width:100%"/>
+            <div style="position:relative;flex:1">
+              <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book title</label>
+              <input type="text" id="ret-book-search" placeholder="Type title to search..." autocomplete="off" oninput="filterReturnDropdown()" onfocus="filterReturnDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
               <input type="hidden" id="ret-book"/>
               <div id="return-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
-              </div>
-              <button type="button" class="btn btn-ghost" onclick="openReturnBookScanner()" style="padding:8px 12px;white-space:nowrap;flex-shrink:0;margin-top:1px" title="Scan book barcode">
+            </div>
+            <div style="flex-shrink:0;padding-bottom:1px">
+              <label style="font-size:11px;display:block;margin-bottom:4px;opacity:0">&nbsp;</label>
+              <button type="button" class="btn btn-ghost" onclick="openReturnBookScanner()" style="padding:8px 12px;white-space:nowrap" title="Scan book barcode">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
                 Scan
               </button>
             </div>
           </div>
+
+          <!-- Member row (auto-filled) -->
+          <div class="field"><label>Member</label>
+            <div style="position:relative">
+              <input type="text" id="ret-member-search" placeholder="Auto-filled when book is selected..." autocomplete="off" oninput="filterReturnMemberDropdown()" onfocus="filterReturnMemberDropdown()" style="width:100%"/>
+              <input type="hidden" id="ret-member"/>
+              <div id="return-member-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
+            </div>
+          </div>
+          <div id="ret-member-card" style="display:none;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:8px;padding:10px 12px;margin-bottom:.75rem"></div>
+
           <div id="ret-msg" style="font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:.75rem;display:none"></div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <button class="btn btn-ghost" onclick="returnBook()" style="background:#185FA5;color:white;border-color:#185FA5">Return book</button>
@@ -1228,6 +1256,8 @@ function loadFromSupabase() {
     var tot=document.getElementById("pub-total");if(tot)tot.textContent=DB.books.length;
     var tot2=document.getElementById("pub-total2");if(tot2)tot2.textContent=DB.books.length;
     refreshDashboard();
+    // Auto-fetch covers for books without ISBN/cover
+    setTimeout(fetchMissingCovers, 2000);
   }).catch(function(err) {
     console.error("Supabase load error:", err);
     if (loading) loading.style.display = "none";
@@ -1654,7 +1684,14 @@ function renderBooks(){
         logActivity("Deleted book: "+btitle);saveData();renderBooks();refreshDashboard();
       });
     });})(b.id,b.title);
-    actTd.appendChild(editBtn);actTd.appendChild(delBtn);
+    actTd.appendChild(editBtn);
+    var isbnBtn=document.createElement("button");
+    isbnBtn.style.cssText="font-size:11px;padding:4px 8px;margin-right:4px;border:1px solid "+(b.isbn&&b.isbn!=="N/A"?"#0F6E56":"#F59E0B")+";border-radius:6px;background:transparent;color:"+(b.isbn&&b.isbn!=="N/A"?"#0F6E56":"#854F0B")+";cursor:pointer;white-space:nowrap";
+    isbnBtn.textContent=b.isbn&&b.isbn!=="N/A"?"📗 ISBN":"📷 Add ISBN";
+    isbnBtn.title=b.isbn&&b.isbn!=="N/A"?"ISBN: "+b.isbn:"Scan or enter ISBN to fetch cover";
+    (function(bid){isbnBtn.addEventListener("click",function(){openAddISBN(bid);});})(b.id);
+    actTd.appendChild(isbnBtn);
+    actTd.appendChild(delBtn);
     // Assemble row
     // Book ID cell — first column
     var idCell=document.createElement("td");
@@ -1862,10 +1899,15 @@ function issueBook(isOverride, overrideComment){
   el=document.getElementById("iss-pending-warn");if(el)el.style.display="none";
 
   showMsg("iss-msg","Issued successfully to "+m.fname+" "+m.lname+(isOverride?" (override applied)":"")+"!",true);
-  document.getElementById("iss-member").value="";document.getElementById("iss-member-search").value="";hideMemberCard();document.getElementById("iss-book").value="";document.getElementById("iss-book-search").value="";clearBookInfo();var nd=new Date();nd.setDate(nd.getDate()+10);document.getElementById("iss-due").value=nd.toISOString().split("T")[0];(function(){var _e=document.getElementById("member-dropdown");if(_e)_e.style.display="none"})();(function(){var _e=document.getElementById("book-dropdown");if(_e)_e.style.display="none"})();
+  document.getElementById("iss-member").value="";document.getElementById("iss-member-search").value="";hideMemberCard();document.getElementById("iss-book").value="";document.getElementById("iss-book-search").value="";var ibi=document.getElementById("iss-book-id");if(ibi)ibi.value="";clearBookInfo();var nd=new Date();nd.setDate(nd.getDate()+10);document.getElementById("iss-due").value=nd.toISOString().split("T")[0];(function(){var _e=document.getElementById("member-dropdown");if(_e)_e.style.display="none"})();(function(){var _e=document.getElementById("book-dropdown");if(_e)_e.style.display="none"})();
 }
 function returnBook(){
+  // Accept from hidden field, book-id field, or book-search field
   var bid=document.getElementById("ret-book").value.trim();
+  if(!bid){
+    var directId=document.getElementById("ret-book-id").value.trim();
+    if(directId) bid=directId;
+  }
   var b=DB.books.find(function(x){return x.id===bid;});
   if(!b)return showMsg("ret-msg","Book ID '"+bid+"' not found.",false);
   if(b.status!=="checked")return showMsg("ret-msg","This book is not currently on loan.",false);
@@ -1879,6 +1921,9 @@ function returnBook(){
   showMsg("ret-msg","Book returned successfully!",true);
   // Refresh returned today panel if open
   if(document.getElementById("ret-today-panel").style.display!=="none") renderReturnedToday();
+  // Clear member card
+  var rc=document.getElementById("ret-member-card");if(rc)rc.style.display="none";
+  var rbi=document.getElementById("ret-book-id");if(rbi)rbi.value="";
   document.getElementById("ret-book").value="";document.getElementById("ret-book-search").value="";document.getElementById("ret-member").value="";document.getElementById("ret-member-search").value="";(function(){var _e=document.getElementById("return-dropdown");if(_e)_e.style.display="none"})();(function(){var _e=document.getElementById("return-member-dropdown");if(_e)_e.style.display="none"})();
 }
 function renderReturnedToday(){
@@ -5128,6 +5173,128 @@ function filterReturnMemberDropdown(){
   dd.style.display="block";
 }
 
+// ── ISBN MANAGEMENT ──────────────────────────────────────────────────────────
+var _isbnBookId = null;
+
+function openAddISBN(bid){
+  _isbnBookId = bid;
+  var b = DB.books.find(function(x){return x.id===bid;});
+  if(!b) return;
+  document.getElementById("m-addisbn-bookname").textContent = b.title + (b.author?" — "+b.author:"");
+  document.getElementById("addisbn-input").value = (b.isbn&&b.isbn!=="N/A")?b.isbn:"";
+  document.getElementById("addisbn-cover-preview").style.display="none";
+  document.getElementById("addisbn-msg").style.display="none";
+  document.getElementById("m-addisbn").classList.add("open");
+  if(b.isbn&&b.isbn!=="N/A") previewISBNCover();
+}
+
+function previewISBNCover(){
+  var isbn = document.getElementById("addisbn-input").value.trim().replace(/[^0-9X]/gi,"");
+  if(isbn.length<10) { document.getElementById("addisbn-cover-preview").style.display="none"; return; }
+  var img = document.getElementById("addisbn-cover-img");
+  var preview = document.getElementById("addisbn-cover-preview");
+  img.src = "https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";
+  img.onload = function(){ if(img.naturalWidth>1) preview.style.display="block"; };
+  img.onerror = function(){ preview.style.display="none"; };
+}
+
+function saveISBN(){
+  var isbn = document.getElementById("addisbn-input").value.trim().replace(/[^0-9X]/gi,"");
+  var msg = document.getElementById("addisbn-msg");
+  if(!isbn||isbn.length<10){
+    msg.textContent="Please enter a valid ISBN-13.";
+    msg.style.background="#FCEAEA";msg.style.color="#C0392B";msg.style.display="block";return;
+  }
+  var b = DB.books.find(function(x){return x.id===_isbnBookId;});
+  if(!b) return;
+  b.isbn = isbn;
+  b.cover = "https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";
+  b.cover2 = "https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";
+  saveBook_DB(b).then(function(){
+    showToast("ISBN saved for "+b.title,"success");
+    closeModal("m-addisbn");
+    renderBooks();
+  }).catch(function(e){ showToast("Save failed: "+e.message,"error"); });
+  saveData();
+}
+
+function openISBNScanner(){
+  // Reuse existing scanner, route result back to ISBN field
+  window._scannerTarget = "isbn";
+  var modal = document.getElementById("m-scanner");
+  if(modal) modal.classList.add("open");
+  startScanner(function(scannedVal){
+    document.getElementById("addisbn-input").value = scannedVal;
+    previewISBNCover();
+    closeScanner();
+    // Reopen ISBN modal
+    document.getElementById("m-addisbn").classList.add("open");
+  });
+}
+
+// Auto-fetch cover by title+author from Open Library (for books without ISBN/cover)
+function fetchCoverByTitle(book){
+  if(book.cover||book.isbn) return; // already has cover or ISBN
+  var q = encodeURIComponent(book.title+" "+book.author);
+  var url = "https://openlibrary.org/search.json?q="+q+"&limit=1&fields=isbn,cover_i";
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    if(!data.docs||!data.docs.length) return;
+    var doc = data.docs[0];
+    if(doc.isbn&&doc.isbn.length){
+      var isbn = doc.isbn[0];
+      book.isbn = isbn;
+      book.cover = "https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";
+      book.cover2 = "https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";
+      saveBook_DB(book).catch(function(){});
+      saveData();
+    } else if(doc.cover_i){
+      book.cover = "https://covers.openlibrary.org/b/id/"+doc.cover_i+"-M.jpg";
+      saveBook_DB(book).catch(function(){});
+      saveData();
+    }
+  }).catch(function(){});
+}
+
+// Run cover fetch for all books without covers — called once after load
+function fetchMissingCovers(){
+  var noCover = DB.books.filter(function(b){return !b.cover&&(!b.isbn||b.isbn==="N/A");});
+  if(!noCover.length) return;
+  // Stagger requests to avoid rate limiting
+  noCover.forEach(function(b, i){
+    setTimeout(function(){ fetchCoverByTitle(b); }, i * 300);
+  });
+}
+
+function filterIssueByBookId(){
+  var id=document.getElementById("iss-book-id").value.trim();
+  if(!id)return;
+  var b=DB.books.find(function(x){return x.id.toLowerCase()===id.toLowerCase()&&x.status==="available";});
+  if(b){
+    document.getElementById("iss-book").value=b.id;
+    document.getElementById("iss-book-search").value=b.title;
+    document.getElementById("book-dropdown").style.display="none";
+    showBookInfo(b.id);
+  }
+}
+
+function filterReturnByBookId(){
+  var id=document.getElementById("ret-book-id").value.trim();
+  if(!id)return;
+  var b=DB.books.find(function(x){return x.id.toLowerCase()===id.toLowerCase()&&x.status==="checked";});
+  if(b){
+    document.getElementById("ret-book").value=b.id;
+    document.getElementById("ret-book-search").value=b.title;
+    // Auto-fill member
+    var m=DB.members.find(function(x){return x.id===b.issuedTo;});
+    if(m){
+      document.getElementById("ret-member").value=m.id;
+      document.getElementById("ret-member-search").value=m.fname+" "+m.lname;
+    }
+    showReturnMemberCard(b.issuedTo);
+    document.getElementById("return-dropdown").style.display="none";
+  }
+}
+
 function filterReturnDropdown(){
   var q=(document.getElementById("ret-book-search").value||"").toLowerCase();
   var selectedMember=document.getElementById("ret-member").value;
@@ -5144,17 +5311,49 @@ function filterReturnDropdown(){
     hits.forEach(function(b){
       var m=DB.members.find(function(x){return x.id===b.issuedTo;});
       dd.appendChild(ddItem(
-        b.title,
+        b.title+(b.id?" <span style='font-size:11px;color:var(--mt)'>"+b.id+"</span>":""),
         (m?m.fname+" "+m.lname:"Unknown")+" · due "+fmtDate(b.dueDate),
-        function(bid,btitle){return function(){
+        function(bid,btitle,memberId,memberName){return function(){
           document.getElementById("ret-book").value=bid;
           document.getElementById("ret-book-search").value=btitle;
           dd.style.display="none";
-        };}(b.id, b.title)
+          // Auto-fill member
+          if(memberId&&memberName){
+            document.getElementById("ret-member").value=memberId;
+            document.getElementById("ret-member-search").value=memberName;
+          }
+          // Show member info card
+          showReturnMemberCard(memberId);
+        };}(b.id, b.title, b.issuedTo, m?m.fname+" "+m.lname:"")
       ));
     });
   }
   dd.style.display="block";
+}
+
+function showReturnMemberCard(mid){
+  var card=document.getElementById("ret-member-card");
+  if(!card)return;
+  if(!mid){card.style.display="none";return;}
+  var m=DB.members.find(function(x){return x.id===mid;});
+  if(!m){card.style.display="none";return;}
+  var blockFlat=[(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" — ")||"-";
+  var booksOut=DB.books.filter(function(b){return b.issuedTo===mid&&b.status==="checked";});
+  card.style.display="block";
+  card.innerHTML=
+    "<div style='display:flex;align-items:center;gap:10px'>"+
+    "<div style='width:36px;height:36px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0F6E56;flex-shrink:0'>"+
+      m.fname[0]+(m.lname?m.lname[0]:"")+
+    "</div>"+
+    "<div>"+
+      "<div style='font-weight:700;font-size:13px;color:var(--tx)'>"+m.fname+" "+m.lname+"</div>"+
+      "<div style='font-size:11px;color:var(--mt);margin-top:1px'>"+blockFlat+" &nbsp;·&nbsp; "+m.id+"</div>"+
+      (m.phone?"<div style='font-size:11px;color:var(--mt)'>"+m.phone+"</div>":"")+
+    "</div>"+
+    "<div style='margin-left:auto;text-align:right'>"+
+      "<div style='font-size:11px;font-weight:700;color:#854F0B'>"+booksOut.length+" book"+(booksOut.length!==1?"s":"")+" out</div>"+
+    "</div>"+
+    "</div>";
 }
 
 // Close dropdowns when clicking outside
@@ -5294,6 +5493,33 @@ document.addEventListener("click", function(e){
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('m-bulk')">Cancel</button>
       <button class="btn btn-primary" id="bulk-upload-btn" onclick="confirmBulkUpload()">Add selected books</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ISBN MODAL -->
+<div class="modal-ov" id="m-addisbn">
+  <div class="modal-box" style="max-width:420px">
+    <h3>📗 Add / Update ISBN</h3>
+    <p id="m-addisbn-bookname" style="font-size:13px;color:var(--mt);margin:.25rem 0 1rem;font-weight:600"></p>
+    <div class="field">
+      <label>ISBN-13</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="addisbn-input" placeholder="Enter ISBN-13 or scan barcode" style="flex:1;font-family:monospace" oninput="previewISBNCover()"/>
+        <button type="button" class="btn btn-ghost" onclick="openISBNScanner()" style="padding:8px 12px;white-space:nowrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
+          Scan
+        </button>
+      </div>
+    </div>
+    <div id="addisbn-cover-preview" style="display:none;margin:.75rem 0;text-align:center">
+      <img id="addisbn-cover-img" src="" style="height:100px;border-radius:6px;border:1px solid var(--bd)" onerror="this.parentElement.style.display='none'"/>
+      <div style="font-size:11px;color:#0F6E56;margin-top:4px;font-weight:600">Cover found ✅</div>
+    </div>
+    <div id="addisbn-msg" style="font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:.75rem;display:none"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('m-addisbn')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveISBN()">Save ISBN</button>
     </div>
   </div>
 </div>
