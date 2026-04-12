@@ -4559,58 +4559,53 @@ function startScanner(){
       return;
     }
     scannerCodeReader = new ZXing.BrowserMultiFormatReader();
-    scannerCodeReader.listVideoInputDevices().then(function(devices){
-      if(!devices || devices.length === 0){
-        document.getElementById("scanner-status").textContent = "No camera found. Please allow camera access.";
-        return;
-      }
-      // Prefer back camera on mobile
-      var deviceId = devices[devices.length - 1].deviceId;
-      devices.forEach(function(d){
-        if(d.label.toLowerCase().indexOf('back') >= 0 || d.label.toLowerCase().indexOf('rear') >= 0){
-          deviceId = d.deviceId;
-        }
-      });
-      document.getElementById("scanner-status").textContent = "Camera ready — point at barcode";
-      scannerCodeReader.decodeFromVideoDevice(deviceId, "scanner-video", function(result, err){
-        if(result){
-          var text = result.getText();
-          // Accept library barcodes (e.g. C001977) OR ISBN-13/10
-          var isLibraryBarcode = /^[A-Ea-e]\d{6}$/.test(text);
-          var isISBN = /^97[89]\d{10}$/.test(text) || /^\d{9}[\dX]$/.test(text);
-          if(isLibraryBarcode){
-            var bk = DB.books.find(function(b){ return b.barcode===text.toUpperCase(); });
-            document.getElementById("scanner-status").textContent = "✓ Barcode detected: "+text;
-            document.getElementById("scanner-result").style.display = "block";
-            document.getElementById("scanner-isbn-display").textContent = text;
-            document.getElementById("scanner-book-info").textContent = bk ? bk.title+(bk.author?" · "+bk.author:"") : "Book not found in library";
-            document.getElementById("scanner-use-btn").style.display = "inline-block";
-            scannedISBN = text;
-            if(typeof scannerCallback === "function"){ scannerCallback(text); }
-          } else if(isISBN){
-            scannedISBN = text;
-            document.getElementById("scanner-isbn-display").textContent = text;
-            document.getElementById("scanner-book-info").textContent = "Looking up book details...";
-            document.getElementById("scanner-result").style.display = "block";
-            document.getElementById("scanner-use-btn").style.display = "inline-block";
-            document.getElementById("scanner-status").textContent = "✓ ISBN detected!";
-            fetchBookByISBN(text, function(info){
-              if(info){
-                document.getElementById("scanner-book-info").textContent = (info.title||"") + (info.author ? " · " + info.author : "");
-              } else {
-                document.getElementById("scanner-book-info").textContent = "Book details not found — you can fill them in manually";
-              }
-            });
+    // Use native getUserMedia for mobile — more reliable than listVideoInputDevices
+    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
+      .then(function(stream){
+        var video = document.getElementById("scanner-video");
+        video.srcObject = stream;
+        video.play();
+        document.getElementById("scanner-status").textContent = "Camera ready — point at barcode";
+        scannerCodeReader.decodeFromStream(stream, video, function(result, err){
+          if(result){
+            var text = result.getText();
+            var isLibraryBarcode = /^[A-Ea-e]\d{6}$/.test(text);
+            var isISBN = /^97[89]\d{10}$/.test(text) || /^\d{9}[\dX]$/.test(text);
+            if(isLibraryBarcode){
+              var bk = DB.books.find(function(b){ return b.barcode===text.toUpperCase(); });
+              document.getElementById("scanner-status").textContent = "✓ Barcode detected!";
+              document.getElementById("scanner-result").style.display = "block";
+              document.getElementById("scanner-isbn-display").textContent = text;
+              document.getElementById("scanner-book-info").textContent = bk ? bk.title+(bk.author?" · "+bk.author:"") : "Book not found in library";
+              document.getElementById("scanner-use-btn").style.display = "inline-block";
+              scannedISBN = text;
+              if(typeof scannerCallback === "function"){ scannerCallback(text); }
+            } else if(isISBN){
+              scannedISBN = text;
+              document.getElementById("scanner-isbn-display").textContent = text;
+              document.getElementById("scanner-book-info").textContent = "Looking up book details...";
+              document.getElementById("scanner-result").style.display = "block";
+              document.getElementById("scanner-use-btn").style.display = "inline-block";
+              document.getElementById("scanner-status").textContent = "✓ ISBN detected!";
+              fetchBookByISBN(text, function(info){
+                if(info){
+                  document.getElementById("scanner-book-info").textContent = (info.title||"") + (info.author ? " · " + info.author : "");
+                } else {
+                  document.getElementById("scanner-book-info").textContent = "Book details not found — you can fill them in manually";
+                }
+              });
+            }
           }
-        }
+        });
+      })
+      .catch(function(err){
+        document.getElementById("scanner-status").textContent = "Camera error: " + (err.message || "Could not access camera. Please check permissions.");
       });
-    }).catch(function(err){
-      document.getElementById("scanner-status").textContent = "Camera error: " + (err.message || "Could not access camera");
-    });
   } catch(e){
     document.getElementById("scanner-status").textContent = "Scanner error: " + e.message;
   }
 }
+
 
 function fetchBookSummary(isbn, cb){
   var script=document.createElement("script");
@@ -5707,8 +5702,8 @@ document.addEventListener("click", function(e){
 
 <div class="modal-ov" id="m-scanner">
   <div class="modal-box" style="max-width:420px;text-align:center">
-    <h3 style="margin-bottom:.5rem">&#128247; Scan ISBN barcode</h3>
-    <p style="font-size:13px;color:var(--mt);margin-bottom:1.25rem">Point your camera at the barcode on the back of the book</p>
+    <h3 style="margin-bottom:.5rem">&#128247; Scan barcode</h3>
+    <p style="font-size:13px;color:var(--mt);margin-bottom:1.25rem">Point your camera at the barcode label on the book</p>
     <div style="position:relative;background:#000;border-radius:10px;overflow:hidden;margin-bottom:1rem">
       <video id="scanner-video" style="width:100%;display:block;border-radius:10px" autoplay muted playsinline></video>
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
@@ -5718,13 +5713,13 @@ document.addEventListener("click", function(e){
     </div>
     <div id="scanner-status" style="font-size:13px;color:var(--mt);margin-bottom:1rem;min-height:20px">Initialising camera...</div>
     <div id="scanner-result" style="display:none;background:#E1F5EE;border-radius:8px;padding:10px 12px;margin-bottom:1rem;text-align:left">
-      <div style="font-size:11px;font-weight:700;color:#0F6E56;margin-bottom:4px">ISBN DETECTED</div>
+      <div style="font-size:11px;font-weight:700;color:#0F6E56;margin-bottom:4px">BARCODE DETECTED</div>
       <div id="scanner-isbn-display" style="font-size:16px;font-weight:700;font-family:monospace;color:#0F3D2E"></div>
       <div id="scanner-book-info" style="font-size:12px;color:var(--mt);margin-top:4px"></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:center">
       <button class="btn btn-ghost" onclick="closeScanner()">Cancel</button>
-      <button class="btn btn-primary" id="scanner-use-btn" style="display:none" onclick="useScannedISBN()">Use this ISBN</button>
+      <button class="btn btn-primary" id="scanner-use-btn" style="display:none" onclick="useScannedISBN()">Use this barcode</button>
     </div>
   </div>
 </div>
