@@ -709,7 +709,9 @@ tr:hover td{background:#fafaf8;}
         <h2>Books</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost" onclick="openBulkUpload()">&#x2B06; Bulk upload</button>
-          <button class="btn btn-ghost" onclick="printAllQRCodes()" style="color:#185FA5;border-color:#185FA5">&#x1F4F7; Print QR labels</button>
+          <button class="btn btn-ghost" onclick="downloadBarcodeTemplate()" style="color:#185FA5;border-color:#185FA5">⬇ Barcode template</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('barcode-excel-upload').click()" style="color:#185FA5;border-color:#185FA5">&#x1F4F7; Print Barcode labels</button>
+          <input type="file" id="barcode-excel-upload" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleBarcodeExcelUpload(this)"/>
           <button class="btn btn-primary" onclick="openAddBook()">+ Add book</button>
         </div>
       </div>
@@ -730,9 +732,9 @@ tr:hover td{background:#fafaf8;}
           <option>Reference &amp; learning</option><option>Fiction</option><option>Non-fiction</option>
         </select>
         <select id="bk-qr-filter" onchange="renderBooks()" style="font-size:13px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);outline:none">
-          <option value="">All QR status</option>
-          <option value="pending">QR pending</option>
-          <option value="printed">QR printed</option>
+          <option value="">All barcode status</option>
+          <option value="pending">Barcode pending</option>
+          <option value="printed">Barcode printed</option>
         </select>
         <button onclick="clearBkFilters()" style="padding:7px 12px;font-size:13px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;cursor:pointer;color:var(--mt);white-space:nowrap;flex-shrink:0">&#x2715; Clear</button>
       </div>
@@ -789,10 +791,7 @@ tr:hover td{background:#fafaf8;}
             </div>
             <div style="flex-shrink:0">
               <label style="font-size:11px;display:block;margin-bottom:4px;opacity:0">&nbsp;</label>
-              <button type="button" class="btn btn-ghost" onclick="openIssueBookScanner()" style="padding:8px 12px;white-space:nowrap;flex-shrink:0" title="Scan book barcode">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
-                Scan
-              </button>
+
             </div>
           </div>
 
@@ -866,10 +865,7 @@ tr:hover td{background:#fafaf8;}
             </div>
             <div style="flex-shrink:0;padding-bottom:1px">
               <label style="font-size:11px;display:block;margin-bottom:4px;opacity:0">&nbsp;</label>
-              <button type="button" class="btn btn-ghost" onclick="openReturnBookScanner()" style="padding:8px 12px;white-space:nowrap" title="Scan book barcode">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
-                Scan
-              </button>
+
             </div>
           </div>
 
@@ -1016,13 +1012,7 @@ tr:hover td{background:#fafaf8;}
     </div>
     <div class="field">
       <label>ISBN-13</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="ab-isbn" placeholder="Enter manually or scan barcode" style="flex:1"/>
-        <button type="button" class="btn btn-ghost" onclick="openScanner('add')" style="padding:8px 12px;white-space:nowrap;flex-shrink:0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/><line x1="0" y1="21" x2="24" y2="21" stroke-width="1.5"/></svg>
-          Scan
-        </button>
-      </div>
+      <input type="text" id="ab-isbn" placeholder="Enter manually or use barcode scanner" style="width:100%" oninput="onISBNInput(this.value)"/>
       <div id="ab-isbn-status" style="font-size:12px;margin-top:5px;display:none"></div>
     </div>
     <div class="field">
@@ -1667,7 +1657,7 @@ function renderBooks(){
     var printed=DB.books.filter(function(b){return b.qrPrinted;}).length;
     var pending=totalBooks-printed;
     statsEl.innerHTML=
-      "<span style='background:#E1F5EE;color:#0F6E56;padding:4px 12px;border-radius:20px;font-weight:600'>&#x2705; "+printed+" QR labels printed</span>"+
+      "<span style='background:#E1F5EE;color:#0F6E56;padding:4px 12px;border-radius:20px;font-weight:600'>&#x2705; "+printed+" Barcode labels printed</span>"+
       "<span style='background:#FCEAEA;color:#C0392B;padding:4px 12px;border-radius:20px;font-weight:600'>&#x23F3; "+pending+" pending</span>"+
       "<span style='color:var(--mt)'>of "+totalBooks+" books total</span>";
   }
@@ -1699,7 +1689,7 @@ function renderBooks(){
     var td5=document.createElement("td");var stSp=document.createElement("span");stSp.className="badge "+statusCls;stSp.textContent=statusLbl;td5.appendChild(stSp);
     // QR printed cell
     var qrTd=document.createElement("td");qrTd.style.cssText="text-align:center";
-    var qrChk=document.createElement("input");qrChk.type="checkbox";qrChk.title="Mark QR label as printed";
+    var qrChk=document.createElement("input");qrChk.type="checkbox";qrChk.title="Mark barcode label as printed";
     qrChk.checked=b.qrPrinted===true;qrChk.style.cssText="width:16px;height:16px;cursor:pointer;accent-color:var(--ac)";
     var qrChk=document.createElement("input");qrChk.type="checkbox";qrChk.title="Mark barcode label as printed";
     qrChk.checked=b.qrPrinted===true;qrChk.style.cssText="width:16px;height:16px;cursor:pointer;accent-color:var(--ac)";
@@ -1759,7 +1749,8 @@ function renderBooks(){
         logActivity("Deleted book: "+btitle);saveData();renderBooks();refreshDashboard();
       });
     });})(b.id,b.title);
-    actTd.appendChild(editBtn);actTd.appendChild(delBtn);
+    var actWrap=document.createElement("div");actWrap.style.cssText="display:flex;flex-direction:column;gap:4px;align-items:flex-start";
+    actWrap.appendChild(editBtn);actWrap.appendChild(delBtn);actTd.appendChild(actWrap);
     // Assemble row
     // Book ID cell — first column
     var idCell=document.createElement("td");
@@ -1867,7 +1858,8 @@ function renderMembers(){
         saveData();renderMembers();refreshDashboard();
       });
     });})(m.id,m.fname+" "+m.lname);
-    actTd.appendChild(editBtn);actTd.appendChild(delBtn);
+    var actWrap2=document.createElement("div");actWrap2.style.cssText="display:flex;flex-direction:column;gap:4px;align-items:flex-start";
+    actWrap2.appendChild(editBtn);actWrap2.appendChild(delBtn);actTd.appendChild(actWrap2);
     tbody.appendChild(tr);
   });
 }
@@ -2776,14 +2768,51 @@ function makeCard(b){
   if(b.summary&&b.summary.trim()){
     st.textContent=b.summary.length>220?b.summary.slice(0,220)+"...":b.summary;
   } else {
-    st.innerHTML="<span style='color:var(--mt)'>"+
-      "<strong>ID:</strong> "+(b.id||"—")+"<br>"+
-      "<strong>Age group:</strong> "+b.age+"<br>"+
-      "<strong>Genre:</strong> "+b.genre+
-      (b.isbn&&b.isbn!=="N/A"?"<br><strong>ISBN:</strong> "+b.isbn:"")+
-    "</span>";
+    st.textContent="Loading summary...";
   }
-  sb.addEventListener("click",function(e){e.stopPropagation();var o=st.style.display!=="none";st.style.display=o?"none":"block";sb.textContent=o?"ℹ About this book":"▴ Hide";});
+  sb.addEventListener("click",function(e){
+    e.stopPropagation();
+    var o=st.style.display!=="none";
+    st.style.display=o?"none":"block";
+    sb.textContent=o?"ℹ About this book":"▴ Hide";
+    // Fetch summary from Open Library first, then Google Books as fallback
+    if(!o&&(!b.summary||!b.summary.trim())){
+      st.textContent="Loading summary...";
+      var title=b.title;
+      var author=b.author&&b.author!=="Unknown"?b.author:"";
+      // Try Google Books first — better summaries
+      var gbUrl="https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent("intitle:"+title+(author?" inauthor:"+author:""))+"&maxResults=1&fields=items(volumeInfo(description,categories))";
+      fetch(gbUrl)
+        .then(function(r){return r.json();})
+        .then(function(data){
+          if(data.items&&data.items.length&&data.items[0].volumeInfo.description){
+            var s=data.items[0].volumeInfo.description;
+            st.textContent=s.length>250?s.slice(0,250)+"...":s;
+            b.summary=s;
+          } else {
+            // Fallback to Open Library
+            return fetch("https://openlibrary.org/search.json?q="+encodeURIComponent(title+(author?" "+author:""))+"&limit=1&fields=first_sentence,subject")
+              .then(function(r){return r.json();})
+              .then(function(data2){
+                if(data2.docs&&data2.docs.length&&data2.docs[0].first_sentence){
+                  var s2=data2.docs[0].first_sentence.value||data2.docs[0].first_sentence;
+                  if(typeof s2==="string"&&s2.length>10){
+                    st.textContent=s2.length>250?s2.slice(0,250)+"...":s2;
+                    b.summary=s2;
+                    return;
+                  }
+                }
+                if(data2.docs&&data2.docs.length&&data2.docs[0].subject){
+                  st.textContent="Topics: "+data2.docs[0].subject.slice(0,6).join(", ");
+                } else {
+                  st.textContent="No summary available for this book.";
+                }
+              });
+          }
+        })
+        .catch(function(){st.textContent="No summary available for this book.";});
+    }
+  });
   ss.appendChild(sb);ss.appendChild(st);card.appendChild(ss);
   return card;
 }
@@ -4631,6 +4660,89 @@ function fetchBookSummary(isbn, cb){
   script.onerror=function(){cb(null);};
   document.head.appendChild(script);
 }
+function onISBNInput(val){
+  val = val.trim().replace(/[^0-9X]/gi,"");
+  if(val.length < 10) return;
+  var status = document.getElementById("ab-isbn-status");
+  status.textContent = "Looking up book details...";
+  status.style.display = "block";
+  status.style.color = "var(--mt)";
+
+  fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1")
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!data.items||!data.items.length){status.textContent="Book not found for this ISBN.";status.style.color="#C0392B";return;}
+      var info = data.items[0].volumeInfo;
+
+      // Auto-fill title if empty
+      if(info.title&&!document.getElementById("ab-title").value.trim())
+        document.getElementById("ab-title").value = info.title;
+
+      // Auto-fill author if empty
+      if(info.authors&&info.authors.length&&!document.getElementById("ab-author").value.trim())
+        document.getElementById("ab-author").value = info.authors[0];
+
+      // Auto-fill summary if empty
+      if(info.description&&!document.getElementById("ab-summary").value.trim())
+        document.getElementById("ab-summary").value = info.description.length>500?info.description.slice(0,500)+"...":info.description;
+
+      // Auto-detect age group from maturityRating and categories
+      var cats = (info.categories||[]).join(" ").toLowerCase();
+      var mat = (info.maturityRating||"").toLowerCase();
+      var ageEl = document.getElementById("ab-age");
+      if(!ageEl.value||ageEl.value===ageEl.options[0].value){
+        if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0||cats.indexOf("toddler")>=0)
+          ageEl.value="Picture books (0-4)";
+        else if(cats.indexOf("early reader")>=0||cats.indexOf("beginning reader")>=0||cats.indexOf("ages 5")>=0||cats.indexOf("ages 6")>=0||cats.indexOf("ages 7")>=0)
+          ageEl.value="Early readers (5-7)";
+        else if(cats.indexOf("middle grade")>=0||cats.indexOf("ages 8")>=0||cats.indexOf("ages 9")>=0||cats.indexOf("ages 10")>=0||cats.indexOf("ages 11")>=0||cats.indexOf("ages 12")>=0)
+          ageEl.value="Middle grade (8-12)";
+        else if(cats.indexOf("young adult")>=0||cats.indexOf("teen")>=0||cats.indexOf("ages 13")>=0||cats.indexOf("ages 14")>=0||cats.indexOf("ages 15")>=0||cats.indexOf("ages 16")>=0||cats.indexOf("ages 17")>=0)
+          ageEl.value="Young adult (13-17)";
+        else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0||cats.indexOf("personal development")>=0)
+          ageEl.value="Self-help & management (16+)";
+        else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0||cats.indexOf("historical")>=0)
+          ageEl.value="Biography & history (16+)";
+        else if(cats.indexOf("juvenile")>=0||cats.indexOf("children")>=0)
+          ageEl.value="Middle grade (8-12)";
+        else if(mat==="mature"||cats.indexOf("adult fiction")>=0||cats.indexOf("adult nonfiction")>=0)
+          ageEl.value="Adults";
+        else
+          ageEl.value="General (16+)";
+      }
+
+      // Auto-detect genre from categories
+      var genreEl = document.getElementById("ab-genre");
+      if(!genreEl.value||genreEl.value==="Fiction"){
+        if(cats.indexOf("fiction")>=0&&(cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0))
+          genreEl.value="Adventure & fantasy";
+        else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0)
+          genreEl.value="Biography & history";
+        else if(cats.indexOf("science")>=0||cats.indexOf("nature")>=0||cats.indexOf("animals")>=0)
+          genreEl.value="Science & nature";
+        else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0)
+          genreEl.value="Non-fiction";
+        else if(cats.indexOf("art")>=0||cats.indexOf("comic")>=0||cats.indexOf("graphic")>=0)
+          genreEl.value="Arts & creativity";
+        else if(cats.indexOf("reference")>=0||cats.indexOf("education")>=0||cats.indexOf("dictionary")>=0)
+          genreEl.value="Reference & learning";
+        else if(cats.indexOf("fiction")>=0)
+          genreEl.value="Fiction";
+      }
+
+      // Set cover if not already set
+      if(info.imageLinks&&info.imageLinks.thumbnail){
+        document.getElementById("ab-lookup-cover").src=info.imageLinks.thumbnail;
+        document.getElementById("ab-lookup-cover").style.display="block";
+      }
+
+      status.textContent="✅ Book details fetched from Google Books!";
+      status.style.color="#0F6E56";
+      setTimeout(function(){status.style.display="none";},3000);
+    })
+    .catch(function(){status.textContent="Could not fetch book details.";status.style.color="#C0392B";});
+}
+
 function fetchBookByISBN(isbn, cb){
   var img = new Image();
   // Use Open Library JSON API
@@ -4736,6 +4848,78 @@ function downloadCSVTemplate(){
   a.click();
   URL.revokeObjectURL(url);
 }
+function downloadBarcodeTemplate(){
+  var csv = "Book ID,Book Name,Author / Publisher\n";
+  csv += "B/1,Little Hanuman,Season's\n";
+  csv += "A/6,Moral stories for kids- book 10,Maya\n";
+  csv += "C/1977,Feluda - The Bandits of Bombay,Satyajit Ray\n";
+  var blob = new Blob([csv], {type:"text/csv"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "Chez_Library_Barcode_Template.csv";
+  a.click();
+  showToast("Template downloaded!","success");
+}
+
+function handleBarcodeExcelUpload(input){
+  var file = input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var text = e.target.result;
+    var lines = text.split("\n").map(function(l){return l.trim();}).filter(Boolean);
+    if(lines.length < 2){showToast("File appears empty","error");return;}
+    var rows = lines.slice(1); // skip header
+    var preview = [];
+    var errors = [];
+
+    rows.forEach(function(line, idx){
+      var cols = line.split(",").map(function(c){return c.trim().replace(/^"|"$/g,"");});
+      var bookId = cols[0]||"";
+      var title  = cols[1]||"";
+      var author = cols[2]||"";
+
+      if(!bookId){errors.push("Row "+(idx+2)+": Missing Book ID");return;}
+
+      // Generate barcode from Book ID e.g. C/1977 → C001977
+      var m = bookId.match(/^([A-Ea-e])\/(\d+)$/);
+      if(!m){errors.push("Row "+(idx+2)+": Invalid Book ID format '"+bookId+"'");return;}
+      var barcode = m[1].toUpperCase()+String(parseInt(m[2])).padStart(6,"0");
+
+      preview.push({bookId:bookId, title:title, author:author, barcode:barcode});
+    });
+
+    if(preview.length===0){showToast("No valid books found in file","error");return;}
+
+    // Show confirmation modal
+    var msg = "Found "+preview.length+" books.\n\nSample barcodes:\n";
+    preview.slice(0,5).forEach(function(r){
+      msg += r.bookId+" → "+r.barcode+(r.title?" ("+r.title.slice(0,30)+")":"")+"\n";
+    });
+    if(errors.length) msg += "\n⚠ "+errors.length+" rows skipped due to errors.";
+
+    confirmAction(
+      "Confirm barcode generation",
+      msg,
+      "Save "+preview.length+" barcodes",
+      function(){
+        var saved=0, failed=0;
+        preview.forEach(function(r){
+          // Update book in DB
+          var bk = DB.books.find(function(b){return b.id===r.bookId;});
+          if(bk) bk.barcode = r.barcode;
+          // Save to Supabase
+          supaFetch("books?id=eq."+encodeURIComponent(r.bookId),"PATCH",{barcode:r.barcode})
+            .then(function(){saved++;if(saved+failed===preview.length){showToast("✅ "+saved+" barcodes saved to database","success");saveData();}})
+            .catch(function(){failed++;if(saved+failed===preview.length){showToast(saved+" saved, "+failed+" failed","error");}});
+        });
+      }
+    );
+    input.value="";
+  };
+  reader.readAsText(file);
+}
+
 function printAllQRCodes(){
   var filter=document.getElementById("bk-qr-filter")?document.getElementById("bk-qr-filter").value:"";
   // If filter is "pending", only print unprinted. Otherwise all.
@@ -5450,9 +5634,9 @@ function saveMember_DB(m){
 }
 
 function barcodeToBookId(val){
-  // Convert barcode A000006 → A/6, C001977 → C/1977
-  var m = val.match(/^([A-Ea-e])0*([1-9][0-9]*)$/);
-  if(m) return m[1].toUpperCase()+"/"+m[2];
+  // Convert barcode A000006 → A/6, C001977 → C/1977, B000007 → B/7
+  var m = val.trim().match(/^([A-Ea-e])(\d+)$/);
+  if(m) return m[1].toUpperCase()+"/"+parseInt(m[2],10);
   return val.toUpperCase();
 }
 
@@ -5704,13 +5888,7 @@ document.addEventListener("click", function(e){
     <p id="m-addisbn-bookname" style="font-size:13px;color:var(--mt);margin:.25rem 0 1rem;font-weight:600"></p>
     <div class="field">
       <label>ISBN-13</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="addisbn-input" placeholder="Enter ISBN-13 or scan barcode" style="flex:1;font-family:monospace" oninput="previewISBNCover()"/>
-        <button type="button" class="btn btn-ghost" onclick="openISBNScanner()" style="padding:8px 12px;white-space:nowrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><rect x="2" y="4" width="4" height="16"/><rect x="8" y="4" width="2" height="16"/><rect x="12" y="4" width="4" height="16"/><rect x="18" y="4" width="4" height="16"/></svg>
-          Scan
-        </button>
-      </div>
+      <input type="text" id="addisbn-input" placeholder="Enter ISBN-13 or use barcode scanner" style="width:100%;font-family:monospace" oninput="previewISBNCover()"/>
     </div>
     <div id="addisbn-cover-preview" style="display:none;margin:.75rem 0;text-align:center">
       <img id="addisbn-cover-img" src="" style="height:100px;border-radius:6px;border:1px solid var(--bd)" onerror="this.parentElement.style.display='none'"/>
