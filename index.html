@@ -739,7 +739,7 @@ tr:hover td{background:#fafaf8;}
       <div id="no-id-banner" style="display:none;background:#FCEAEA;border:2px solid #C0392B;border-radius:10px;padding:14px 16px;margin-bottom:1rem"></div>
       <div id="bk-qr-stats" style="display:flex;gap:1rem;margin-bottom:.75rem;font-size:12px;flex-wrap:wrap"></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>Book ID</th><th>Book</th><th>Author</th><th>ISBN-13</th><th>Age</th><th>Genre</th><th>Status</th><th style="text-align:center">QR label</th><th>Actions</th></tr></thead>
+        <table><thead><tr><th>Book ID</th><th>Book</th><th>Author</th><th>ISBN-13</th><th>Age</th><th>Genre</th><th>Status</th><th style="text-align:center">Barcode label</th><th>Actions</th></tr></thead>
         <tbody id="books-tbody"></tbody></table>
       </div>
     </div>
@@ -1589,6 +1589,18 @@ function confirmDel(title,msg,cb){
   document.getElementById("confirm-title").textContent=title;
   document.getElementById("confirm-msg").textContent=msg;
   var btn=document.getElementById("confirm-ok");
+  btn.textContent="Delete";
+  btn.className="btn btn-danger";
+  btn.onclick=function(){closeModal("m-confirm");cb();};
+  document.getElementById("m-confirm").classList.add("open");
+}
+
+function confirmAction(title,msg,label,cb){
+  document.getElementById("confirm-title").textContent=title;
+  document.getElementById("confirm-msg").textContent=msg;
+  var btn=document.getElementById("confirm-ok");
+  btn.textContent=label||"Confirm";
+  btn.className="btn btn-primary";
   btn.onclick=function(){closeModal("m-confirm");cb();};
   document.getElementById("m-confirm").classList.add("open");
 }
@@ -1689,11 +1701,50 @@ function renderBooks(){
     var qrTd=document.createElement("td");qrTd.style.cssText="text-align:center";
     var qrChk=document.createElement("input");qrChk.type="checkbox";qrChk.title="Mark QR label as printed";
     qrChk.checked=b.qrPrinted===true;qrChk.style.cssText="width:16px;height:16px;cursor:pointer;accent-color:var(--ac)";
-    (function(bid){qrChk.addEventListener("change",function(){
-      var bk=DB.books.find(function(x){return x.id===bid;});
-      if(bk){bk.qrPrinted=qrChk.checked;saveData();}
-      qrChk.closest("tr").style.opacity=qrChk.checked?"0.6":"1";
-    });})(b.id);
+    var qrChk=document.createElement("input");qrChk.type="checkbox";qrChk.title="Mark barcode label as printed";
+    qrChk.checked=b.qrPrinted===true;qrChk.style.cssText="width:16px;height:16px;cursor:pointer;accent-color:var(--ac)";
+    (function(bid,row){qrChk.addEventListener("change",function(){
+      var checked=qrChk.checked;
+      // Revert visually until confirmed
+      qrChk.checked=!checked;
+      if(checked){
+        confirmAction(
+          "Confirm barcode label",
+          "Has the barcode label been printed and pasted on the book?",
+          "Yes, confirm",
+          function(){
+            var bk=DB.books.find(function(x){return x.id===bid;});
+            if(bk){
+              bk.qrPrinted=true;
+              saveData();
+              supaFetch("books?id=eq."+encodeURIComponent(bid),"PATCH",{qr_printed:true})
+                .then(function(){
+                  showToast("✅ Marked as printed","success");
+                  qrChk.checked=true;
+                  var lbl=qrChk.parentElement&&qrChk.parentElement.querySelector("div");
+                  if(lbl){lbl.textContent="Printed";lbl.style.color="#0F6E56";}
+                  row.style.opacity="0.6";
+                })
+                .catch(function(e){showToast("Save failed: "+e.message,"error");});
+            }
+          }
+        );
+      } else {
+        var bk=DB.books.find(function(x){return x.id===bid;});
+        if(bk){
+          bk.qrPrinted=false;saveData();
+          supaFetch("books?id=eq."+encodeURIComponent(bid),"PATCH",{qr_printed:false})
+            .then(function(){
+              showToast("Marked as pending","success");
+              qrChk.checked=false;
+              var lbl=qrChk.parentElement&&qrChk.parentElement.querySelector("div");
+              if(lbl){lbl.textContent="Pending";lbl.style.color="#C0392B";}
+              row.style.opacity="1";
+            })
+            .catch(function(e){showToast("Save failed: "+e.message,"error");});
+        }
+      }
+    });})(b.id,tr);
     if(b.qrPrinted)tr.style.opacity="0.6";
     var qrLbl=document.createElement("div");qrLbl.style.cssText="font-size:10px;color:"+(b.qrPrinted?"#0F6E56":"#C0392B")+";margin-top:2px;font-weight:600";
     qrLbl.textContent=b.qrPrinted?"Printed":"Pending";qrTd.appendChild(qrChk);qrTd.appendChild(qrLbl);
