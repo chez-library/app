@@ -4575,15 +4575,25 @@ function startScanner(){
       scannerCodeReader.decodeFromVideoDevice(deviceId, "scanner-video", function(result, err){
         if(result){
           var text = result.getText();
-          // Accept EAN-13 (ISBN-13) or EAN-10 (ISBN-10)
-          if(/^97[89]\d{10}$/.test(text) || /^\d{9}[\dX]$/.test(text)){
+          // Accept library barcodes (e.g. C001977) OR ISBN-13/10
+          var isLibraryBarcode = /^[A-Ea-e]\d{6}$/.test(text);
+          var isISBN = /^97[89]\d{10}$/.test(text) || /^\d{9}[\dX]$/.test(text);
+          if(isLibraryBarcode){
+            var bk = DB.books.find(function(b){ return b.barcode===text.toUpperCase(); });
+            document.getElementById("scanner-status").textContent = "✓ Barcode detected: "+text;
+            document.getElementById("scanner-result").style.display = "block";
+            document.getElementById("scanner-isbn-display").textContent = text;
+            document.getElementById("scanner-book-info").textContent = bk ? bk.title+(bk.author?" · "+bk.author:"") : "Book not found in library";
+            document.getElementById("scanner-use-btn").style.display = "inline-block";
+            scannedISBN = text;
+            if(typeof scannerCallback === "function"){ scannerCallback(text); }
+          } else if(isISBN){
             scannedISBN = text;
             document.getElementById("scanner-isbn-display").textContent = text;
             document.getElementById("scanner-book-info").textContent = "Looking up book details...";
             document.getElementById("scanner-result").style.display = "block";
             document.getElementById("scanner-use-btn").style.display = "inline-block";
-            document.getElementById("scanner-status").textContent = "✓ Barcode detected!";
-            // Try to look up book info via Open Library
+            document.getElementById("scanner-status").textContent = "✓ ISBN detected!";
             fetchBookByISBN(text, function(info){
               if(info){
                 document.getElementById("scanner-book-info").textContent = (info.title||"") + (info.author ? " · " + info.author : "");
@@ -4644,41 +4654,45 @@ function useScannedISBN(){
   closeScanner();
 
   if(scannerTarget==="issue-book"){
-    // Find book by ISBN in available books
-    var foundBook=DB.books.find(function(b){return b.isbn===scannedISBN&&b.status==="available";});
+    // Find book by barcode first, then by ISBN
+    var foundBook=DB.books.find(function(b){return b.barcode===scannedISBN&&b.status==="available";});
+    if(!foundBook) foundBook=DB.books.find(function(b){return b.isbn===scannedISBN&&b.status==="available";});
     if(foundBook){
       document.getElementById("iss-book").value=foundBook.id;
       document.getElementById("iss-book-search").value=foundBook.title;
+      var ibi=document.getElementById("iss-book-id");if(ibi)ibi.value=foundBook.id;
       document.getElementById("book-dropdown").style.display="none";
       showBookInfo(foundBook.id);
     } else {
-      var anyBook=DB.books.find(function(b){return b.isbn===scannedISBN;});
+      var anyBook=DB.books.find(function(b){return b.barcode===scannedISBN||b.isbn===scannedISBN;});
       if(anyBook){
         document.getElementById("iss-book-search").value=anyBook.title+" (not available)";
       } else {
-        document.getElementById("iss-book-search").value="ISBN: "+scannedISBN+" — not found in catalog";
+        document.getElementById("iss-book-search").value=scannedISBN+" — not found in catalog";
       }
     }
     return;
   }
 
   if(scannerTarget==="return-book"){
-    // Find checked-out book by ISBN
-    var retBook=DB.books.find(function(b){return b.isbn===scannedISBN&&b.status==="checked";});
+    // Find book by barcode first, then by ISBN
+    var retBook=DB.books.find(function(b){return b.barcode===scannedISBN&&b.status==="checked";});
+    if(!retBook) retBook=DB.books.find(function(b){return b.isbn===scannedISBN&&b.status==="checked";});
     if(retBook){
       document.getElementById("ret-book").value=retBook.id;
       document.getElementById("ret-book-search").value=retBook.title;
+      var rbi=document.getElementById("ret-book-id");if(rbi)rbi.value=retBook.id;
       document.getElementById("return-dropdown").style.display="none";
-      // Also populate member if known
       if(retBook.issuedTo){
         var m=DB.members.find(function(x){return x.id===retBook.issuedTo;});
         if(m){
           document.getElementById("ret-member").value=m.id;
           document.getElementById("ret-member-search").value=m.fname+" "+m.lname;
+          showReturnMemberCard(m.id);
         }
       }
     } else {
-      document.getElementById("ret-book-search").value="ISBN: "+scannedISBN+" — not found or not on loan";
+      document.getElementById("ret-book-search").value=scannedISBN+" — not found or not on loan";
     }
     return;
   }
