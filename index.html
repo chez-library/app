@@ -1918,11 +1918,15 @@ function saveMember(){
   var fullAddr=block?(block+(flat?" - Flat "+flat:"")):flat;
   if(editMemberId){
     var m=DB.members.find(function(x){return x.id===editMemberId;});
-    if(m){m.fname=fname;m.lname=lname;m.block=block;m.flatNo=flat;m.flatFull=fullAddr;m.email=email;m.phone=phone;logActivity("Edited member: "+fname+" "+lname);}
+    if(m){m.fname=fname;m.lname=lname;m.block=block;m.flatNo=flat;m.flatFull=fullAddr;m.email=email;m.phone=phone;logActivity("Edited member: "+fname+" "+lname);
+      saveMember_DB(m).then(function(){showToast("Member updated","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
+    }
   }else{
     var newId="MEM"+String(DB.members.length+1).padStart(3,"0");
-    DB.members.push({id:newId,fname:fname,lname:lname,block:block,flatNo:flat,flatFull:fullAddr,email:email,phone:phone,joined:todayStr(),booksOut:[]});
+    var newM={id:newId,fname:fname,lname:lname,block:block,flatNo:flat,flatFull:fullAddr,email:email,phone:phone,joined:todayStr(),booksOut:[]};
+    DB.members.push(newM);
     logActivity("Added member: "+fname+" "+lname);
+    saveMember_DB(newM).then(function(){showToast("Member added","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
   }
   saveData();closeModal("m-addmember");renderMembers();refreshDashboard();
 }
