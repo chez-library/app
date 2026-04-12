@@ -1216,8 +1216,22 @@ function loadFromSupabase() {
   var loading = document.getElementById("supabase-loading");
   if (loading) loading.style.display = "flex";
 
+  // Fetch books in batches of 1000 to bypass Supabase row limit
+  function fetchAllBooks(offset, accumulated) {
+    offset = offset || 0;
+    accumulated = accumulated || [];
+    return supaFetch("books?order=id&limit=1000&offset="+offset).then(function(batch) {
+      var rows = batch || [];
+      accumulated = accumulated.concat(rows);
+      if(rows.length === 1000) {
+        return fetchAllBooks(offset + 1000, accumulated);
+      }
+      return accumulated;
+    });
+  }
+
   Promise.all([
-    supaFetch("books?order=id&limit=5000"),
+    fetchAllBooks(),
     supaFetch("members?order=id"),
     supaFetch("transactions?order=date")
   ]).then(function(results) {
