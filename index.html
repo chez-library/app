@@ -1159,14 +1159,17 @@ var SUPA_URL = "https://aoolikgczoblizwjtynf.supabase.co";
 var SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvb2xpa2djem9ibGl6d2p0eW5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODYzMzksImV4cCI6MjA5MDY2MjMzOX0.sLmMLb2ETSubWehXf-5EU6n19CSoPbFjOCI_L_YvFiU";
 
 function supaFetch(path, method, body) {
+  var headers = {
+    "apikey": SUPA_KEY,
+    "Authorization": "Bearer " + SUPA_KEY,
+    "Content-Type": "application/json",
+    "Prefer": method === "POST" ? "return=representation,resolution=merge-duplicates" : (method === "PATCH" || method === "PUT" ? "return=representation" : "count=exact")
+  };
+  // Allow up to 5000 rows for GET requests
+  if(!method || method === "GET") headers["Range"] = "0-4999";
   return fetch(SUPA_URL + "/rest/v1/" + path, {
     method: method || "GET",
-    headers: {
-      "apikey": SUPA_KEY,
-      "Authorization": "Bearer " + SUPA_KEY,
-      "Content-Type": "application/json",
-      "Prefer": method === "POST" ? "return=representation,resolution=merge-duplicates" : (method === "PATCH" || method === "PUT" ? "return=representation" : "")
-    },
+    headers: headers,
     body: body ? JSON.stringify(body) : undefined
   }).then(function(r) {
     if (!r.ok) return r.text().then(function(t) { throw new Error(t); });
