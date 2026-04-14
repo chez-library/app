@@ -780,7 +780,8 @@ tr:hover td{background:#fafaf8;}
             <div style="width:130px;flex-shrink:0">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
               <input type="text" id="iss-book-id" placeholder="B/112" autocomplete="off"
-                oninput="filterIssueByBookId()"
+                oninput="clearTimeout(window._issIdTimer);window._issIdTimer=setTimeout(filterIssueByBookId,300)"
+                onkeydown="if(event.key==='Enter'){clearTimeout(window._issIdTimer);filterIssueByBookId();}"
                 style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
             <div style="position:relative;flex:1">
@@ -854,7 +855,8 @@ tr:hover td{background:#fafaf8;}
             <div style="width:130px;flex-shrink:0">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
               <input type="text" id="ret-book-id" placeholder="B/112" autocomplete="off"
-                oninput="filterReturnByBookId()"
+                oninput="clearTimeout(window._retIdTimer);window._retIdTimer=setTimeout(filterReturnByBookId,300)"
+                onkeydown="if(event.key==='Enter'){clearTimeout(window._retIdTimer);filterReturnByBookId();}"
                 style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
             <div style="position:relative;flex:1">
@@ -4668,79 +4670,85 @@ function onISBNInput(val){
   status.style.display = "block";
   status.style.color = "var(--mt)";
 
-  fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1")
+  function fillFields(info){
+    if(info.title&&!document.getElementById("ab-title").value.trim())
+      document.getElementById("ab-title").value = info.title;
+    if(info.author&&!document.getElementById("ab-author").value.trim())
+      document.getElementById("ab-author").value = info.author;
+    if(info.description&&!document.getElementById("ab-summary").value.trim())
+      document.getElementById("ab-summary").value = info.description.length>500?info.description.slice(0,500)+"...":info.description;
+    if(info.cover){
+      var ci=document.getElementById("ab-lookup-cover");
+      if(ci){ci.src=info.cover;ci.style.display="block";}
+    }
+    // Age group
+    var cats=(info.categories||"").toLowerCase();
+    var ageEl=document.getElementById("ab-age");
+    if(!ageEl.value||!ageEl.value.trim()){
+      if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0) ageEl.value="Picture books (0-4)";
+      else if(cats.indexOf("early reader")>=0||cats.indexOf("ages 5")>=0||cats.indexOf("ages 6")>=0||cats.indexOf("ages 7")>=0) ageEl.value="Early readers (5-7)";
+      else if(cats.indexOf("middle grade")>=0||cats.indexOf("ages 8")>=0||cats.indexOf("ages 9")>=0||cats.indexOf("ages 10")>=0||cats.indexOf("ages 11")>=0||cats.indexOf("ages 12")>=0) ageEl.value="Middle grade (8-12)";
+      else if(cats.indexOf("young adult")>=0||cats.indexOf("teen")>=0) ageEl.value="Young adult (13-17)";
+      else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0) ageEl.value="Self-help & management (16+)";
+      else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0) ageEl.value="Biography & history (16+)";
+      else if(cats.indexOf("juvenile")>=0||cats.indexOf("children")>=0) ageEl.value="Middle grade (8-12)";
+      else ageEl.value="General (16+)";
+    }
+    // Genre
+    var genreEl=document.getElementById("ab-genre");
+    if(!genreEl.value||genreEl.value==="Fiction"){
+      if(cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0) genreEl.value="Adventure & fantasy";
+      else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0) genreEl.value="Biography & history";
+      else if(cats.indexOf("science")>=0||cats.indexOf("nature")>=0) genreEl.value="Science & nature";
+      else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0) genreEl.value="Non-fiction";
+      else if(cats.indexOf("art")>=0||cats.indexOf("comic")>=0) genreEl.value="Arts & creativity";
+      else if(cats.indexOf("reference")>=0||cats.indexOf("education")>=0) genreEl.value="Reference & learning";
+    }
+    status.textContent="✅ Book details fetched!";
+    status.style.color="#0F6E56";
+    setTimeout(function(){status.style.display="none";},3000);
+  }
+
+  // Try Google Books first via CORS proxy
+  var proxy = "https://corsproxy.io/?";
+  fetch(proxy+encodeURIComponent("https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1"))
     .then(function(r){return r.json();})
     .then(function(data){
-      if(!data.items||!data.items.length){status.textContent="Book not found for this ISBN.";status.style.color="#C0392B";return;}
-      var info = data.items[0].volumeInfo;
-
-      // Auto-fill title if empty
-      if(info.title&&!document.getElementById("ab-title").value.trim())
-        document.getElementById("ab-title").value = info.title;
-
-      // Auto-fill author if empty
-      if(info.authors&&info.authors.length&&!document.getElementById("ab-author").value.trim())
-        document.getElementById("ab-author").value = info.authors[0];
-
-      // Auto-fill summary if empty
-      if(info.description&&!document.getElementById("ab-summary").value.trim())
-        document.getElementById("ab-summary").value = info.description.length>500?info.description.slice(0,500)+"...":info.description;
-
-      // Auto-detect age group from maturityRating and categories
-      var cats = (info.categories||[]).join(" ").toLowerCase();
-      var mat = (info.maturityRating||"").toLowerCase();
-      var ageEl = document.getElementById("ab-age");
-      if(!ageEl.value||ageEl.value===ageEl.options[0].value){
-        if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0||cats.indexOf("toddler")>=0)
-          ageEl.value="Picture books (0-4)";
-        else if(cats.indexOf("early reader")>=0||cats.indexOf("beginning reader")>=0||cats.indexOf("ages 5")>=0||cats.indexOf("ages 6")>=0||cats.indexOf("ages 7")>=0)
-          ageEl.value="Early readers (5-7)";
-        else if(cats.indexOf("middle grade")>=0||cats.indexOf("ages 8")>=0||cats.indexOf("ages 9")>=0||cats.indexOf("ages 10")>=0||cats.indexOf("ages 11")>=0||cats.indexOf("ages 12")>=0)
-          ageEl.value="Middle grade (8-12)";
-        else if(cats.indexOf("young adult")>=0||cats.indexOf("teen")>=0||cats.indexOf("ages 13")>=0||cats.indexOf("ages 14")>=0||cats.indexOf("ages 15")>=0||cats.indexOf("ages 16")>=0||cats.indexOf("ages 17")>=0)
-          ageEl.value="Young adult (13-17)";
-        else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0||cats.indexOf("personal development")>=0)
-          ageEl.value="Self-help & management (16+)";
-        else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0||cats.indexOf("historical")>=0)
-          ageEl.value="Biography & history (16+)";
-        else if(cats.indexOf("juvenile")>=0||cats.indexOf("children")>=0)
-          ageEl.value="Middle grade (8-12)";
-        else if(mat==="mature"||cats.indexOf("adult fiction")>=0||cats.indexOf("adult nonfiction")>=0)
-          ageEl.value="Adults";
-        else
-          ageEl.value="General (16+)";
+      if(data.items&&data.items.length){
+        var v=data.items[0].volumeInfo;
+        fillFields({
+          title:v.title,
+          author:v.authors&&v.authors.length?v.authors[0]:"",
+          description:v.description||"",
+          categories:(v.categories||[]).join(" "),
+          cover:v.imageLinks&&v.imageLinks.thumbnail?v.imageLinks.thumbnail:null
+        });
+      } else {
+        // Fallback to Open Library
+        return fetch(proxy+encodeURIComponent("https://openlibrary.org/api/books?bibkeys=ISBN:"+val+"&format=json&jscmd=data"))
+          .then(function(r){return r.json();})
+          .then(function(olData){
+            var key="ISBN:"+val;
+            if(olData&&olData[key]){
+              var info=olData[key];
+              fillFields({
+                title:info.title||"",
+                author:info.authors&&info.authors.length?info.authors[0].name:"",
+                description:info.notes&&typeof info.notes==="string"?info.notes:(info.excerpts&&info.excerpts.length?info.excerpts[0].text:""),
+                categories:(info.subjects||[]).map(function(s){return typeof s==="string"?s:s.name||"";}).join(" "),
+                cover:info.cover&&info.cover.medium?info.cover.medium:null
+              });
+            } else {
+              status.textContent="Book not found for this ISBN.";
+              status.style.color="#C0392B";
+            }
+          });
       }
-
-      // Auto-detect genre from categories
-      var genreEl = document.getElementById("ab-genre");
-      if(!genreEl.value||genreEl.value==="Fiction"){
-        if(cats.indexOf("fiction")>=0&&(cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0))
-          genreEl.value="Adventure & fantasy";
-        else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0)
-          genreEl.value="Biography & history";
-        else if(cats.indexOf("science")>=0||cats.indexOf("nature")>=0||cats.indexOf("animals")>=0)
-          genreEl.value="Science & nature";
-        else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0)
-          genreEl.value="Non-fiction";
-        else if(cats.indexOf("art")>=0||cats.indexOf("comic")>=0||cats.indexOf("graphic")>=0)
-          genreEl.value="Arts & creativity";
-        else if(cats.indexOf("reference")>=0||cats.indexOf("education")>=0||cats.indexOf("dictionary")>=0)
-          genreEl.value="Reference & learning";
-        else if(cats.indexOf("fiction")>=0)
-          genreEl.value="Fiction";
-      }
-
-      // Set cover if not already set
-      if(info.imageLinks&&info.imageLinks.thumbnail){
-        document.getElementById("ab-lookup-cover").src=info.imageLinks.thumbnail;
-        document.getElementById("ab-lookup-cover").style.display="block";
-      }
-
-      status.textContent="✅ Book details fetched from Google Books!";
-      status.style.color="#0F6E56";
-      setTimeout(function(){status.style.display="none";},3000);
     })
-    .catch(function(){status.textContent="Could not fetch book details.";status.style.color="#C0392B";});
+    .catch(function(){
+      status.innerHTML="Could not auto-fetch. Try: <a href='https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"' target='_blank' style='color:#185FA5'>Google Books</a> or <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
+      status.style.color="#C0392B";
+    });
 }
 
 function fetchBookByISBN(isbn, cb){
