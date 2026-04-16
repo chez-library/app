@@ -1918,7 +1918,8 @@ function saveMember(){
       saveMember_DB(m).then(function(){showToast("Member updated","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
     }
   }else{
-    var newId="MEM"+String(DB.members.length+1).padStart(3,"0");
+    var maxMem=DB.members.reduce(function(max,m){var n=parseInt((m.id||"").replace(/[^0-9]/g,""))||0;return Math.max(max,n);},0);
+    var newId="MEM"+String(maxMem+1).padStart(3,"0");
     var newM={id:newId,fname:fname,lname:lname,block:block,flatNo:flat,flatFull:fullAddr,email:email,phone:phone,joined:todayStr(),booksOut:[]};
     DB.members.push(newM);
     logActivity("Added member: "+fname+" "+lname);
