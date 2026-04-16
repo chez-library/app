@@ -5580,17 +5580,14 @@ function handleMemberBulkUpload(input){
     var text = e.target.result;
     var lines = text.split("\n").map(function(l){return l.trim();}).filter(Boolean);
     if(lines.length<2){showToast("File appears empty","error");return;}
-    // Skip header row
     var rows = lines.slice(1);
     var added=0, skipped=0, errors=[];
-    // Find highest existing MEM number
     var maxNum = DB.members.reduce(function(max,m){
       var n=parseInt((m.id||"").replace(/[^0-9]/g,""))||0;
       return Math.max(max,n);
     },0);
 
     rows.forEach(function(line, idx){
-      // Parse CSV (simple split — handles quoted fields)
       var cols = line.split(",").map(function(c){return c.trim().replace(/^"|"$/g,"");});
       var mid   = cols[0]||"";
       var fname = cols[1]||"";
@@ -5600,8 +5597,11 @@ function handleMemberBulkUpload(input){
       var email = cols[5]||"";
       var phone = cols[6]||"";
       var joined= cols[7]||todayStr();
+      var rowLabel = "Row "+(idx+2)+(fname?" ("+fname+" "+lname+")":"");
 
-      if(!fname||!lname){errors.push("Row "+(idx+2)+": Missing first or last name");return;}
+      if(!fname&&!lname){errors.push(rowLabel+": Empty row — skipped");return;}
+      if(!fname){errors.push(rowLabel+": Missing first name");return;}
+      if(!lname&&!fname){errors.push(rowLabel+": Missing last name");return;}
 
       // Auto-assign ID if blank
       if(!mid){
@@ -5609,8 +5609,17 @@ function handleMemberBulkUpload(input){
         mid = "MEM"+String(maxNum).padStart(3,"0");
       }
 
-      // Skip if ID already exists
-      if(DB.members.find(function(m){return m.id===mid;})){
+      // If ID already exists — UPDATE
+      var existing = DB.members.find(function(m){return m.id===mid;});
+      if(existing){
+        if(fname) existing.fname=fname;
+        if(lname) existing.lname=lname;
+        if(block) existing.block=block;
+        if(flat) existing.flatNo=flat;
+        if(email) existing.email=email;
+        if(phone) existing.phone=phone;
+        existing.flatFull=(existing.block&&existing.flatNo?existing.block+" — Flat "+existing.flatNo:"");
+        saveMember_DB(existing).catch(function(e){errors.push(rowLabel+": DB update failed — "+e.message);});
         skipped++;return;
       }
 
@@ -5618,16 +5627,25 @@ function handleMemberBulkUpload(input){
         flatFull:(block&&flat?block+" — Flat "+flat:""),
         email:email,phone:phone,joined:joined||todayStr()};
       DB.members.push(newM);
-      saveMember_DB(newM).catch(function(e){console.error("Save failed:",e);});
+      saveMember_DB(newM).catch(function(e){errors.push(rowLabel+": DB save failed — "+e.message);});
       added++;
     });
 
     saveData();renderMembers();refreshDashboard();
-    var msg="✅ "+added+" member"+(added!==1?"s":"")+" added";
-    if(skipped) msg+=" · "+skipped+" skipped (duplicate ID)";
-    if(errors.length) msg+=" · "+errors.length+" error"+(errors.length!==1?"s":"");
-    showToast(msg, added>0?"success":"error");
-    if(errors.length) console.warn("Bulk upload errors:",errors);
+
+    // Show detailed results
+    var summary = "✅ "+added+" added  |  🔄 "+skipped+" updated  |  ❌ "+errors.length+" errors";
+    if(errors.length>0){
+      // Show error details in a modal
+      var errHtml = "<div style='font-size:13px;font-weight:700;margin-bottom:10px'>"+summary+"</div>";
+      errHtml += "<div style='font-size:12px;color:#C0392B;background:#FCEAEA;border-radius:8px;padding:10px;max-height:300px;overflow-y:auto'>";
+      errors.forEach(function(e){ errHtml += "• "+e+"<br>"; });
+      errHtml += "</div>";
+      confirmAction("Bulk upload complete", summary+"\n\nErrors:\n"+errors.join("\n"), "OK", function(){});
+      showToast(summary, "error");
+    } else {
+      showToast(summary, "success");
+    }
     input.value="";
   };
   reader.readAsText(file);
