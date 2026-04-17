@@ -1287,8 +1287,8 @@ function loadFromSupabase() {
     var tot2=document.getElementById("pub-total2");if(tot2)tot2.textContent=DB.books.length;
     updateActiveMembers();
     refreshDashboard();
-    // Auto-fetch covers for books without ISBN/cover
-    setTimeout(fetchMissingCovers, 2000);
+    // Auto-fetch covers disabled — causes rate limit errors with 1153 books
+    // Use Edit book → ISBN field to add covers manually
   }).catch(function(err) {
     console.error("Supabase load error:", err);
     if (loading) loading.style.display = "none";
