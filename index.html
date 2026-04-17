@@ -286,6 +286,7 @@ tr:hover td{background:#fafaf8;}
   <div class="hero-stats">
     <div class="hstat"><div class="hstat-n" id="pub-total2">…</div><div class="hstat-l">books in catalog</div></div>
     <div class="hstat"><div class="hstat-n">95%</div><div class="hstat-l">children's collection</div></div>
+    <div class="hstat"><div class="hstat-n" id="pub-active-members">…</div><div class="hstat-l">registered members</div></div>
     <div class="hstat">
       <div id="pub-borrow-chart" style="display:flex;align-items:flex-end;justify-content:center;gap:8px;height:54px"></div>
       <div id="pub-borrow-labels" style="display:flex;justify-content:center;gap:8px"></div>
@@ -1191,6 +1192,9 @@ function loadData() {
     users:[
       {id:"u1",name:"Jayasuryan",username:"Jayan",password:"Jayan@77",role:"master_admin",created:"2024-01-01"},
       {id:"u2",name:"Backup Admin",username:"chezlib2",password:"chezlib2",role:"backup_admin",created:"2024-01-01"},
+      {id:"u3",name:"Sunita Rao",username:"sunita",password:"sunita",role:"volunteer",created:"2024-06-01"},
+      {id:"u4",name:"Arjun Menon",username:"arjun",password:"arjun",role:"volunteer",created:"2024-07-15"},
+      {id:"u5",name:"Chez",username:"Chez",password:"Chez",role:"volunteer",created:"2026-03-28"},
       {id:"u3",name:"Sunita Rao",username:"sunita",password:"vol123",role:"volunteer",created:"2024-06-01"},
       {id:"u4",name:"Arjun Menon",username:"arjun",password:"vol123",role:"volunteer",created:"2024-07-15"},
       {id:"u5",name:"Chez",username:"Chez",password:"Bangalore",role:"volunteer",created:"2026-03-28"}
@@ -1232,7 +1236,8 @@ function loadFromSupabase() {
   Promise.all([
     fetchAllBooks(),
     supaFetch("members?order=id"),
-    supaFetch("transactions?order=date")
+    supaFetch("transactions?order=date"),
+    supaFetch("users?order=created")
   ]).then(function(results) {
     // Map Supabase snake_case to our camelCase
     DB.books = (results[0] || []).map(function(b) {
@@ -1260,6 +1265,15 @@ function loadFromSupabase() {
         date: t.date, due: t.due_date, returnDate: t.return_date
       };
     });
+    // Load users from Supabase — override localStorage
+    if(results[3] && results[3].length){
+      DB.users = results[3].map(function(u){
+        return {
+          id: u.id, name: u.name, username: u.username,
+          password: u.password, role: u.role, created: u.created
+        };
+      });
+    }
     saveData(); // update cache
     if (loading) loading.style.display = "none";
     // Refresh all UI
@@ -1271,6 +1285,7 @@ function loadFromSupabase() {
     upd();
     var tot=document.getElementById("pub-total");if(tot)tot.textContent=DB.books.length;
     var tot2=document.getElementById("pub-total2");if(tot2)tot2.textContent=DB.books.length;
+    updateActiveMembers();
     refreshDashboard();
     // Auto-fetch covers for books without ISBN/cover
     setTimeout(fetchMissingCovers, 2000);
@@ -1363,6 +1378,9 @@ function loadData(){
     users:[
       {id:"u1",name:"Jayasuryan",username:"Jayan",password:"Jayan@77",role:"master_admin",created:"2024-01-01"},
       {id:"u2",name:"Backup Admin",username:"chezlib2",password:"chezlib2",role:"backup_admin",created:"2024-01-01"},
+      {id:"u3",name:"Sunita Rao",username:"sunita",password:"sunita",role:"volunteer",created:"2024-06-01"},
+      {id:"u4",name:"Arjun Menon",username:"arjun",password:"arjun",role:"volunteer",created:"2024-07-15"},
+      {id:"u5",name:"Chez",username:"Chez",password:"Chez",role:"volunteer",created:"2026-03-28"},
       {id:"u3",name:"Sunita Rao",username:"sunita",password:"vol123",role:"volunteer",created:"2024-06-01"},
       {id:"u4",name:"Arjun Menon",username:"arjun",password:"vol123",role:"volunteer",created:"2024-07-15"},
       {id:"u5",name:"Chez",username:"Chez",password:"Bangalore",role:"volunteer",created:"2026-03-28"}
@@ -1437,17 +1455,15 @@ function loadData(){
         });
       }
       // Always sync hardcoded users — ensures new/updated credentials work
+      if(!d.users) d.users=[];
       def.users.forEach(function(du){
-        var existing=d.users?d.users.find(function(u){return u.id===du.id;}):null;
+        var existing=d.users.find(function(u){return u.id===du.id;});
         if(existing){
-          // Update username and password from hardcoded (so changes take effect)
           existing.username=du.username;
           existing.password=du.password;
           existing.name=du.name;
           existing.role=du.role;
         } else {
-          // Add new hardcoded user if not in localStorage
-          if(!d.users)d.users=[];
           d.users.push(du);
         }
       });
@@ -1634,6 +1650,7 @@ function refreshDashboard(){
   renderPopularBooks();
   renderTopReaders();
   var pt2=document.getElementById("pub-total2");if(pt2)pt2.textContent=DB.books.length;
+  updateActiveMembers();
   var tbody=document.getElementById("d-activity");
   tbody.innerHTML="";
   if(DB.activity.length===0){tbody.innerHTML="<tr><td colspan='3' style='text-align:center;color:var(--mt);padding:2rem'>No activity yet</td></tr>";return;}
@@ -2687,7 +2704,9 @@ function renderUsers(){
       (function(uid2,uname){delBtn.addEventListener("click",function(){
         confirmDel("Delete user","Remove "+uname+" from the system?",function(){
           DB.users=DB.users.filter(function(x){return x.id!==uid2;});
-          logActivity("Deleted user: "+uname);saveData();renderUsers();
+          logActivity("Deleted user: "+uname);
+          deleteUser_DB(uid2).catch(function(e){showToast("Delete failed: "+e.message,"error");});
+          saveData();renderUsers();
         });
       });})(u.id,u.name);
       tr.lastElementChild.appendChild(delBtn);
@@ -2710,8 +2729,10 @@ function saveUser(){
     (function(){var _e=document.getElementById("au-err");if(_e)_e.style.display="block"})();return;
   }
   (function(){var _e=document.getElementById("au-err");if(_e)_e.style.display="none"})();
-  DB.users.push({id:uid(),name:name,username:uname,password:pass,role:role,created:todayStr()});
+  var newU={id:uid(),name:name,username:uname,password:pass,role:role,created:todayStr()};
+  DB.users.push(newU);
   logActivity("Created user: "+name+" ("+role+")");
+  saveUser_DB(newU).then(function(){showToast("User added","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
   saveData();closeModal("m-adduser");renderUsers();
 }
 
@@ -3078,8 +3099,9 @@ function setupStaffUIExtra(){
 // ── EDIT USER ────────────────────────────────────────────────────────────────
 var editUserId=null;
 function openEditUser(id){
+  // Merge hardcoded + localStorage users to find the right one
   var u=DB.users.find(function(x){return x.id===id;});
-  if(!u)return;
+  if(!u){showToast("User not found — try refreshing the page","error");return;}
   editUserId=id;
   var isSelf=currentUser.id===id;
   document.getElementById("eu-title").textContent=isSelf?"Edit my details":"Edit user: "+u.name;
@@ -3131,6 +3153,8 @@ function saveEditUser(){
   }
 
   logActivity("Updated user details: "+name);
+  var updU=DB.users.find(function(x){return x.id===editUserId;});
+  if(updU) saveUser_DB(updU).catch(function(e){showToast("Save failed: "+e.message,"error");});
   saveData();
   closeModal("m-edit-user");
   renderUsers();
@@ -4065,6 +4089,13 @@ function getNewArrivals(){
     return true;
   });
 }
+
+function updateActiveMembers(){
+  var el=document.getElementById("pub-active-members");
+  if(!el)return;
+  el.textContent=DB.members.length;
+}
+
 function renderNewArrivals(){
   var list=getNewArrivals();
   var today=new Date();
@@ -5658,6 +5689,16 @@ function saveMember_DB(m){
   return supaFetch("members?id=eq."+encodeURIComponent(m.id),"PATCH",row).then(function(r){
     if(!r||!r.length) return supaFetch("members","POST",row);
   });
+}
+
+function saveUser_DB(u){
+  var row={id:u.id,name:u.name,username:u.username,password:u.password,role:u.role,created:u.created||todayStr()};
+  return supaFetch("users?id=eq."+encodeURIComponent(u.id),"PATCH",row).then(function(r){
+    if(!r||!r.length) return supaFetch("users","POST",row);
+  });
+}
+function deleteUser_DB(uid){
+  return supaFetch("users?id=eq."+encodeURIComponent(uid),"DELETE");
 }
 
 function barcodeToBookId(val){
