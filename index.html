@@ -4762,29 +4762,27 @@ function onISBNInput(val){
       var ci=document.getElementById("ab-lookup-cover");
       if(ci){ci.src=info.cover;ci.style.display="block";}
     }
-    // Age group
+    // Age group — always set based on categories
     var cats=(info.categories||"").toLowerCase();
     var ageEl=document.getElementById("ab-age");
-    if(!ageEl.value||!ageEl.value.trim()){
-      if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0) ageEl.value="Picture books (0-4)";
-      else if(cats.indexOf("early reader")>=0||cats.indexOf("ages 5")>=0||cats.indexOf("ages 6")>=0||cats.indexOf("ages 7")>=0) ageEl.value="Early readers (5-7)";
-      else if(cats.indexOf("middle grade")>=0||cats.indexOf("ages 8")>=0||cats.indexOf("ages 9")>=0||cats.indexOf("ages 10")>=0||cats.indexOf("ages 11")>=0||cats.indexOf("ages 12")>=0) ageEl.value="Middle grade (8-12)";
-      else if(cats.indexOf("young adult")>=0||cats.indexOf("teen")>=0) ageEl.value="Young adult (13-17)";
-      else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0) ageEl.value="Self-help & management (16+)";
-      else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0) ageEl.value="Biography & history (16+)";
-      else if(cats.indexOf("juvenile")>=0||cats.indexOf("children")>=0) ageEl.value="Middle grade (8-12)";
-      else ageEl.value="General (16+)";
-    }
-    // Genre
+    if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0||cats.indexOf("toddler")>=0) ageEl.value="Picture books (0\u20134)";
+    else if(cats.indexOf("early reader")>=0||cats.indexOf("beginning reader")>=0||cats.indexOf("ages 5")>=0||cats.indexOf("ages 6")>=0||cats.indexOf("ages 7")>=0) ageEl.value="Early readers (5\u20137)";
+    else if(cats.indexOf("middle grade")>=0||cats.indexOf("ages 8")>=0||cats.indexOf("ages 9")>=0||cats.indexOf("ages 10")>=0||cats.indexOf("ages 11")>=0||cats.indexOf("ages 12")>=0||cats.indexOf("juvenile")>=0||cats.indexOf("children")>=0) ageEl.value="Middle grade (8\u201312)";
+    else if(cats.indexOf("young adult")>=0||cats.indexOf("teen")>=0||cats.indexOf("ages 13")>=0||cats.indexOf("ages 14")>=0||cats.indexOf("ages 15")>=0||cats.indexOf("ages 16")>=0||cats.indexOf("ages 17")>=0) ageEl.value="Young adult (13\u201317)";
+    else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("management")>=0) ageEl.value="Self-help & management (16+)";
+    else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0) ageEl.value="Biography & history (16+)";
+    else if(cats.indexOf("adult")>=0) ageEl.value="Adults";
+    else if(cats) ageEl.value="General (16+)";
+
+    // Genre — always set based on categories
     var genreEl=document.getElementById("ab-genre");
-    if(!genreEl.value||genreEl.value==="Fiction"){
-      if(cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0) genreEl.value="Adventure & fantasy";
-      else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0) genreEl.value="Biography & history";
-      else if(cats.indexOf("science")>=0||cats.indexOf("nature")>=0) genreEl.value="Science & nature";
-      else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0) genreEl.value="Non-fiction";
-      else if(cats.indexOf("art")>=0||cats.indexOf("comic")>=0) genreEl.value="Arts & creativity";
-      else if(cats.indexOf("reference")>=0||cats.indexOf("education")>=0) genreEl.value="Reference & learning";
-    }
+    if(cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0||cats.indexOf("juvenile fiction")>=0) genreEl.value="Adventure & fantasy";
+    else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0||cats.indexOf("culture")>=0) genreEl.value="History & culture";
+    else if(cats.indexOf("science")>=0||cats.indexOf("nature")>=0||cats.indexOf("animals")>=0) genreEl.value="Science & nature";
+    else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("economics")>=0) genreEl.value="Non-fiction";
+    else if(cats.indexOf("art")>=0||cats.indexOf("comic")>=0||cats.indexOf("graphic")>=0) genreEl.value="Arts & creativity";
+    else if(cats.indexOf("reference")>=0||cats.indexOf("education")>=0||cats.indexOf("dictionary")>=0) genreEl.value="Reference & learning";
+    else if(cats.indexOf("fiction")>=0) genreEl.value="Fiction";
     status.textContent="✅ Book details fetched!";
     status.style.color="#0F6E56";
     setTimeout(function(){status.style.display="none";},3000);
@@ -4792,7 +4790,7 @@ function onISBNInput(val){
 
   // Try multiple CORS proxies in order
   var proxies=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://thingproxy.freeboard.io/fetch/"];
-  var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1";
+  var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1&fields=items(volumeInfo(title,authors,description,categories,imageLinks))";
 
   function tryISBNProxy(idx){
     if(idx>=proxies.length){
