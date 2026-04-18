@@ -1597,7 +1597,7 @@ function fmtDate(d){if(!d)return"-";var dt=new Date(d);return dt.toLocaleDateStr
 function todayStr(){return new Date().toISOString().split("T")[0];}
 function uid(){return "id"+Date.now()+Math.random().toString(36).slice(2,6);}
 function logActivity(msg){DB.activity.unshift({msg:msg,user:currentUser?currentUser.name:"System",time:new Date().toLocaleTimeString()});if(DB.activity.length>50)DB.activity.pop();saveData();}
-function closeModal(id){document.getElementById(id).classList.remove("open");}
+function closeModal(id){var m=document.getElementById(id);if(m){m.classList.remove("open");m.style.cssText="";}}
 function confirmDel(title,msg,cb){
   document.getElementById("confirm-title").textContent=title;
   document.getElementById("confirm-msg").textContent=msg;
@@ -2690,22 +2690,30 @@ function renderUsers(){
     var isSelf=currentUser&&u.id===currentUser.id;
     var isMaster=u.role==="master_admin";
     var canDelete=!isSelf&&!isMaster&&(currentUser.role==="master_admin"||(currentUser.role==="backup_admin"&&u.role==="volunteer"));
-    tr.innerHTML=
-      "<td style='font-weight:600'>"+u.name+(isSelf?" <span style='font-size:11px;color:var(--mt)'>(you)</span>":"")+"</td>"+
-      "<td style='font-family:monospace;font-size:13px'>"+u.username+"</td>"+
-      "<td><span class='badge "+(roleCls[u.role]||"b-gray")+"'>"+( roleLabel[u.role]||u.role)+"</span></td>"+
-      "<td style='font-size:12px;color:var(--mt)'>"+fmtDate(u.created)+"</td>"+
-      "<td></td>";
-    // Edit button: user can edit themselves, master_admin can edit anyone, backup_admin can edit volunteers
     var canEdit=isSelf||(currentUser.role==="master_admin")||(currentUser.role==="backup_admin"&&u.role==="volunteer");
+
+    var tdName=document.createElement("td");tdName.style.fontWeight="600";
+    tdName.innerHTML=u.name+(isSelf?" <span style='font-size:11px;color:var(--mt)'>(you)</span>":"");
+    var tdUser=document.createElement("td");tdUser.style.cssText="font-family:monospace;font-size:13px";tdUser.textContent=u.username;
+    var tdRole=document.createElement("td");tdRole.innerHTML="<span class='badge "+(roleCls[u.role]||"b-gray")+"'>"+(roleLabel[u.role]||u.role)+"</span>";
+    var tdDate=document.createElement("td");tdDate.style.cssText="font-size:12px;color:var(--mt)";tdDate.textContent=fmtDate(u.created);
+    var tdAct=document.createElement("td");tdAct.style.whiteSpace="nowrap";
+
     if(canEdit){
-      var editBtn=document.createElement("button");editBtn.className="btn btn-ghost";editBtn.style.cssText="font-size:12px;padding:4px 10px;margin-right:4px";
+      var editBtn=document.createElement("button");
+      editBtn.className="btn btn-ghost";
+      editBtn.style.cssText="font-size:12px;padding:4px 10px;margin-right:4px";
       editBtn.textContent=isSelf?"Edit my details":"Edit";
-      editBtn.setAttribute("onclick","openEditUser('"+u.id+"')");
-      tr.lastElementChild.appendChild(editBtn);
+      (function(uid2){editBtn.addEventListener("click",function(){
+        openEditUser(uid2);
+      });})(u.id);
+      tdAct.appendChild(editBtn);
     }
     if(canDelete){
-      var delBtn=document.createElement("button");delBtn.className="btn btn-danger";delBtn.style.cssText="font-size:12px;padding:4px 10px";delBtn.textContent="Delete";
+      var delBtn=document.createElement("button");
+      delBtn.className="btn btn-danger";
+      delBtn.style.cssText="font-size:12px;padding:4px 10px";
+      delBtn.textContent="Delete";
       (function(uid2,uname){delBtn.addEventListener("click",function(){
         confirmDel("Delete user","Remove "+uname+" from the system?",function(){
           DB.users=DB.users.filter(function(x){return x.id!==uid2;});
@@ -2714,8 +2722,9 @@ function renderUsers(){
           saveData();renderUsers();
         });
       });})(u.id,u.name);
-      tr.lastElementChild.appendChild(delBtn);
+      tdAct.appendChild(delBtn);
     }
+    tr.appendChild(tdName);tr.appendChild(tdUser);tr.appendChild(tdRole);tr.appendChild(tdDate);tr.appendChild(tdAct);
     tbody.appendChild(tr);
   });
 }
@@ -3109,23 +3118,22 @@ function openEditUser(id){
   for(var i=0;i<DB.users.length;i++){
     if(String(DB.users[i].id).trim()===id){u=DB.users[i];break;}
   }
-  if(!u){
-    showToast("User not found: "+id,"error");
-    console.error("openEditUser: id="+id+" not in DB.users=",DB.users.map(function(x){return x.id;}));
-    return;
-  }
+  if(!u){alert("User not found: "+id+" (total: "+DB.users.length+")");return;}
   editUserId=id;
-  var isSelf=currentUser&&String(currentUser.id).trim()===id;
-  document.getElementById("eu-title").textContent=isSelf?"Edit my details":"Edit user: "+u.name;
-  document.getElementById("eu-subtitle").textContent=isSelf?"Update your name, username or password.":"Update details for this user.";
+
+  // Populate fields
+  document.getElementById("eu-title").textContent=(currentUser&&currentUser.id===id)?"Edit my details":"Edit user: "+u.name;
+  document.getElementById("eu-subtitle").textContent="Update details for this user.";
   document.getElementById("eu-name").value=u.name||"";
   document.getElementById("eu-username").value=u.username||"";
   document.getElementById("eu-newpwd").value="";
   document.getElementById("eu-confirmpwd").value="";
   var msg=document.getElementById("eu-msg");if(msg)msg.style.display="none";
+
+  // Show modal by appending directly to body
   var modal=document.getElementById("m-edit-user");
-  if(!modal){showToast("Edit modal not found!","error");return;}
-  modal.classList.add("open");
+  document.body.appendChild(modal);
+  modal.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveEditUser(){
   var name=document.getElementById("eu-name").value.trim();
