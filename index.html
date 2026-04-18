@@ -1190,11 +1190,11 @@ function loadData() {
   // Return defaults synchronously; async load from Supabase happens after page load
   var def = {
     users:[
-      {id:"u1",name:"Jayasuryan",username:"Jayan",password:"6acf56d84d42af4cb1a1313526ff60f659116e94d73f7e21b04e162fbb76a4aa",role:"master_admin",created:"2024-01-01"},
-      {id:"u2",name:"Backup Admin",username:"chezlib2",password:"682e0933ef08e80d08416357066e6e615c7152ee869e67053b1c16e8fe967c1c",role:"backup_admin",created:"2024-01-01"},
-      {id:"u3",name:"Sunita Rao",username:"sunita",password:"60fd844475d56a9df211ec1ee8e43aac6117c804191289ccfefd67498bfc493b",role:"volunteer",created:"2024-06-01"},
-      {id:"u4",name:"Arjun Menon",username:"arjun",password:"fa4f7155e110eac164bda0f36b5d43f01d5d43d6afa190a317c5bec463f85764",role:"volunteer",created:"2024-07-15"},
-      {id:"u5",name:"Chez",username:"Chez",password:"71a5d30a744a9a9fb4891868357d10fd243122fdfd51d550c33300f7f5422c30",role:"volunteer",created:"2026-03-28"},
+      {id:"u1",name:"Jayasuryan",username:"Jayan",password:"Jayan@77",role:"master_admin",created:"2024-01-01"},
+      {id:"u2",name:"Backup Admin",username:"chezlib2",password:"chezlib2",role:"backup_admin",created:"2024-01-01"},
+      {id:"u3",name:"Sunita Rao",username:"sunita",password:"sunita",role:"volunteer",created:"2024-06-01"},
+      {id:"u4",name:"Arjun Menon",username:"arjun",password:"arjun",role:"volunteer",created:"2024-07-15"},
+      {id:"u5",name:"Chez",username:"Chez",password:"Chez",role:"volunteer",created:"2026-03-28"},
       {id:"u3",name:"Sunita Rao",username:"sunita",password:"vol123",role:"volunteer",created:"2024-06-01"},
       {id:"u4",name:"Arjun Menon",username:"arjun",password:"vol123",role:"volunteer",created:"2024-07-15"},
       {id:"u5",name:"Chez",username:"Chez",password:"Bangalore",role:"volunteer",created:"2026-03-28"}
@@ -1381,11 +1381,11 @@ function showToast(msg, type) {
 function loadData(){
   var def={
     users:[
-      {id:"u1",name:"Jayasuryan",username:"Jayan",password:"6acf56d84d42af4cb1a1313526ff60f659116e94d73f7e21b04e162fbb76a4aa",role:"master_admin",created:"2024-01-01"},
-      {id:"u2",name:"Backup Admin",username:"chezlib2",password:"682e0933ef08e80d08416357066e6e615c7152ee869e67053b1c16e8fe967c1c",role:"backup_admin",created:"2024-01-01"},
-      {id:"u3",name:"Sunita Rao",username:"sunita",password:"60fd844475d56a9df211ec1ee8e43aac6117c804191289ccfefd67498bfc493b",role:"volunteer",created:"2024-06-01"},
-      {id:"u4",name:"Arjun Menon",username:"arjun",password:"fa4f7155e110eac164bda0f36b5d43f01d5d43d6afa190a317c5bec463f85764",role:"volunteer",created:"2024-07-15"},
-      {id:"u5",name:"Chez",username:"Chez",password:"71a5d30a744a9a9fb4891868357d10fd243122fdfd51d550c33300f7f5422c30",role:"volunteer",created:"2026-03-28"},
+      {id:"u1",name:"Jayasuryan",username:"Jayan",password:"Jayan@77",role:"master_admin",created:"2024-01-01"},
+      {id:"u2",name:"Backup Admin",username:"chezlib2",password:"chezlib2",role:"backup_admin",created:"2024-01-01"},
+      {id:"u3",name:"Sunita Rao",username:"sunita",password:"sunita",role:"volunteer",created:"2024-06-01"},
+      {id:"u4",name:"Arjun Menon",username:"arjun",password:"arjun",role:"volunteer",created:"2024-07-15"},
+      {id:"u5",name:"Chez",username:"Chez",password:"Chez",role:"volunteer",created:"2026-03-28"},
       {id:"u3",name:"Sunita Rao",username:"sunita",password:"vol123",role:"volunteer",created:"2024-06-01"},
       {id:"u4",name:"Arjun Menon",username:"arjun",password:"vol123",role:"volunteer",created:"2024-07-15"},
       {id:"u5",name:"Chez",username:"Chez",password:"Bangalore",role:"volunteer",created:"2026-03-28"}
@@ -1497,17 +1497,15 @@ async function sha256(str){
 function doLogin(){
   var u=document.getElementById("li-user").value.trim();
   var p=document.getElementById("li-pass").value;
-  sha256(p).then(function(hashed){
-    var found=null;
-    DB.users.forEach(function(x){if(x.username===u&&x.password===hashed)found=x;});
-    if(!found){(function(){var _e=document.getElementById("login-err");if(_e)_e.style.display="block"})();return;}
-    currentUser=found;
-    (function(){var _e=document.getElementById("login-err");if(_e)_e.style.display="none"})();
-    document.getElementById("li-pass").value="";
-    showPage("page-staff");
-    setupStaffUI();
-    showPanel("p-dashboard");
-  });
+  var found=null;
+  DB.users.forEach(function(x){if(x.username===u&&x.password===p)found=x;});
+  if(!found){(function(){var _e=document.getElementById("login-err");if(_e)_e.style.display="block"})();return;}
+  currentUser=found;
+  (function(){var _e=document.getElementById("login-err");if(_e)_e.style.display="none"})();
+  document.getElementById("li-pass").value="";
+  showPage("page-staff");
+  setupStaffUI();
+  showPanel("p-dashboard");
 }
 function doLogout(){currentUser=null;showPage("page-public");}
 function setupStaffUI(){
@@ -2751,13 +2749,11 @@ function saveUser(){
     (function(){var _e=document.getElementById("au-err");if(_e)_e.style.display="block"})();return;
   }
   (function(){var _e=document.getElementById("au-err");if(_e)_e.style.display="none"})();
-  sha256(pass).then(function(hashed){
-    var newU={id:uid(),name:name,username:uname,password:hashed,role:role,created:todayStr()};
-    DB.users.push(newU);
-    logActivity("Created user: "+name+" ("+role+")");
-    saveUser_DB(newU).then(function(){showToast("User added","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
-    saveData();closeModal("m-adduser");renderUsers();
-  });
+  var newU={id:uid(),name:name,username:uname,password:pass,role:role,created:todayStr()};
+  DB.users.push(newU);
+  logActivity("Created user: "+name+" ("+role+")");
+  saveUser_DB(newU).then(function(){showToast("User added","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
+  saveData();closeModal("m-adduser");renderUsers();
 }
 
 // ============================================================
@@ -2830,43 +2826,27 @@ function makeCard(b){
       var author=b.author&&b.author!=="Unknown"?b.author:"";
       var isbn=b.isbn&&b.isbn!=="N/A"?b.isbn:"";
 
-      // Try Google Books by ISBN first (most reliable), then by title
-      var proxy="https://corsproxy.io/?";
+      var proxies=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://proxy.cors.sh/"];
       var gbQuery=isbn?"isbn:"+isbn:"intitle:"+title+(author?" inauthor:"+author:"");
-      var gbUrl=proxy+encodeURIComponent("https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent(gbQuery)+"&maxResults=1&fields=items(volumeInfo(description))");
-      fetch(gbUrl)
-        .then(function(r){return r.json();})
-        .then(function(data){
-          if(data.items&&data.items.length&&data.items[0].volumeInfo.description){
-            var s=data.items[0].volumeInfo.description;
-            st.textContent=s.length>250?s.slice(0,250)+"...":s;
-            b.summary=s;
-            // Save to Supabase so we don't need to fetch again
-            supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
-          } else {
-            // Fallback to Open Library
-            return fetch(proxy+encodeURIComponent("https://openlibrary.org/search.json?q="+encodeURIComponent(title+(author?" "+author:""))+"&limit=1&fields=first_sentence,subject"))
-              .then(function(r){return r.json();})
-              .then(function(data2){
-                if(data2.docs&&data2.docs.length&&data2.docs[0].first_sentence){
-                  var s2=data2.docs[0].first_sentence.value||data2.docs[0].first_sentence;
-                  if(typeof s2==="string"&&s2.length>10){
-                    st.textContent=s2.length>250?s2.slice(0,250)+"...":s2;
-                    b.summary=s2;
-                    // Save to Supabase
-                    supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s2}).catch(function(){});
-                    return;
-                  }
-                }
-                if(data2.docs&&data2.docs.length&&data2.docs[0].subject){
-                  st.textContent="Topics: "+data2.docs[0].subject.slice(0,6).join(", ");
-                } else {
-                  st.textContent="No summary available for this book.";
-                }
-              });
-          }
-        })
-        .catch(function(){st.textContent="No summary available for this book.";});
+      var gbApiUrl="https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent(gbQuery)+"&maxResults=1&fields=items(volumeInfo(description))";
+
+      function tryProxy(idx){
+        if(idx>=proxies.length){st.textContent="No summary available for this book.";return;}
+        fetch(proxies[idx]+encodeURIComponent(gbApiUrl))
+          .then(function(r){if(!r.ok)throw new Error("proxy failed");return r.json();})
+          .then(function(data){
+            if(data.items&&data.items.length&&data.items[0].volumeInfo&&data.items[0].volumeInfo.description){
+              var s=data.items[0].volumeInfo.description;
+              st.textContent=s.length>250?s.slice(0,250)+"...":s;
+              b.summary=s;
+              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
+            } else {
+              tryProxy(idx+1);
+            }
+          })
+          .catch(function(){tryProxy(idx+1);});
+      }
+      tryProxy(0);
     }
   });
   ss.appendChild(sb);ss.appendChild(st);card.appendChild(ss);
@@ -3230,26 +3210,21 @@ function saveNewPassword(){
   }
 
   if(!current||!newPwd||!confirm) return showMsg("Please fill in all fields.",false);
+  if(current!==currentUser.password) return showMsg("Current password is incorrect.",false);
   if(newPwd.length<6) return showMsg("New password must be at least 6 characters.",false);
   if(newPwd!==confirm) return showMsg("New passwords do not match.",false);
   if(newPwd===current) return showMsg("New password must be different from current password.",false);
 
-  // Hash current password to compare
-  sha256(current).then(function(hashedCurrent){
-    if(hashedCurrent!==currentUser.password) return showMsg("Current password is incorrect.",false);
-    sha256(newPwd).then(function(hashedNew){
-      var u=DB.users.find(function(x){return x.id===currentUser.id;});
-      if(u){
-        u.password=hashedNew;
-        currentUser.password=hashedNew;
-        saveUser_DB(u).catch(function(){});
-        saveData();
-        logActivity("Password changed by "+currentUser.name);
-        showMsg("Password updated successfully!",true);
-        setTimeout(function(){closeModal("m-change-pwd");},1500);
-      }
-    });
-  });
+  var u=DB.users.find(function(x){return x.id===currentUser.id;});
+  if(u){
+    u.password=newPwd;
+    currentUser.password=newPwd;
+    saveUser_DB(u).catch(function(){});
+    saveData();
+    logActivity("Password changed by "+currentUser.name);
+    showMsg("Password updated successfully!",true);
+    setTimeout(function(){closeModal("m-change-pwd");},1500);
+  }
 }
 
 // ── DAILY CONTENT ────────────────────────────────────────────────────────────
@@ -4795,7 +4770,7 @@ function onISBNInput(val){
   }
 
   // Try Google Books first via CORS proxy
-  var proxy = "https://corsproxy.io/?";
+  var proxy = "https://api.allorigins.win/raw?url=";
   fetch(proxy+encodeURIComponent("https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1"))
     .then(function(r){return r.json();})
     .then(function(data){
