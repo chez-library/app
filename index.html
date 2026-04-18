@@ -2828,8 +2828,12 @@ function makeCard(b){
       st.textContent="Loading summary...";
       var title=b.title;
       var author=b.author&&b.author!=="Unknown"?b.author:"";
-      // Try Google Books first — better summaries
-      var gbUrl="https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent("intitle:"+title+(author?" inauthor:"+author:""))+"&maxResults=1&fields=items(volumeInfo(description,categories))";
+      var isbn=b.isbn&&b.isbn!=="N/A"?b.isbn:"";
+
+      // Try Google Books by ISBN first (most reliable), then by title
+      var proxy="https://corsproxy.io/?";
+      var gbQuery=isbn?"isbn:"+isbn:"intitle:"+title+(author?" inauthor:"+author:"");
+      var gbUrl=proxy+encodeURIComponent("https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent(gbQuery)+"&maxResults=1&fields=items(volumeInfo(description))");
       fetch(gbUrl)
         .then(function(r){return r.json();})
         .then(function(data){
@@ -2837,9 +2841,11 @@ function makeCard(b){
             var s=data.items[0].volumeInfo.description;
             st.textContent=s.length>250?s.slice(0,250)+"...":s;
             b.summary=s;
+            // Save to Supabase so we don't need to fetch again
+            supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
           } else {
             // Fallback to Open Library
-            return fetch("https://openlibrary.org/search.json?q="+encodeURIComponent(title+(author?" "+author:""))+"&limit=1&fields=first_sentence,subject")
+            return fetch(proxy+encodeURIComponent("https://openlibrary.org/search.json?q="+encodeURIComponent(title+(author?" "+author:""))+"&limit=1&fields=first_sentence,subject"))
               .then(function(r){return r.json();})
               .then(function(data2){
                 if(data2.docs&&data2.docs.length&&data2.docs[0].first_sentence){
@@ -2847,6 +2853,8 @@ function makeCard(b){
                   if(typeof s2==="string"&&s2.length>10){
                     st.textContent=s2.length>250?s2.slice(0,250)+"...":s2;
                     b.summary=s2;
+                    // Save to Supabase
+                    supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s2}).catch(function(){});
                     return;
                   }
                 }
