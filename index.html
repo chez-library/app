@@ -1597,7 +1597,7 @@ function fmtDate(d){if(!d)return"-";var dt=new Date(d);return dt.toLocaleDateStr
 function todayStr(){return new Date().toISOString().split("T")[0];}
 function uid(){return "id"+Date.now()+Math.random().toString(36).slice(2,6);}
 function logActivity(msg){DB.activity.unshift({msg:msg,user:currentUser?currentUser.name:"System",time:new Date().toLocaleTimeString()});if(DB.activity.length>50)DB.activity.pop();saveData();}
-function closeModal(id){var m=document.getElementById(id);if(m){m.classList.remove("open");m.style.cssText="";}}
+function closeModal(id){var m=document.getElementById(id);if(m){m.classList.remove("open");m.style.cssText="display:none";}}
 function confirmDel(title,msg,cb){
   document.getElementById("confirm-title").textContent=title;
   document.getElementById("confirm-msg").textContent=msg;
@@ -1605,7 +1605,7 @@ function confirmDel(title,msg,cb){
   btn.textContent="Delete";
   btn.className="btn btn-danger";
   btn.onclick=function(){closeModal("m-confirm");cb();};
-  document.getElementById("m-confirm").classList.add("open");
+  var _m=document.getElementById("m-confirm");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 
 function confirmAction(title,msg,label,cb){
@@ -1615,7 +1615,7 @@ function confirmAction(title,msg,label,cb){
   btn.textContent=label||"Confirm";
   btn.className="btn btn-primary";
   btn.onclick=function(){closeModal("m-confirm");cb();};
-  document.getElementById("m-confirm").classList.add("open");
+  var _m=document.getElementById("m-confirm");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function loadCover(img,src1,src2){
   var tried2=false;
@@ -1802,7 +1802,7 @@ function openAddBook(){
   ["ab-title","ab-author","ab-isbn","ab-summary"].forEach(function(id){document.getElementById(id).value="";});
   var lp=document.getElementById("ab-lookup-result");if(lp)lp.style.display="none";
   _addBookMatch=null;clearTimeout(_addBookTimer);
-  document.getElementById("m-addbook").classList.add("open");
+  var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function openEditBook(id){
   var b=DB.books.find(function(x){return x.id===id;});if(!b)return;
@@ -1815,7 +1815,7 @@ function openEditBook(id){
   document.getElementById("ab-age").value=b.age;
   document.getElementById("ab-genre").value=b.genre;
   document.getElementById("ab-summary").value=b.summary||"";
-  document.getElementById("m-addbook").classList.add("open");
+  var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveBook(){
   var title=document.getElementById("ab-title").value.trim();
@@ -1894,7 +1894,7 @@ function openAddMember(){
   ["am-fname","am-lname","am-flat","am-email","am-phone"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("am-block").value="";
   var errEl=document.getElementById("am-err");if(errEl)errEl.style.display="none";
-  document.getElementById("m-addmember").classList.add("open");
+  var _m=document.getElementById("m-addmember");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function openEditMember(id){
   var m=DB.members.find(function(x){return x.id===id;});if(!m)return;
@@ -1908,7 +1908,7 @@ function openEditMember(id){
   document.getElementById("am-flat").value=m.flatNo||"";
   document.getElementById("am-email").value=m.email;
   document.getElementById("am-phone").value=m.phone||"";
-  document.getElementById("m-addmember").classList.add("open");
+  var _m=document.getElementById("m-addmember");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveMember(){
   var fname=document.getElementById("am-fname").value.trim();
@@ -2731,7 +2731,7 @@ function renderUsers(){
 function openAddUser(){
   ["au-name","au-user","au-pass"].forEach(function(id){document.getElementById(id).value="";});
   (function(){var _e=document.getElementById("au-err");if(_e)_e.style.display="none"})();
-  document.getElementById("m-adduser").classList.add("open");
+  var _m=document.getElementById("m-adduser");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveUser(){
   var name=document.getElementById("au-name").value.trim();
@@ -2941,7 +2941,7 @@ function openOverrideModal(){
   summary.innerHTML=lines.join("<br>");
   document.getElementById("override-comment").value="";
   (function(){var _e=document.getElementById("override-err");if(_e)_e.style.display="none"})();
-  document.getElementById("m-override").classList.add("open");
+  var _m=document.getElementById("m-override");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 
 function confirmOverride(){
@@ -3028,7 +3028,7 @@ function openEmailSettings(){
   var btn=document.getElementById("nav-email-settings");
   if(btn)btn.textContent=isConfigured?"✓ Email configured":"⚠ Email not configured";
   if(btn)btn.style.color=isConfigured?"#3B6D11":"#C0392B";
-  document.getElementById("m-email-settings").classList.add("open");
+  var _m=document.getElementById("m-email-settings");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function initEmailJS(){
   var cfg=loadEmailConfig();
@@ -3189,7 +3189,7 @@ function openChangePassword(){
   document.getElementById("cp-new").value="";
   document.getElementById("cp-confirm").value="";
   (function(){var _e=document.getElementById("cp-msg");if(_e)_e.style.display="none"})();
-  document.getElementById("m-change-pwd").classList.add("open");
+  var _m=document.getElementById("m-change-pwd");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveNewPassword(){
   var current=document.getElementById("cp-current").value;
@@ -4228,7 +4228,7 @@ function openBulkUpload(){
   var ub=document.getElementById("bulk-upload-btn");
   if(ub){ub.disabled=true;ub.style.opacity="0.4";ub.textContent="Preview books first";}
   addManualRow();addManualRow();addManualRow();
-  document.getElementById("m-bulk").classList.add("open");
+  var _m=document.getElementById("m-bulk");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function switchBulkTab(tab){
   var csvBtn=document.getElementById("bulk-tab-csv");
@@ -4641,7 +4641,7 @@ function openScanner(target){
   document.getElementById("scanner-status").textContent = "Initialising camera...";
   document.getElementById("scanner-result").style.display = "none";
   document.getElementById("scanner-use-btn").style.display = "none";
-  document.getElementById("m-scanner").classList.add("open");
+  var _m=document.getElementById("m-scanner");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
   startScanner();
 }
 
@@ -5205,7 +5205,7 @@ function openIssueBookScanner(){
   document.getElementById("scanner-status").textContent="Initialising camera...";
   (function(){var _e=document.getElementById("scanner-result");if(_e)_e.style.display="none"})();
   (function(){var _e=document.getElementById("scanner-use-btn");if(_e)_e.style.display="none"})();
-  document.getElementById("m-scanner").classList.add("open");
+  var _m=document.getElementById("m-scanner");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
   startScanner();
 }
 function openReturnBookScanner(){
@@ -5214,7 +5214,7 @@ function openReturnBookScanner(){
   document.getElementById("scanner-status").textContent="Initialising camera...";
   (function(){var _e=document.getElementById("scanner-result");if(_e)_e.style.display="none"})();
   (function(){var _e=document.getElementById("scanner-use-btn");if(_e)_e.style.display="none"})();
-  document.getElementById("m-scanner").classList.add("open");
+  var _m=document.getElementById("m-scanner");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
   startScanner();
 }
 function closeScanner(){
@@ -5528,7 +5528,7 @@ function openAddISBN(bid){
   document.getElementById("addisbn-input").value = (b.isbn&&b.isbn!=="N/A")?b.isbn:"";
   document.getElementById("addisbn-cover-preview").style.display="none";
   document.getElementById("addisbn-msg").style.display="none";
-  document.getElementById("m-addisbn").classList.add("open");
+  var _m=document.getElementById("m-addisbn");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
   if(b.isbn&&b.isbn!=="N/A") previewISBNCover();
 }
 
@@ -5572,7 +5572,7 @@ function openISBNScanner(){
     previewISBNCover();
     closeScanner();
     // Reopen ISBN modal
-    document.getElementById("m-addisbn").classList.add("open");
+    var _m=document.getElementById("m-addisbn");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
   });
 }
 
