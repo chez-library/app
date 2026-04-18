@@ -1273,6 +1273,11 @@ function loadFromSupabase() {
           password: u.password, role: u.role, created: u.created
         };
       });
+      // Re-sync currentUser with Supabase data
+      if(currentUser){
+        var refreshed = DB.users.find(function(u){return u.username===currentUser.username;});
+        if(refreshed) currentUser = refreshed;
+      }
     }
     saveData(); // update cache
     if (loading) loading.style.display = "none";
@@ -3099,24 +3104,30 @@ function setupStaffUIExtra(){
 // ── EDIT USER ────────────────────────────────────────────────────────────────
 var editUserId=null;
 function openEditUser(id){
-  var u=DB.users.find(function(x){return x.id===id;});
-  if(!u){
-    // Try string comparison in case of type mismatch
-    u=DB.users.find(function(x){return String(x.id)===String(id);});
+  id = String(id).trim();
+  var u = null;
+  for(var i=0;i<DB.users.length;i++){
+    if(String(DB.users[i].id).trim()===id){u=DB.users[i];break;}
   }
-  if(!u){showToast("User not found (ID: "+id+") — total users: "+DB.users.length,"error");return;}
+  if(!u){
+    showToast("User not found: "+id,"error");
+    console.error("openEditUser: id="+id+" not in DB.users=",DB.users.map(function(x){return x.id;}));
+    return;
+  }
   editUserId=id;
-  var isSelf=currentUser.id===id;
+  var isSelf=currentUser&&String(currentUser.id).trim()===id;
   document.getElementById("eu-title").textContent=isSelf?"Edit my details":"Edit user: "+u.name;
   document.getElementById("eu-subtitle").textContent=isSelf?"Update your name, username or password.":"Update details for this user.";
-  document.getElementById("eu-name").value=u.name;
-  document.getElementById("eu-username").value=u.username;
+  document.getElementById("eu-name").value=u.name||"";
+  document.getElementById("eu-username").value=u.username||"";
   document.getElementById("eu-newpwd").value="";
   document.getElementById("eu-confirmpwd").value="";
-  (function(){var _e=document.getElementById("eu-msg");if(_e)_e.style.display="none"})();
-  document.getElementById("m-edit-user").classList.add("open");
+  var msg=document.getElementById("eu-msg");if(msg)msg.style.display="none";
+  var modal=document.getElementById("m-edit-user");
+  if(!modal){showToast("Edit modal not found!","error");return;}
+  modal.classList.add("open");
 }
-function saveEditUser(){
+function saveEditUser(){function saveEditUser(){
   var name=document.getElementById("eu-name").value.trim();
   var username=document.getElementById("eu-username").value.trim();
   var newpwd=document.getElementById("eu-newpwd").value;
