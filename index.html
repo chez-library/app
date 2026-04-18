@@ -1293,6 +1293,8 @@ function loadFromSupabase() {
     updateActiveMembers();
     refreshDashboard();
     // Auto-fetch covers disabled — causes rate limit errors with 1153 books
+    // Start background summary sync after 5 seconds
+    setTimeout(syncMissingSummaries, 5000);
     // Use Edit book → ISBN field to add covers manually
   }).catch(function(err) {
     console.error("Supabase load error:", err);
@@ -5700,6 +5702,60 @@ function fetchCoverByTitle(book){
 }
 
 // Run cover fetch for all books without covers — called once after load
+function syncMissingSummaries(){
+  // Find books without summaries that have an ISBN
+  var booksNeedingSummary = DB.books.filter(function(b){
+    return (!b.summary||!b.summary.trim()) && b.isbn && b.isbn!=="N/A";
+  });
+  if(booksNeedingSummary.length===0) return;
+
+  var proxies=[
+    "https://corsproxy.io/?",
+    "https://cors.eu.org/",
+    "https://api.codetabs.com/v1/proxy?quest=",
+    "https://api.allorigins.win/raw?url="
+  ];
+
+  // Test if Google Books is available first
+  var testUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:9780061351341&maxResults=1&fields=items(volumeInfo(description))";
+  fetch(proxies[0]+encodeURIComponent(testUrl))
+    .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
+    .then(function(data){
+      if(!data.items||!data.items.length) throw new Error("no data");
+      // Google Books is up! Process books in batches of 5 with 2s delay
+      console.log("Google Books available — syncing summaries for "+booksNeedingSummary.length+" books");
+      var idx=0;
+      function processNext(){
+        if(idx>=booksNeedingSummary.length) {
+          console.log("Summary sync complete!");
+          return;
+        }
+        var b=booksNeedingSummary[idx++];
+        var url="https://www.googleapis.com/books/v1/volumes?q=isbn:"+b.isbn+"&maxResults=1&fields=items(volumeInfo(description))";
+        fetch(proxies[0]+encodeURIComponent(url))
+          .then(function(r){return r.json();})
+          .then(function(d){
+            if(d.items&&d.items.length&&d.items[0].volumeInfo.description){
+              var s=d.items[0].volumeInfo.description;
+              b.summary=s;
+              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s})
+                .catch(function(){});
+            }
+          })
+          .catch(function(){})
+          .finally(function(){
+            // Process next book after 500ms delay to avoid rate limiting
+            setTimeout(processNext, 500);
+          });
+      }
+      processNext();
+    })
+    .catch(function(){
+      // Google Books still down — try again in 30 minutes
+      setTimeout(syncMissingSummaries, 30*60*1000);
+    });
+}
+
 function fetchMissingCovers(){
   var noCover = DB.books.filter(function(b){return !b.cover&&(!b.isbn||b.isbn==="N/A");});
   if(!noCover.length) return;
