@@ -5019,8 +5019,7 @@ function printAllQRCodes(){
     var canvasId="qr-"+b.id.replace(/[^a-z0-9]/gi,"_");
     html2+="try{QRCode.toCanvas(document.getElementById('"+canvasId+"'),"+JSON.stringify(qrData)+",{width:80,margin:1},function(){});}catch(e){}";
   });
-  html2+="</scr"+"ipt></body></html>";
-  win.document.write(html2);
+    win.document.write(html2);
   win.document.close();
 }
 // ── BOOK ID SUGGESTION ──────────────────────────────────────────────────────
@@ -6009,24 +6008,7 @@ document.addEventListener("click", function(e){
 </div>
 
 
-<div class="modal-ov" id="m-edit-user">
-  <div class="modal-box" style="max-width:400px">
-    <h3 id="eu-title">Edit user</h3>
-    <p id="eu-subtitle" style="font-size:13px;color:var(--mt);margin:.4rem 0 1.25rem"></p>
-    <div class="field"><label>Full name</label><input type="text" id="eu-name"/></div>
-    <div class="field"><label>Username</label><input type="text" id="eu-username"/></div>
-    <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--mt);margin-bottom:1rem">
-      Leave password fields blank to keep the current password unchanged.
-    </div>
-    <div class="field"><label>New password <span style="font-weight:400;color:var(--mt)">(optional)</span></label><input type="password" id="eu-newpwd" placeholder="Leave blank to keep current"/></div>
-    <div class="field"><label>Confirm new password</label><input type="password" id="eu-confirmpwd" placeholder="Re-enter new password"/></div>
-    <div id="eu-msg" style="font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:.75rem;display:none"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('m-edit-user')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEditUser()">Save changes</button>
-    </div>
-  </div>
-</div>
+
 
 <div class="modal-ov" id="m-change-pwd">
   <div class="modal-box" style="max-width:380px">
@@ -6058,5 +6040,24 @@ document.addEventListener("click", function(e){
   <div style="font-size:14px;color:#178A6A;font-weight:600">Loading library data...</div>
 </div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<div class="modal-ov" id="m-edit-user">
+  <div class="modal-box" style="max-width:400px">
+    <h3 id="eu-title">Edit user</h3>
+    <p id="eu-subtitle" style="font-size:13px;color:var(--mt);margin:.4rem 0 1.25rem"></p>
+    <div class="field"><label>Full name</label><input type="text" id="eu-name"/></div>
+    <div class="field"><label>Username</label><input type="text" id="eu-username"/></div>
+    <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--mt);margin-bottom:1rem">
+      Leave password fields blank to keep the current password unchanged.
+    </div>
+    <div class="field"><label>New password <span style="font-weight:400;color:var(--mt)">(optional)</span></label><input type="password" id="eu-newpwd" placeholder="Leave blank to keep current"/></div>
+    <div class="field"><label>Confirm new password</label><input type="password" id="eu-confirmpwd" placeholder="Re-enter new password"/></div>
+    <div id="eu-msg" style="font-size:13px;padding:8px 12px;border-radius:8px;margin-bottom:.75rem;display:none"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('m-edit-user')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditUser()">Save changes</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
