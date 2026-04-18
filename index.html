@@ -3099,9 +3099,12 @@ function setupStaffUIExtra(){
 // ── EDIT USER ────────────────────────────────────────────────────────────────
 var editUserId=null;
 function openEditUser(id){
-  // Merge hardcoded + localStorage users to find the right one
   var u=DB.users.find(function(x){return x.id===id;});
-  if(!u){showToast("User not found — try refreshing the page","error");return;}
+  if(!u){
+    // Try string comparison in case of type mismatch
+    u=DB.users.find(function(x){return String(x.id)===String(id);});
+  }
+  if(!u){showToast("User not found (ID: "+id+") — total users: "+DB.users.length,"error");return;}
   editUserId=id;
   var isSelf=currentUser.id===id;
   document.getElementById("eu-title").textContent=isSelf?"Edit my details":"Edit user: "+u.name;
