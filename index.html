@@ -4754,7 +4754,9 @@ function onISBNInput(val){
   document.getElementById("ab-genre").value="Fiction";
 
   function fillFields(info){
-    if(info.title) document.getElementById("ab-title").value = info.title;
+    // Clean up title — remove Indian edition prefixes
+    var cleanTitle=(info.title||"").replace(/^(Indian\s+Edt\s+|India\s+Ed\s+|Indian\s+Edition\s+)/i,"").trim();
+    if(cleanTitle) document.getElementById("ab-title").value = cleanTitle;
     if(info.author) document.getElementById("ab-author").value = info.author;
     if(info.description)
       document.getElementById("ab-summary").value = info.description.length>500?info.description.slice(0,500)+"...":info.description;
@@ -4764,8 +4766,19 @@ function onISBNInput(val){
     }
     // Age group — always set based on categories
     var cats=(info.categories||"").toLowerCase();
+    var titleLower=(info.title||"").toLowerCase();
+    var authorLower=(info.author||"").toLowerCase();
+
+    // Smart detection for known children's authors/series
+    var isChildrensBook=false;
+    var childrenAuthors=["enid blyton","r.k. narayan","ruskin bond","roald dahl","j.k. rowling","jeff kinney","wimpy kid","diary of a","magic tree","hardy boys","nancy drew","famous five","secret seven","geronimo stilton","captain underpants","goosebumps","r.l. stine"];
+    childrenAuthors.forEach(function(a){if(authorLower.indexOf(a)>=0||titleLower.indexOf(a)>=0)isChildrensBook=true;});
+
     var ageEl=document.getElementById("ab-age");
-    if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0||cats.indexOf("toddler")>=0) ageEl.value="Picture books (0\u20134)";
+    if(isChildrensBook){
+      // Known children's series — default to Middle grade
+      ageEl.value="Middle grade (8\u201312)";
+    } else if(cats.indexOf("picture")>=0||cats.indexOf("baby")>=0||cats.indexOf("toddler")>=0) ageEl.value="Picture books (0\u20134)";
     else if(cats.indexOf("early reader")>=0||cats.indexOf("beginning reader")>=0||cats.indexOf("ages 5")>=0||cats.indexOf("ages 6")>=0||cats.indexOf("ages 7")>=0) ageEl.value="Early readers (5\u20137)";
     else if(cats.indexOf("middle grade")>=0||cats.indexOf("ages 8")>=0||cats.indexOf("ages 9")>=0||cats.indexOf("ages 10")>=0||cats.indexOf("ages 11")>=0||cats.indexOf("ages 12")>=0||cats.indexOf("juvenile")>=0||cats.indexOf("children")>=0) ageEl.value="Middle grade (8\u201312)";
     else if(cats.indexOf("young adult")>=0||cats.indexOf("teen")>=0||cats.indexOf("ages 13")>=0||cats.indexOf("ages 14")>=0||cats.indexOf("ages 15")>=0||cats.indexOf("ages 16")>=0||cats.indexOf("ages 17")>=0) ageEl.value="Young adult (13\u201317)";
@@ -4774,9 +4787,9 @@ function onISBNInput(val){
     else if(cats.indexOf("adult")>=0) ageEl.value="Adults";
     else if(cats) ageEl.value="General (16+)";
 
-    // Genre — always set based on categories
+    // Genre — always set based on categories and title/author
     var genreEl=document.getElementById("ab-genre");
-    if(cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0||cats.indexOf("juvenile fiction")>=0) genreEl.value="Adventure & fantasy";
+    if(isChildrensBook||cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0||cats.indexOf("juvenile fiction")>=0) genreEl.value="Adventure & fantasy";
     else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0||cats.indexOf("culture")>=0) genreEl.value="History & culture";
     else if(cats.indexOf("science")>=0||cats.indexOf("nature")>=0||cats.indexOf("animals")>=0) genreEl.value="Science & nature";
     else if(cats.indexOf("self-help")>=0||cats.indexOf("business")>=0||cats.indexOf("economics")>=0) genreEl.value="Non-fiction";
@@ -4789,9 +4802,51 @@ function onISBNInput(val){
   }
 
   // Try multiple CORS proxies in order
-  var proxies=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://thingproxy.freeboard.io/fetch/"];
+  var proxies=[
+    "https://corsproxy.io/?",
+    "https://api.allorigins.win/raw?url=",
+    "https://api.codetabs.com/v1/proxy?quest=",
+    "https://thingproxy.freeboard.io/fetch/",
+    "https://cors.eu.org/"
+  ];
   var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1&fields=items(volumeInfo(title,authors,description,categories,imageLinks))";
 
+  // Try Claude API first — most reliable, works for all books including Indian editions
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:400,
+      messages:[{
+        role:"user",
+        content:"For the book with ISBN "+val+", provide the following in JSON format only, no other text:\n{\"title\":\"...\",\"author\":\"...\",\"summary\":\"2-3 sentence description\",\"age\":\"one of: Picture books (0-4), Early readers (5-7), Middle grade (8-12), Young adult (13-17), General (16+), Self-help & management (16+), Biography & history (16+), Adults\",\"genre\":\"one of: Adventure & fantasy, Science & nature, History & culture, Arts & creativity, Reference & learning, Fiction, Non-fiction\"}"
+      }]
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var text=data.content&&data.content[0]&&data.content[0].text;
+    if(text){
+      try{
+        var info=JSON.parse(text.replace(/```json|```/g,"").trim());
+        if(info.title) document.getElementById("ab-title").value=info.title;
+        if(info.author) document.getElementById("ab-author").value=info.author;
+        if(info.summary) document.getElementById("ab-summary").value=info.summary;
+        if(info.age) document.getElementById("ab-age").value=info.age;
+        if(info.genre) document.getElementById("ab-genre").value=info.genre;
+        status.textContent="✅ Book details fetched!";
+        status.style.color="#0F6E56";
+        setTimeout(function(){status.style.display="none";},3000);
+        return;
+      }catch(e){}
+    }
+    // Claude API failed — fall back to proxies
+    tryISBNProxy(0);
+  })
+  .catch(function(){tryISBNProxy(0);});
+
+  // Fallback proxy function when Claude API is unavailable
   function tryISBNProxy(idx){
     if(idx>=proxies.length){
       // All proxies failed — try Open Library directly
