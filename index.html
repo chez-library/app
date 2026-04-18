@@ -4804,47 +4804,15 @@ function onISBNInput(val){
   // Try multiple CORS proxies in order
   var proxies=[
     "https://corsproxy.io/?",
-    "https://api.allorigins.win/raw?url=",
+    "https://cors.eu.org/",
     "https://api.codetabs.com/v1/proxy?quest=",
-    "https://thingproxy.freeboard.io/fetch/",
-    "https://cors.eu.org/"
+    "https://api.allorigins.win/raw?url="
   ];
-  var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1&fields=items(volumeInfo(title,authors,description,categories,imageLinks))";
+  var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&langRestrict=en&maxResults=3&fields=items(volumeInfo(title,authors,description,categories,imageLinks,language))";
 
   // Try Claude API first — most reliable, works for all books including Indian editions
-  fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      model:"claude-sonnet-4-20250514",
-      max_tokens:400,
-      messages:[{
-        role:"user",
-        content:"For the book with ISBN "+val+", provide the following in JSON format only, no other text:\n{\"title\":\"...\",\"author\":\"...\",\"summary\":\"2-3 sentence description\",\"age\":\"one of: Picture books (0-4), Early readers (5-7), Middle grade (8-12), Young adult (13-17), General (16+), Self-help & management (16+), Biography & history (16+), Adults\",\"genre\":\"one of: Adventure & fantasy, Science & nature, History & culture, Arts & creativity, Reference & learning, Fiction, Non-fiction\"}"
-      }]
-    })
-  })
-  .then(function(r){return r.json();})
-  .then(function(data){
-    var text=data.content&&data.content[0]&&data.content[0].text;
-    if(text){
-      try{
-        var info=JSON.parse(text.replace(/```json|```/g,"").trim());
-        if(info.title) document.getElementById("ab-title").value=info.title;
-        if(info.author) document.getElementById("ab-author").value=info.author;
-        if(info.summary) document.getElementById("ab-summary").value=info.summary;
-        if(info.age) document.getElementById("ab-age").value=info.age;
-        if(info.genre) document.getElementById("ab-genre").value=info.genre;
-        status.textContent="✅ Book details fetched!";
-        status.style.color="#0F6E56";
-        setTimeout(function(){status.style.display="none";},3000);
-        return;
-      }catch(e){}
-    }
-    // Claude API failed — fall back to proxies
-    tryISBNProxy(0);
-  })
-  .catch(function(){tryISBNProxy(0);});
+  // Start with proxy fallback chain
+  tryISBNProxy(0);
 
   // Fallback proxy function when Claude API is unavailable
   function tryISBNProxy(idx){
@@ -4878,7 +4846,13 @@ function onISBNInput(val){
       .then(function(r){if(!r.ok)throw new Error("proxy failed");return r.json();})
       .then(function(data){
         if(data.items&&data.items.length){
-          var v=data.items[0].volumeInfo;
+          // Pick first English result
+          var v=null;
+          for(var i=0;i<data.items.length;i++){
+            var vi=data.items[i].volumeInfo;
+            if(!vi.language||vi.language==="en"){v=vi;break;}
+          }
+          if(!v) v=data.items[0].volumeInfo; // fallback to first
           fillFields({
             title:v.title,
             author:v.authors&&v.authors.length?v.authors[0]:"",
@@ -4887,7 +4861,32 @@ function onISBNInput(val){
             cover:v.imageLinks&&v.imageLinks.thumbnail?v.imageLinks.thumbnail:null
           });
         } else {
-          tryISBNProxy(idx+1);
+          // No items for this ISBN — try searching by title if we have it
+          var existingTitle = document.getElementById("ab-title").value.trim();
+          var existingAuthor = document.getElementById("ab-author").value.trim();
+          if(existingTitle && idx===0){
+            // Search by title+author instead
+            var titleQuery="https://www.googleapis.com/books/v1/volumes?q=intitle:"+encodeURIComponent(existingTitle)+(existingAuthor?"&inauthor:"+encodeURIComponent(existingAuthor):"")+"&maxResults=1&fields=items(volumeInfo(title,authors,description,categories,imageLinks))";
+            fetch(proxies[0]+encodeURIComponent(titleQuery))
+              .then(function(r){return r.json();})
+              .then(function(data2){
+                if(data2.items&&data2.items.length){
+                  var v2=data2.items[0].volumeInfo;
+                  fillFields({
+                    title:v2.title,
+                    author:v2.authors&&v2.authors.length?v2.authors[0]:"",
+                    description:v2.description||"",
+                    categories:(v2.categories||[]).join(" "),
+                    cover:v2.imageLinks&&v2.imageLinks.thumbnail?v2.imageLinks.thumbnail:null
+                  });
+                } else {
+                  tryISBNProxy(idx+1);
+                }
+              })
+              .catch(function(){tryISBNProxy(idx+1);});
+          } else {
+            tryISBNProxy(idx+1);
+          }
         }
       })
       .catch(function(){tryISBNProxy(idx+1);});
