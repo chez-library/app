@@ -2692,11 +2692,11 @@ function renderUsers(){
       "<td style='font-size:12px;color:var(--mt)'>"+fmtDate(u.created)+"</td>"+
       "<td></td>";
     // Edit button: user can edit themselves, master_admin can edit anyone, backup_admin can edit volunteers
-    var canEdit=isSelf||(currentUser.role==="master_admin")||( currentUser.role==="backup_admin"&&u.role==="volunteer");
+    var canEdit=isSelf||(currentUser.role==="master_admin")||(currentUser.role==="backup_admin"&&u.role==="volunteer");
     if(canEdit){
       var editBtn=document.createElement("button");editBtn.className="btn btn-ghost";editBtn.style.cssText="font-size:12px;padding:4px 10px;margin-right:4px";
       editBtn.textContent=isSelf?"Edit my details":"Edit";
-      (function(uid2){editBtn.addEventListener("click",function(){openEditUser(uid2);});})(u.id);
+      editBtn.setAttribute("onclick","openEditUser('"+u.id+"')");
       tr.lastElementChild.appendChild(editBtn);
     }
     if(canDelete){
