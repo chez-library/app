@@ -2819,46 +2819,37 @@ function makeCard(b){
     var o=st.style.display!=="none";
     st.style.display=o?"none":"block";
     sb.textContent=o?"ℹ About this book":"▴ Hide";
-    // Fetch summary from Open Library first, then Google Books as fallback
     if(!o&&(!b.summary||!b.summary.trim())){
       st.textContent="Loading summary...";
       var title=b.title;
       var author=b.author&&b.author!=="Unknown"?b.author:"";
-      var isbn=b.isbn&&b.isbn!=="N/A"?b.isbn:"";
 
-      var proxies=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://proxy.cors.sh/"];
-      var gbQuery=isbn?"isbn:"+isbn:"intitle:"+title+(author?" inauthor:"+author:"");
-      var gbApiUrl="https://www.googleapis.com/books/v1/volumes?q="+encodeURIComponent(gbQuery)+"&langRestrict=en&maxResults=3&fields=items(volumeInfo(description,language))";
-
-      function tryProxy(idx){
-        if(idx>=proxies.length){st.textContent="No summary available for this book.";return;}
-        fetch(proxies[idx]+encodeURIComponent(gbApiUrl))
-          .then(function(r){if(!r.ok)throw new Error("proxy failed");return r.json();})
-          .then(function(data){
-            // Pick first item with an English description
-            var s="";
-            if(data.items&&data.items.length){
-              for(var i=0;i<data.items.length;i++){
-                var vi=data.items[i].volumeInfo;
-                if(vi&&vi.description&&(!vi.language||vi.language==="en")){
-                  s=vi.description;break;
-                }
-              }
-              // Fallback to first description regardless of language
-              if(!s&&data.items[0].volumeInfo&&data.items[0].volumeInfo.description)
-                s=data.items[0].volumeInfo.description;
-            }
-            if(s){
-              st.textContent=s.length>250?s.slice(0,250)+"...":s;
-              b.summary=s;
-              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
-            } else {
-              tryProxy(idx+1);
-            }
-          })
-          .catch(function(){tryProxy(idx+1);});
-      }
-      tryProxy(0);
+      // Use Claude API to generate summary — no CORS issues, works for all books
+      fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:150,
+          messages:[{
+            role:"user",
+            content:"Write a 2-3 sentence summary of the book '"+title+"'"+(author?" by "+author:"")+" suitable for a library catalog. Be concise and informative. Reply with only the summary, no quotes or labels."
+          }]
+        })
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        var s=data.content&&data.content[0]&&data.content[0].text;
+        if(s&&s.length>10){
+          st.textContent=s;
+          b.summary=s;
+          // Save to Supabase permanently
+          supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
+        } else {
+          st.textContent="No summary available for this book.";
+        }
+      })
+      .catch(function(){st.textContent="No summary available for this book.";});
     }
   });
   ss.appendChild(sb);ss.appendChild(st);card.appendChild(ss);
@@ -4781,46 +4772,56 @@ function onISBNInput(val){
     setTimeout(function(){status.style.display="none";},3000);
   }
 
-  // Try Google Books first via CORS proxy
-  var proxy = "https://api.allorigins.win/raw?url=";
-  fetch(proxy+encodeURIComponent("https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1"))
-    .then(function(r){return r.json();})
-    .then(function(data){
-      if(data.items&&data.items.length){
-        var v=data.items[0].volumeInfo;
-        fillFields({
-          title:v.title,
-          author:v.authors&&v.authors.length?v.authors[0]:"",
-          description:v.description||"",
-          categories:(v.categories||[]).join(" "),
-          cover:v.imageLinks&&v.imageLinks.thumbnail?v.imageLinks.thumbnail:null
+  // Try multiple CORS proxies in order
+  var proxies=["https://api.allorigins.win/raw?url=","https://corsproxy.io/?","https://thingproxy.freeboard.io/fetch/"];
+  var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&maxResults=1";
+
+  function tryISBNProxy(idx){
+    if(idx>=proxies.length){
+      // All proxies failed — try Open Library directly
+      fetch("https://openlibrary.org/api/books?bibkeys=ISBN:"+val+"&format=json&jscmd=data")
+        .then(function(r){return r.json();})
+        .then(function(olData){
+          var key="ISBN:"+val;
+          if(olData&&olData[key]){
+            var info=olData[key];
+            fillFields({
+              title:info.title||"",
+              author:info.authors&&info.authors.length?info.authors[0].name:"",
+              description:info.notes&&typeof info.notes==="string"?info.notes:(info.excerpts&&info.excerpts.length?info.excerpts[0].text:""),
+              categories:(info.subjects||[]).map(function(s){return typeof s==="string"?s:s.name||"";}).join(" "),
+              cover:info.cover&&info.cover.medium?info.cover.medium:null
+            });
+          } else {
+            status.innerHTML="Could not auto-fetch. Try: <a href='https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"' target='_blank' style='color:#185FA5'>Google Books</a> or <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
+            status.style.color="#C0392B";
+          }
+        })
+        .catch(function(){
+          status.innerHTML="Could not auto-fetch. Try: <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
+          status.style.color="#C0392B";
         });
-      } else {
-        // Fallback to Open Library
-        return fetch(proxy+encodeURIComponent("https://openlibrary.org/api/books?bibkeys=ISBN:"+val+"&format=json&jscmd=data"))
-          .then(function(r){return r.json();})
-          .then(function(olData){
-            var key="ISBN:"+val;
-            if(olData&&olData[key]){
-              var info=olData[key];
-              fillFields({
-                title:info.title||"",
-                author:info.authors&&info.authors.length?info.authors[0].name:"",
-                description:info.notes&&typeof info.notes==="string"?info.notes:(info.excerpts&&info.excerpts.length?info.excerpts[0].text:""),
-                categories:(info.subjects||[]).map(function(s){return typeof s==="string"?s:s.name||"";}).join(" "),
-                cover:info.cover&&info.cover.medium?info.cover.medium:null
-              });
-            } else {
-              status.textContent="Book not found for this ISBN.";
-              status.style.color="#C0392B";
-            }
+      return;
+    }
+    fetch(proxies[idx]+encodeURIComponent(gbUrl))
+      .then(function(r){if(!r.ok)throw new Error("proxy failed");return r.json();})
+      .then(function(data){
+        if(data.items&&data.items.length){
+          var v=data.items[0].volumeInfo;
+          fillFields({
+            title:v.title,
+            author:v.authors&&v.authors.length?v.authors[0]:"",
+            description:v.description||"",
+            categories:(v.categories||[]).join(" "),
+            cover:v.imageLinks&&v.imageLinks.thumbnail?v.imageLinks.thumbnail:null
           });
-      }
-    })
-    .catch(function(){
-      status.innerHTML="Could not auto-fetch. Try: <a href='https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"' target='_blank' style='color:#185FA5'>Google Books</a> or <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
-      status.style.color="#C0392B";
-    });
+        } else {
+          tryISBNProxy(idx+1);
+        }
+      })
+      .catch(function(){tryISBNProxy(idx+1);});
+  }
+  tryISBNProxy(0);
 }
 
 function fetchBookByISBN(isbn, cb){
