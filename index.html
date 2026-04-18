@@ -993,7 +993,7 @@ tr:hover td{background:#fafaf8;}
 
 <!-- MODALS -->
 <div class="modal-ov" id="m-addbook">
-  <div class="modal-box">
+  <div class="modal-box" style="max-height:90vh;overflow-y:auto;max-width:500px">
     <h3 id="addbook-title">Add book</h3>
     <div class="field"><label>Title</label><input type="text" id="ab-title" oninput="scheduleAddBookLookup()"/></div>
     <div class="field"><label>Author</label><input type="text" id="ab-author" oninput="scheduleAddBookLookup()"/></div>
@@ -1015,7 +1015,7 @@ tr:hover td{background:#fafaf8;}
     </div>
     <div class="field">
       <label>ISBN-13</label>
-      <input type="text" id="ab-isbn" placeholder="Enter manually or use barcode scanner" style="width:100%" oninput="onISBNInput(this.value)"/>
+      <input type="text" id="ab-isbn" placeholder="Enter manually or use barcode scanner" style="width:100%" oninput="clearTimeout(window._isbnTimer);window._isbnTimer=setTimeout(function(){onISBNInput(document.getElementById('ab-isbn').value);},400)"/>
       <div id="ab-isbn-status" style="font-size:12px;margin-top:5px;display:none"></div>
     </div>
     <div class="field">
@@ -1049,7 +1049,7 @@ tr:hover td{background:#fafaf8;}
 </div>
 
 <div class="modal-ov" id="m-addmember">
-  <div class="modal-box">
+  <div class="modal-box" style="max-height:90vh;overflow-y:auto">
     <h3 id="addmember-title">Add member</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="field"><label>First name</label><input type="text" id="am-fname"/></div>
@@ -1092,7 +1092,7 @@ tr:hover td{background:#fafaf8;}
 </div>
 
 <div class="modal-ov" id="m-adduser">
-  <div class="modal-box">
+  <div class="modal-box" style="max-height:90vh;overflow-y:auto">
     <h3>Add staff user</h3>
     <div class="field"><label>Full name</label><input type="text" id="au-name"/></div>
     <div class="field"><label>Username</label><input type="text" id="au-user"/></div>
@@ -4727,18 +4727,36 @@ function fetchBookSummary(isbn, cb){
 }
 function onISBNInput(val){
   val = val.trim().replace(/[^0-9X]/gi,"");
-  if(val.length < 10) return;
   var status = document.getElementById("ab-isbn-status");
+
+  // Clear fields if ISBN is cleared
+  if(val.length < 10){
+    if(val.length === 0){
+      document.getElementById("ab-title").value="";
+      document.getElementById("ab-author").value="";
+      document.getElementById("ab-summary").value="";
+      document.getElementById("ab-age").value="";
+      document.getElementById("ab-genre").value="Fiction";
+      if(status) status.style.display="none";
+    }
+    return;
+  }
+
   status.textContent = "Looking up book details...";
   status.style.display = "block";
   status.style.color = "var(--mt)";
 
+  // Clear existing fields before fetching new book
+  document.getElementById("ab-title").value="";
+  document.getElementById("ab-author").value="";
+  document.getElementById("ab-summary").value="";
+  document.getElementById("ab-age").value="";
+  document.getElementById("ab-genre").value="Fiction";
+
   function fillFields(info){
-    if(info.title&&!document.getElementById("ab-title").value.trim())
-      document.getElementById("ab-title").value = info.title;
-    if(info.author&&!document.getElementById("ab-author").value.trim())
-      document.getElementById("ab-author").value = info.author;
-    if(info.description&&!document.getElementById("ab-summary").value.trim())
+    if(info.title) document.getElementById("ab-title").value = info.title;
+    if(info.author) document.getElementById("ab-author").value = info.author;
+    if(info.description)
       document.getElementById("ab-summary").value = info.description.length>500?info.description.slice(0,500)+"...":info.description;
     if(info.cover){
       var ci=document.getElementById("ab-lookup-cover");
@@ -6038,7 +6056,7 @@ document.addEventListener("click", function(e){
 
 
 <div class="modal-ov" id="m-change-pwd">
-  <div class="modal-box" style="max-width:380px">
+  <div class="modal-box" style="max-width:380px;max-height:90vh;overflow-y:auto">
     <h3>&#x1F512; Change password</h3>
     <p style="font-size:13px;color:var(--mt);margin:.4rem 0 1.25rem">Choose a new password for your account.</p>
     <div class="field">
@@ -6069,7 +6087,7 @@ document.addEventListener("click", function(e){
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <div class="modal-ov" id="m-edit-user">
-  <div class="modal-box" style="max-width:400px">
+  <div class="modal-box" style="max-width:400px;max-height:90vh;overflow-y:auto">
     <h3 id="eu-title">Edit user</h3>
     <p id="eu-subtitle" style="font-size:13px;color:var(--mt);margin:.4rem 0 1.25rem"></p>
     <div class="field"><label>Full name</label><input type="text" id="eu-name"/></div>
