@@ -4756,9 +4756,9 @@ function onISBNInput(val){
   function fillFields(info){
     // Clean up title — remove Indian edition prefixes
     var cleanTitle=(info.title||"").replace(/^(Indian\s+Edt\s+|India\s+Ed\s+|Indian\s+Edition\s+)/i,"").trim();
-    if(cleanTitle) document.getElementById("ab-title").value = cleanTitle;
-    if(info.author) document.getElementById("ab-author").value = info.author;
-    if(info.description)
+    if(cleanTitle&&!document.getElementById("ab-title").value.trim()) document.getElementById("ab-title").value = cleanTitle;
+    if(info.author&&!document.getElementById("ab-author").value.trim()) document.getElementById("ab-author").value = info.author;
+    if(info.description&&!document.getElementById("ab-summary").value.trim())
       document.getElementById("ab-summary").value = info.description.length>500?info.description.slice(0,500)+"...":info.description;
     if(info.cover){
       var ci=document.getElementById("ab-lookup-cover");
@@ -4811,35 +4811,46 @@ function onISBNInput(val){
   var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&langRestrict=en&maxResults=3&fields=items(volumeInfo(title,authors,description,categories,imageLinks,language))";
 
   // Try Claude API first — most reliable, works for all books including Indian editions
-  // Start with proxy fallback chain
-  tryISBNProxy(0);
+  // STEP 1: Open Library — no proxy needed, works directly
+  fetch("https://openlibrary.org/api/books?bibkeys=ISBN:"+val+"&format=json&jscmd=data")
+    .then(function(r){return r.json();})
+    .then(function(olData){
+      var key="ISBN:"+val;
+      if(olData&&olData[key]){
+        var info=olData[key];
+        var cats=(info.subjects||[]).map(function(s){return s.name||"";}).join(" ").toLowerCase();
+        fillFields({
+          title:info.title||"",
+          author:info.authors&&info.authors.length?info.authors[0].name:"",
+          description:"",
+          categories:cats,
+          cover:info.cover&&info.cover.medium?info.cover.medium:null
+        });
+        // STEP 2: Also try Google Books via proxy for summary
+        tryISBNProxy(0);
+      } else {
+        // Not in Open Library — try Google Books via proxies
+        tryISBNProxy(0);
+      }
+    })
+    .catch(function(){
+      // Open Library failed — go straight to Google Books proxies
+      tryISBNProxy(0);
+    });
 
-  // Fallback proxy function when Claude API is unavailable
+  // STEP 2: Google Books via proxies (for summary mainly)
   function tryISBNProxy(idx){
     if(idx>=proxies.length){
-      // All proxies failed — try Open Library directly
-      fetch("https://openlibrary.org/api/books?bibkeys=ISBN:"+val+"&format=json&jscmd=data")
-        .then(function(r){return r.json();})
-        .then(function(olData){
-          var key="ISBN:"+val;
-          if(olData&&olData[key]){
-            var info=olData[key];
-            fillFields({
-              title:info.title||"",
-              author:info.authors&&info.authors.length?info.authors[0].name:"",
-              description:info.notes&&typeof info.notes==="string"?info.notes:(info.excerpts&&info.excerpts.length?info.excerpts[0].text:""),
-              categories:(info.subjects||[]).map(function(s){return typeof s==="string"?s:s.name||"";}).join(" "),
-              cover:info.cover&&info.cover.medium?info.cover.medium:null
-            });
-          } else {
-            status.innerHTML="Could not auto-fetch. Try: <a href='https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"' target='_blank' style='color:#185FA5'>Google Books</a> or <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
-            status.style.color="#C0392B";
-          }
-        })
-        .catch(function(){
-          status.innerHTML="Could not auto-fetch. Try: <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
-          status.style.color="#C0392B";
-        });
+      // All proxies failed — show what we have from Open Library or nothing
+      if(!document.getElementById("ab-title").value.trim()){
+        status.innerHTML="Could not fetch details. Try: <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
+        status.style.color="#C0392B";
+      } else {
+        // We got data from Open Library — just no summary
+        status.textContent="✅ Book details fetched! (No summary available)";
+        status.style.color="#0F6E56";
+        setTimeout(function(){status.style.display="none";},3000);
+      }
       return;
     }
     fetch(proxies[idx]+encodeURIComponent(gbUrl))
