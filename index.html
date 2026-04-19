@@ -6363,11 +6363,14 @@ function onBookIdInput(inputEl, mode){
   var prefix=m[1].toUpperCase(), numStr=m[2];
   // No leading zeros
   if(numStr.length>1&&numStr.charAt(0)==='0'){ inputEl.style.borderColor='#C0392B'; dd.style.display='none'; return; }
-  // Find matches
+  // Find matches — for return mode show only checked-out books, for issue only available
   var hits=DB.books.filter(function(b){
     if(!b.id) return false;
     var bm=b.id.match(/^([A-E])\/(\d+)$/i);
-    return bm&&bm[1].toUpperCase()===prefix&&bm[2].startsWith(numStr);
+    if(!bm||bm[1].toUpperCase()!==prefix||!bm[2].startsWith(numStr)) return false;
+    if(mode==='return') return b.status==='checked';
+    if(mode==='issue') return b.status==='available';
+    return true;
   });
   if(!hits.length){
     dd.innerHTML="<div style='padding:9px 14px;font-size:12px;color:#C0392B;font-weight:600'>&#x26A0; No books found with this ID</div>";
@@ -6379,10 +6382,9 @@ function onBookIdInput(inputEl, mode){
   dd.innerHTML=shown.map(function(b){
     var avail=b.status==='available', out=b.status==='checked';
     var dot=avail?"<span style='color:#0F6E56'>●</span>":"<span style='color:#C0392B'>●</span>";
-    var grey=(mode==='issue'&&!avail)||(mode==='return'&&!out);
     return "<div data-id='"+b.id+"' data-avail='"+avail+"' data-out='"+out+"' "+
-      "style='padding:7px 12px;cursor:"+(grey?'default':'pointer')+";display:flex;justify-content:space-between;align-items:center;"+
-      "border-bottom:1px solid var(--bd);color:"+(grey?'var(--mt)':'var(--tx)')+"'>"+
+      "style='padding:7px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"+
+      "border-bottom:1px solid var(--bd);color:var(--tx)'>"+
       "<span>"+dot+" <strong>"+b.id+"</strong>&nbsp; "+(b.title.length>30?b.title.slice(0,30)+'…':b.title)+"</span>"+
       "<span style='font-size:11px;font-weight:600;color:"+(avail?'#0F6E56':'#C0392B')+"'>"+(avail?'Available':'Out')+"</span>"+
       "</div>";
