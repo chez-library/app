@@ -5574,11 +5574,7 @@ function filterMemberDropdown(){
     var hits=DB.members.filter(function(m){
       if(!q) return true;
       var fullName=((m.fname||"")+" "+(m.lname||"")).toLowerCase();
-      return fullName.indexOf(q)>=0
-        || (m.id||"").toLowerCase().indexOf(q)>=0
-        || (m.email||"").toLowerCase().indexOf(q)>=0
-        || (m.block||"").toLowerCase().indexOf(q)>=0
-        || (m.flatNo||"").toLowerCase().indexOf(q)>=0;
+      return fullName.indexOf(q)>=0;
     }).slice(0,10);
     if(hits.length===0){
       dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No members found</div>";
