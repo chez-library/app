@@ -6044,6 +6044,8 @@ function filterIssueByBookId(){
     searchEl.value=b.title;
     searchEl.style.color="";
     document.getElementById("book-dropdown").style.display="none";
+    // Close Book ID autocomplete dropdown — book found, no need to browse
+    var bidDd=document.getElementById("bid-dd-iss-book-id");if(bidDd)bidDd.style.display="none";
     showBookInfo(b.id);
   } else {
     // Check if the ID exists at all (just not available)
@@ -6071,6 +6073,8 @@ function filterReturnByBookId(){
     document.getElementById("ret-book").value=b.id;
     searchEl.value=b.title;
     searchEl.style.color="";
+    // Close Book ID autocomplete dropdown — book found, no need to browse
+    var bidDd2=document.getElementById("bid-dd-ret-book-id");if(bidDd2)bidDd2.style.display="none";
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
     if(m){
       document.getElementById("ret-member").value=m.id;
@@ -6421,6 +6425,13 @@ function onBookIdInput(inputEl, mode){
     clearTimeout(window._issIdTimer);
     if(mode==='issue') filterIssueByBookId();
     else if(mode==='return') filterReturnByBookId();
+    return;
+  }
+  // If a book is already resolved, close the dropdown — no need to browse
+  var resolvedId=mode==='issue'?document.getElementById("iss-book"):document.getElementById("ret-book");
+  if(resolvedId&&resolvedId.value){
+    var dd=document.getElementById(bookIdDropdownId(inputEl.id));
+    if(dd) dd.style.display='none';
     return;
   }
   var raw=inputEl.value;
