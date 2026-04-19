@@ -1339,7 +1339,11 @@ function saveBook_DB(book) {
     no_id: book.noId || false, qr_printed: book.qrPrinted || false,
     barcode: book.barcode || null
   };
-  return supaFetch("books?id=eq." + encodeURIComponent(book.id), "PATCH", row)
+  // If book has no id yet, try matching by isbn+title in Supabase
+  var supaQuery = book.id && book.id.trim()
+    ? "books?id=eq." + encodeURIComponent(book.id)
+    : "books?title=eq." + encodeURIComponent(book.title) + "&author=eq." + encodeURIComponent(book.author);
+  return supaFetch(supaQuery, "PATCH", row)
     .then(function(r) {
       if (!r || !r.length) return supaFetch("books", "POST", row);
       return r;
@@ -1735,14 +1739,18 @@ function renderBooks(){
     
     var actTd=document.createElement("td");
     var editBtn=document.createElement("button");editBtn.className="btn btn-ghost";editBtn.style.cssText="font-size:12px;padding:4px 10px;margin-right:4px";editBtn.textContent="Edit";
-    (function(bid){editBtn.addEventListener("click",function(){openEditBook(bid);});})(b.id);
+    (function(bidx){editBtn.addEventListener("click",function(){openEditBook(bidx);});})(DB.books.indexOf(b));
     var delBtn=document.createElement("button");delBtn.className="btn btn-danger";delBtn.style.cssText="font-size:12px;padding:4px 10px";delBtn.textContent="Delete";
-    (function(bid,btitle){delBtn.addEventListener("click",function(){
+    (function(bidx,btitle){delBtn.addEventListener("click",function(){
       confirmDel("Delete book","Delete '"+btitle+"'? This cannot be undone.",function(){
-        DB.books=DB.books.filter(function(x){return x.id!==bid;});
+        var bk=DB.books[bidx];
+        var bid=bk?bk.id:null;
+        DB.books.splice(bidx,1);
+        if(bid&&bid.trim()) deleteBook_DB(bid).catch(function(e){showToast("DB delete failed: "+e.message,"error");});
+        else if(bk) supaFetch("books?title=eq."+encodeURIComponent(bk.title)+"&author=eq."+encodeURIComponent(bk.author),"DELETE").catch(function(){});
         logActivity("Deleted book: "+btitle);saveData();renderBooks();refreshDashboard();
       });
-    });})(b.id,b.title);
+    });})(DB.books.indexOf(b),b.title);
     var actWrap=document.createElement("div");actWrap.style.cssText="display:flex;flex-direction:column;gap:4px;align-items:flex-start";
     actWrap.appendChild(editBtn);actWrap.appendChild(delBtn);actTd.appendChild(actWrap);
     
@@ -1783,9 +1791,12 @@ function openAddBook(){
   
   setTimeout(function(){var el=document.getElementById("ab-isbn");if(el)el.focus();},80);
 }
-function openEditBook(id){
-  var b=DB.books.find(function(x){return x.id===id;});if(!b)return;
-  editBookId=id;
+function openEditBook(idx){
+  var b=typeof idx==="number"?DB.books[idx]:DB.books.find(function(x){return x.id===idx;});
+  if(!b)return;
+  editBookId=b.id;
+  var editBookIdx=typeof idx==="number"?idx:DB.books.indexOf(b);
+  window._editBookIdx=editBookIdx;
   
   _addBookMatch=null;clearTimeout(_addBookTimer);
   var lp=document.getElementById("ab-lookup-result");if(lp){lp.style.display="none";}
@@ -1856,13 +1867,20 @@ function saveBook(){
   var fetchedCover=document.getElementById("ab-cover")?document.getElementById("ab-cover").value.trim():"";
   var coverUrl=fetchedCover||(isbn!="N/A"?"https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg":null);
   var cover2Url=isbn!="N/A"?"https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1":null;
-  if(editBookId){
-    var b=DB.books.find(function(x){return x.id===editBookId;});
+  if(editBookId!==null&&editBookId!==undefined){
+    var b=window._editBookIdx!==undefined?DB.books[window._editBookIdx]:DB.books.find(function(x){return x.id===editBookId;});
     if(b){b.title=title;b.author=author;b.isbn=isbn;b.age=age;b.genre=genre;
       b.summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
       if(coverUrl) b.cover=coverUrl;
       if(cover2Url) b.cover2=cover2Url;
-      if(manualBookId){b.id=manualBookId;b.noId=false;}
+      if(manualBookId&&manualBookId!==editBookId){
+        var oldId=b.id;
+        b.id=manualBookId;b.noId=false;
+        // Update any transactions that reference the old ID
+        if(oldId) DB.transactions.forEach(function(t){if(t.bookId===oldId)t.bookId=manualBookId;});
+        // Update Supabase transactions too
+        if(oldId) supaFetch("transactions?book_id=eq."+encodeURIComponent(oldId),"PATCH",{book_id:manualBookId}).catch(function(){});
+      }
       logActivity("Edited book: "+title);}
   }else{
     var newId=manualBookId;var noIdFlag=false;
@@ -1871,7 +1889,10 @@ function saveBook(){
     DB.books.push(newB);
     logActivity("Added book: "+title+" [New arrival]");
   }
-  saveBook_DB(editBookId?DB.books.find(function(b){return b.id===editBookId;})||newB:newB).then(function(){showToast("Book saved","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
+  var bookToSave=window._editBookIdx!==undefined?DB.books[window._editBookIdx]:null;
+  if(!bookToSave&&editBookId) bookToSave=DB.books.find(function(b){return b.id===editBookId;});
+  if(!bookToSave) bookToSave=newB;
+  saveBook_DB(bookToSave).then(function(){showToast("Book saved","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
   saveData();closeModal("m-addbook");renderBooks();refreshDashboard();
 }
 
