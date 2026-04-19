@@ -792,7 +792,7 @@ tr:hover td{background:#fafaf8;}
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
               <input type="text" id="iss-book-id" placeholder="B/112" autocomplete="off"
                 oninput="clearTimeout(window._issIdTimer);onBookIdInput(this,'issue');window._issIdTimer=setTimeout(filterIssueByBookId,300)"
-                onkeydown="if(event.key==='Enter'){clearTimeout(window._issIdTimer);filterIssueByBookId();}" onblur="closeBookIdDropdown(this)"
+                onkeydown="if(event.key==='Enter'){clearTimeout(window._issIdTimer);filterIssueByBookId();return;}if(/^[0-9]$/.test(event.key)&&/^[A-E]$/i.test(this.value)){event.preventDefault();this.value=this.value.toUpperCase()+'/'+event.key;onBookIdInput(this,'issue');}" onblur="closeBookIdDropdown(this)"
                 style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
             <div style="position:relative;flex:1">
@@ -867,7 +867,7 @@ tr:hover td{background:#fafaf8;}
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
               <input type="text" id="ret-book-id" placeholder="B/112" autocomplete="off"
                 oninput="clearTimeout(window._retIdTimer);onBookIdInput(this,'return');window._retIdTimer=setTimeout(filterReturnByBookId,300)"
-                onkeydown="if(event.key==='Enter'){clearTimeout(window._retIdTimer);filterReturnByBookId();}" onblur="closeBookIdDropdown(this)"
+                onkeydown="if(event.key==='Enter'){clearTimeout(window._retIdTimer);filterReturnByBookId();return;}if(/^[0-9]$/.test(event.key)&&/^[A-E]$/i.test(this.value)){event.preventDefault();this.value=this.value.toUpperCase()+'/'+event.key;onBookIdInput(this,'return');}" onblur="closeBookIdDropdown(this)"
                 style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
             <div style="position:relative;flex:1">
@@ -6414,13 +6414,10 @@ function ensureBookIdDropdown(inputEl){
 function onBookIdInput(inputEl, mode){
   // Auto-uppercase prefix
   if(inputEl.value.length>=1) inputEl.value=inputEl.value.charAt(0).toUpperCase()+inputEl.value.slice(1);
-  // Auto-append "/" only if exactly one letter — skip if it looks like a barcode (e.g. C001296)
-  if(/^[A-E]$/.test(inputEl.value)){
-    inputEl.value=inputEl.value+'/';
-  }
-  // If barcode format was pasted/scanned (e.g. C001296), convert immediately and skip dropdown logic
-  if(/^[A-E]\d{4,6}$/.test(inputEl.value)){
-    inputEl.value=barcodeToBookId(inputEl.value);
+  // If full barcode scanned (e.g. C001296 or C/001296), convert and trigger lookup immediately
+  var barcodeMatch=inputEl.value.match(/^([A-E])\/?(\d{4,6})$/i);
+  if(barcodeMatch){
+    inputEl.value=barcodeToBookId(barcodeMatch[1]+barcodeMatch[2]);
     clearTimeout(window._issIdTimer);
     if(mode==='issue') filterIssueByBookId();
     else if(mode==='return') filterReturnByBookId();
