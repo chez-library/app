@@ -1274,9 +1274,9 @@ function loadFromSupabase() {
     });
     DB.members = (results[1] || []).map(function(m) {
       return {
-        id: m.id, fname: m.fname, lname: m.lname, email: m.email,
-        phone: m.phone, block: m.block, flatNo: m.flat_no,
-        flatFull: m.flat_full, joined: m.joined
+        id: m.id, fname: m.fname||"", lname: m.lname||"", email: m.email||"",
+        phone: m.phone||"", block: m.block||"", flatNo: m.flat_no||"",
+        flatFull: m.flat_full||"", joined: m.joined
       };
     });
     DB.transactions = (results[2] || []).map(function(t) {
@@ -5565,33 +5565,47 @@ function ddItem(label, sub, onClick){
   return div;
 }
 
+function memberName(m){ return ((m.fname||"")+" "+(m.lname||"")).trim(); }
 function filterMemberDropdown(){
   var q=(document.getElementById("iss-member-search").value||"").toLowerCase();
   var dd=document.getElementById("member-dropdown");
   dd.innerHTML="";
-  var hits=DB.members.filter(function(m){
-    return !q || (m.fname+" "+m.lname).toLowerCase().indexOf(q)>=0 || m.id.toLowerCase().indexOf(q)>=0 || m.email.toLowerCase().indexOf(q)>=0;
-  }).slice(0,10);
-  if(hits.length===0){
-    dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No members found</div>";
-  } else {
-    var booksOut;
-    hits.forEach(function(m){
-      booksOut=DB.books.filter(function(b){return b.issuedTo===m.id;}).length;
-      dd.appendChild(ddItem(
-        m.fname+" "+m.lname,
-        m.id + (booksOut>0 ? " · "+booksOut+" book"+(booksOut>1?"s":"")+" out" : ""),
-        function(mid,mname,mobj){return function(){
-          document.getElementById("iss-member").value=mid;
-          document.getElementById("iss-member-search").value=mname;
-          dd.style.display="none";
-          showMemberCard(mobj);
-          checkMemberPending(mid);
-        };}(m.id, m.fname+" "+m.lname, m)
-      ));
-    });
+  try{
+    var hits=DB.members.filter(function(m){
+      if(!q) return true;
+      var fullName=((m.fname||"")+" "+(m.lname||"")).toLowerCase();
+      return fullName.indexOf(q)>=0
+        || (m.id||"").toLowerCase().indexOf(q)>=0
+        || (m.email||"").toLowerCase().indexOf(q)>=0
+        || (m.block||"").toLowerCase().indexOf(q)>=0
+        || (m.flatNo||"").toLowerCase().indexOf(q)>=0;
+    }).slice(0,10);
+    if(hits.length===0){
+      dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No members found</div>";
+    } else {
+      var booksOut;
+      hits.forEach(function(m){
+        booksOut=DB.books.filter(function(b){return b.issuedTo===m.id;}).length;
+        dd.appendChild(ddItem(
+          memberName(m),
+          m.id + (booksOut>0 ? " · "+booksOut+" book"+(booksOut>1?"s":"")+" out" : ""),
+          function(mid,mname,mobj){return function(){
+            document.getElementById("iss-member").value=mid;
+            document.getElementById("iss-member-search").value=mname;
+            dd.style.display="none";
+            showMemberCard(mobj);
+            checkMemberPending(mid);
+          };}(m.id, memberName(m), m)
+        ));
+      });
+    }
+    dd.style.display="block";
+  } catch(err){
+    // Show error in dropdown so we can diagnose which member is causing the crash
+    dd.innerHTML="<div style='padding:10px 14px;font-size:12px;color:#C0392B'>⚠ Member search error: "+err.message+"</div>";
+    dd.style.display="block";
+    console.error("filterMemberDropdown error:", err, "Members:", DB.members);
   }
-  dd.style.display="block";
 }
 
 function clearBookInfo(){
