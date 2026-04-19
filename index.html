@@ -1005,7 +1005,16 @@ tr:hover td{background:#fafaf8;}
 <div class="modal-ov" id="m-addbook">
   <div class="modal-box" style="max-height:90vh;overflow-y:auto;max-width:500px">
     <h3 id="addbook-title">Add book</h3>
-    <div class="field"><label>Title</label><input type="text" id="ab-title" oninput="scheduleAddBookLookup()"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>Title</label><input type="text" id="ab-title" oninput="scheduleAddBookLookup()"/></div>
+      <div class="field">
+        <label>Book ID <span style="font-weight:400;color:var(--mt)">(optional)</span></label>
+        <input type="text" id="ab-bookid" placeholder="e.g. C/550" style="font-family:monospace"
+          oninput="this.value=this.value.toUpperCase()"
+          onblur="var v=this.value.trim();if(v&&!/^[A-E]\/[1-9]\d{0,3}$/.test(v)){this.style.borderColor='#C0392B';}else{this.style.borderColor='';}"/>
+        <div id="ab-bookid-err" style="font-size:11px;color:#C0392B;margin-top:3px;display:none">Use format A/1 to E/9999. Prefix must match age group (A=0–4, B=5–7, C=8–12, D=13–17, E=Adults)</div>
+      </div>
+    </div>
     <div class="field"><label>Author</label><input type="text" id="ab-author" oninput="scheduleAddBookLookup()"/></div>
     <!-- Cover preview from title+author lookup -->
     <div id="ab-lookup-result" style="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:.75rem">
@@ -1780,7 +1789,8 @@ function openAddBook(){
   editBookId=null;
   document.getElementById("addbook-title").textContent="Add book";
   document.getElementById("addbook-btn").textContent="Add book";
-  ["ab-title","ab-author","ab-isbn","ab-summary","ab-cover"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  ["ab-title","ab-author","ab-isbn","ab-summary","ab-cover","ab-bookid"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  var bkidErr=document.getElementById("ab-bookid-err");if(bkidErr)bkidErr.style.display="none";
   var lp=document.getElementById("ab-lookup-result");if(lp)lp.style.display="none";
   var ltEl=document.getElementById("ab-lookup-title");if(ltEl)ltEl.textContent="";
   var laEl=document.getElementById("ab-lookup-author");if(laEl)laEl.textContent="";
@@ -1810,6 +1820,7 @@ function openEditBook(id){
   document.getElementById("addbook-btn").textContent="Save changes";
   document.getElementById("ab-title").value=b.title;
   document.getElementById("ab-author").value=b.author;
+  var bkidEl=document.getElementById("ab-bookid");if(bkidEl){bkidEl.value=b.id&&b.id.trim()?b.id:"";bkidEl.style.borderColor="";}
   document.getElementById("ab-isbn").value=b.isbn&&b.isbn!="N/A"?b.isbn:"";
   document.getElementById("ab-age").value=b.age;
   document.getElementById("ab-genre").value=b.genre;
@@ -1824,6 +1835,38 @@ function saveBook(){
   var isbn=document.getElementById("ab-isbn").value.trim()||"N/A";
   var age=document.getElementById("ab-age").value;
   var genre=document.getElementById("ab-genre").value;
+  var bookIdInput=document.getElementById("ab-bookid");
+  var manualBookId=bookIdInput?bookIdInput.value.trim().toUpperCase():"";
+  if(bookIdInput) bookIdInput.value=manualBookId;
+  var bkidErr=document.getElementById("ab-bookid-err");
+  function showBkIdErr(msg){if(bkidErr){bkidErr.textContent=msg;bkidErr.style.display="block";}if(bookIdInput)bookIdInput.style.borderColor="#C0392B";}
+  function clearBkIdErr(){if(bkidErr)bkidErr.style.display="none";if(bookIdInput)bookIdInput.style.borderColor="";}
+  if(manualBookId){
+    // Rule 1: Format must be A-E / 1-9999, no leading zeros
+    if(!/^[A-E]\/[1-9]\d{0,3}$/.test(manualBookId)){
+      showBkIdErr("Format must be A/1 to E/9999 — no leading zeros");return;
+    }
+    // Rule 2: Prefix should match age group — warn but don't block
+    var expectedPrefix=getAgePrefix(age);
+    var enteredPrefix=manualBookId.charAt(0);
+    var prefixAgeNames={"A":"Picture books","B":"Early readers","C":"Middle grade","D":"Young adult","E":"Adults/General"};
+    if(bkidErr&&enteredPrefix!==expectedPrefix){
+      bkidErr.textContent="⚠ Note: Prefix "+enteredPrefix+" is usually for "+prefixAgeNames[enteredPrefix]+", but selected age is "+prefixAgeNames[expectedPrefix]||age+". Saving anyway.";
+      bkidErr.style.color="#854F0B";
+      bkidErr.style.display="block";
+    }
+    // Rule 3: Number must be globally unique across all books
+    var enteredNum=parseInt(manualBookId.split("/")[1],10);
+    var numConflict=DB.books.find(function(b){
+      if(!b.id||b.id===editBookId) return false;
+      var m=b.id.match(/^[A-E]\/([1-9]\d{0,3})$/);
+      return m&&parseInt(m[1],10)===enteredNum;
+    });
+    if(numConflict){
+      showBkIdErr("Number "+enteredNum+" is already used by "+numConflict.id+" ("+numConflict.title+")");return;
+    }
+    clearBkIdErr();
+  }
   if(!title||!author)return;
   // Use the actually-fetched cover URL if available, otherwise derive from ISBN
   var fetchedCover=document.getElementById("ab-cover")?document.getElementById("ab-cover").value.trim():"";
@@ -1835,9 +1878,10 @@ function saveBook(){
       b.summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
       if(coverUrl) b.cover=coverUrl;
       if(cover2Url) b.cover2=cover2Url;
+      if(manualBookId){b.id=manualBookId;b.noId=false;}
       logActivity("Edited book: "+title);}
   }else{
-    var newId="";var noIdFlag=true;
+    var newId=manualBookId||"";var noIdFlag=!manualBookId;
     var summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
     var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:coverUrl,cover2:cover2Url,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag};
     DB.books.push(newB);
