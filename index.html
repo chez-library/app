@@ -872,7 +872,7 @@ tr:hover td{background:#fafaf8;}
             </div>
             <div style="position:relative;flex:1">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book title</label>
-              <input type="text" id="ret-book-search" placeholder="Type title to search..." autocomplete="off" oninput="filterReturnDropdown()" onfocus="filterReturnDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
+              <input type="text" id="ret-book-search" placeholder="Type title to search..." autocomplete="off" oninput="if(this.value){var rid=document.getElementById('ret-book-id');if(rid&&rid.value){rid.value='';rid.style.borderColor='';this.style.color='';this.placeholder='Type title to search...';}};filterReturnDropdown()" onfocus="filterReturnDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
               <input type="hidden" id="ret-book"/>
               <div id="return-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
             </div>
@@ -6045,6 +6045,10 @@ function filterReturnByBookId(){
 }
 
 function filterReturnDropdown(){
+  // Suppress dropdown when Book ID is typed but hasn't resolved to a valid checked-out book
+  var retIdVal=document.getElementById("ret-book-id")?document.getElementById("ret-book-id").value.trim():"";
+  var resolvedRetId=document.getElementById("ret-book")?document.getElementById("ret-book").value.trim():"";
+  if(retIdVal&&!resolvedRetId){document.getElementById("return-dropdown").style.display="none";return;}
   var q=(document.getElementById("ret-book-search").value||"").toLowerCase();
   var selectedMember=document.getElementById("ret-member").value;
   var dd=document.getElementById("return-dropdown");
@@ -6065,6 +6069,8 @@ function filterReturnDropdown(){
         function(bid,btitle,memberId,memberName){return function(){
           document.getElementById("ret-book").value=bid;
           document.getElementById("ret-book-search").value=btitle;
+          var retIdField=document.getElementById("ret-book-id");
+          if(retIdField&&bid){retIdField.value=bid;retIdField.style.borderColor="var(--ac)";}
           dd.style.display="none";
           // Auto-fill member
           if(memberId&&memberName){
