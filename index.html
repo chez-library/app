@@ -6412,10 +6412,19 @@ function ensureBookIdDropdown(inputEl){
 }
 
 function onBookIdInput(inputEl, mode){
-  // Auto-uppercase prefix and append '/' after a valid letter
+  // Auto-uppercase prefix
   if(inputEl.value.length>=1) inputEl.value=inputEl.value.charAt(0).toUpperCase()+inputEl.value.slice(1);
+  // Auto-append "/" only if exactly one letter — skip if it looks like a barcode (e.g. C001296)
   if(/^[A-E]$/.test(inputEl.value)){
     inputEl.value=inputEl.value+'/';
+  }
+  // If barcode format was pasted/scanned (e.g. C001296), convert immediately and skip dropdown logic
+  if(/^[A-E]\d{4,6}$/.test(inputEl.value)){
+    inputEl.value=barcodeToBookId(inputEl.value);
+    clearTimeout(window._issIdTimer);
+    if(mode==='issue') filterIssueByBookId();
+    else if(mode==='return') filterReturnByBookId();
+    return;
   }
   var raw=inputEl.value;
   var dd=ensureBookIdDropdown(inputEl);
