@@ -740,7 +740,17 @@ tr:hover td{background:#fafaf8;}
         <button onclick="clearBkFilters()" style="padding:7px 12px;font-size:13px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;cursor:pointer;color:var(--mt);white-space:nowrap;flex-shrink:0">&#x2715; Clear</button>
       </div>
       <div id="no-id-banner" style="display:none;background:#FCEAEA;border:2px solid #C0392B;border-radius:10px;padding:14px 16px;margin-bottom:1rem"></div>
-      <div id="bk-qr-stats" style="display:flex;gap:1rem;margin-bottom:.75rem;font-size:12px;flex-wrap:wrap"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem;">
+        <div id="bk-qr-stats" style="display:flex;gap:1rem;font-size:12px;flex-wrap:wrap;align-items:center"></div>
+        <div style="display:flex;align-items:center;gap:6px;position:relative">
+          <div id="bk-summary-notice" style="display:none;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:#E6F1FB;color:#185FA5;white-space:nowrap"></div>
+          <button id="bk-sync-log-btn" onclick="toggleSyncLog()" title="Summary sync history" style="display:none;background:none;border:none;cursor:pointer;padding:2px 5px;font-size:15px;color:var(--mt);line-height:1;border-radius:6px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">&#128203;</button>
+          <div id="bk-sync-log-dropdown" style="display:none;position:absolute;right:0;top:28px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 0;min-width:300px;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.13);z-index:500">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);padding:0 14px 6px;border-bottom:1px solid var(--bd);margin-bottom:4px">Summary sync history</div>
+            <div id="bk-sync-log-list" style="max-height:220px;overflow-y:auto;padding:4px 0"></div>
+          </div>
+        </div>
+      </div>
       <div class="tbl-wrap">
         <table><thead><tr><th>Book ID</th><th>Book</th><th>Author</th><th>ISBN-13</th><th>Age</th><th>Genre</th><th>Status</th><th style="text-align:center">Barcode label</th><th>Actions</th></tr></thead>
         <tbody id="books-tbody"></tbody></table>
@@ -1017,6 +1027,15 @@ tr:hover td{background:#fafaf8;}
       <label>ISBN-13</label>
       <input type="text" id="ab-isbn" placeholder="Enter manually or use barcode scanner" style="width:100%" oninput="clearTimeout(window._isbnTimer);window._isbnTimer=setTimeout(function(){onISBNInput(document.getElementById('ab-isbn').value);},400)"/>
       <div id="ab-isbn-status" style="font-size:12px;margin-top:5px;display:none"></div>
+      <!-- Cover preview shown after ISBN lookup -->
+      <div id="ab-isbn-cover-wrap" style="display:none;margin-top:10px;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px">
+        <img id="ab-isbn-cover-img" src="" style="width:44px;height:62px;object-fit:cover;border-radius:4px;border:1px solid var(--bd);flex-shrink:0" onerror="document.getElementById('ab-isbn-cover-wrap').style.display='none'"/>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#0F6E56">✅ Cover found</div>
+          <div id="ab-isbn-cover-title" style="font-size:12px;color:var(--tx);margin-top:2px;font-weight:500"></div>
+          <div id="ab-isbn-cover-author" style="font-size:11px;color:var(--mt);margin-top:1px"></div>
+        </div>
+      </div>
     </div>
     <div class="field">
       <label>Book summary <span style="font-weight:400;color:var(--mt)">(optional — auto-fetched if ISBN provided)</span></label>
@@ -1041,6 +1060,8 @@ tr:hover td{background:#fafaf8;}
         </select>
       </div>
     </div>
+    <!-- Hidden field to carry the fetched cover URL through to saveBook -->
+    <input type="hidden" id="ab-cover" value=""/>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('m-addbook')">Cancel</button>
       <button class="btn btn-primary" id="addbook-btn" onclick="saveBook()">Add book</button>
@@ -1295,6 +1316,8 @@ function loadFromSupabase() {
     // Auto-fetch covers disabled — causes rate limit errors with 1153 books
     // Start background summary sync after 5 seconds
     setTimeout(syncMissingSummaries, 5000);
+    // Restore sync log button visibility if history exists
+    setTimeout(function(){renderSyncLog();}, 100);
     // Use Edit book → ISBN field to add covers manually
   }).catch(function(err) {
     console.error("Supabase load error:", err);
@@ -1807,14 +1830,32 @@ function openAddBook(){
   editBookId=null;
   document.getElementById("addbook-title").textContent="Add book";
   document.getElementById("addbook-btn").textContent="Add book";
-  ["ab-title","ab-author","ab-isbn","ab-summary"].forEach(function(id){document.getElementById(id).value="";});
+  ["ab-title","ab-author","ab-isbn","ab-summary","ab-cover"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
   var lp=document.getElementById("ab-lookup-result");if(lp)lp.style.display="none";
+  var ltEl=document.getElementById("ab-lookup-title");if(ltEl)ltEl.textContent="";
+  var laEl=document.getElementById("ab-lookup-author");if(laEl)laEl.textContent="";
+  var liEl=document.getElementById("ab-lookup-isbn");if(liEl)liEl.textContent="";
+  var lcEl=document.getElementById("ab-lookup-cover");if(lcEl){lcEl.src="";lcEl.style.display="none";}
+  var covW=document.getElementById("ab-isbn-cover-wrap");if(covW)covW.style.display="none";
+  var st=document.getElementById("ab-isbn-status");if(st)st.style.display="none";
   _addBookMatch=null;clearTimeout(_addBookTimer);
   var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
+  // Focus ISBN field so barcode scanner input goes to the right place
+  setTimeout(function(){var el=document.getElementById("ab-isbn");if(el)el.focus();},80);
 }
 function openEditBook(id){
   var b=DB.books.find(function(x){return x.id===id;});if(!b)return;
   editBookId=id;
+  // Clear stale lookup state before populating new book values
+  _addBookMatch=null;clearTimeout(_addBookTimer);
+  var lp=document.getElementById("ab-lookup-result");if(lp){lp.style.display="none";}
+  // Wipe stale lookup panel content so it can't flash back
+  var ltEl=document.getElementById("ab-lookup-title");if(ltEl)ltEl.textContent="";
+  var laEl=document.getElementById("ab-lookup-author");if(laEl)laEl.textContent="";
+  var liEl=document.getElementById("ab-lookup-isbn");if(liEl)liEl.textContent="";
+  var lcEl=document.getElementById("ab-lookup-cover");if(lcEl){lcEl.src="";lcEl.style.display="none";}
+  var covW2=document.getElementById("ab-isbn-cover-wrap");if(covW2)covW2.style.display="none";
+  var st=document.getElementById("ab-isbn-status");if(st)st.style.display="none";
   document.getElementById("addbook-title").textContent="Edit book";
   document.getElementById("addbook-btn").textContent="Save changes";
   document.getElementById("ab-title").value=b.title;
@@ -1823,6 +1864,8 @@ function openEditBook(id){
   document.getElementById("ab-age").value=b.age;
   document.getElementById("ab-genre").value=b.genre;
   document.getElementById("ab-summary").value=b.summary||"";
+  // Pre-populate cover with existing value so it isn't wiped on re-save
+  var covHid=document.getElementById("ab-cover");if(covHid)covHid.value=b.cover||"";
   var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveBook(){
@@ -1832,17 +1875,21 @@ function saveBook(){
   var age=document.getElementById("ab-age").value;
   var genre=document.getElementById("ab-genre").value;
   if(!title||!author)return;
+  // Use the actually-fetched cover URL if available, otherwise derive from ISBN
+  var fetchedCover=document.getElementById("ab-cover")?document.getElementById("ab-cover").value.trim():"";
+  var coverUrl=fetchedCover||(isbn!="N/A"?"https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg":null);
+  var cover2Url=isbn!="N/A"?"https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1":null;
   if(editBookId){
     var b=DB.books.find(function(x){return x.id===editBookId;});
     if(b){b.title=title;b.author=author;b.isbn=isbn;b.age=age;b.genre=genre;
       b.summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
-      if(isbn!="N/A"){b.cover="https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";b.cover2="https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";}
+      if(coverUrl) b.cover=coverUrl;
+      if(cover2Url) b.cover2=cover2Url;
       logActivity("Edited book: "+title);}
   }else{
     var newId="";var noIdFlag=true;
     var summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
-    var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:null,cover2:null,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag};
-    if(isbn!="N/A"){newB.cover="https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";newB.cover2="https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";}
+    var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:coverUrl,cover2:cover2Url,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag};
     DB.books.push(newB);
     logActivity("Added book: "+title+" [New arrival]");
   }
@@ -4739,6 +4786,8 @@ function onISBNInput(val){
       document.getElementById("ab-summary").value="";
       document.getElementById("ab-age").value="";
       document.getElementById("ab-genre").value="Fiction";
+      var covW=document.getElementById("ab-isbn-cover-wrap");if(covW)covW.style.display="none";
+      var covHid=document.getElementById("ab-cover");if(covHid)covHid.value="";
       if(status) status.style.display="none";
     }
     return;
@@ -4765,6 +4814,20 @@ function onISBNInput(val){
     if(info.cover){
       var ci=document.getElementById("ab-lookup-cover");
       if(ci){ci.src=info.cover;ci.style.display="block";}
+      // Store the actual fetched cover URL so saveBook can use it
+      var covHid=document.getElementById("ab-cover");
+      if(covHid&&!covHid.value) covHid.value=info.cover;
+      // Show dedicated ISBN cover preview strip below ISBN field
+      var covWrap=document.getElementById("ab-isbn-cover-wrap");
+      var covImg=document.getElementById("ab-isbn-cover-img");
+      var covTitleEl=document.getElementById("ab-isbn-cover-title");
+      var covAuthorEl=document.getElementById("ab-isbn-cover-author");
+      if(covWrap&&covImg){
+        covImg.src=info.cover;
+        if(covTitleEl) covTitleEl.textContent=info.title||"";
+        if(covAuthorEl) covAuthorEl.textContent=info.author||"";
+        covWrap.style.display="flex";
+      }
     }
     // Age group — always set based on categories
     var cats=(info.categories||"").toLowerCase();
@@ -5233,6 +5296,16 @@ function scheduleAddBookLookup(){
   var author=document.getElementById("ab-author").value.trim();
   var panel=document.getElementById("ab-lookup-result");
   if(title.length<3){panel.style.display="none";return;}
+  // If the title field looks like a barcode/ISBN (all digits, 10+ chars), move value to ISBN field and abort
+  if(/^\d{10,}$/.test(title)){
+    document.getElementById("ab-isbn").value=title;
+    document.getElementById("ab-title").value="";
+    panel.style.display="none";
+    // Trigger ISBN lookup
+    clearTimeout(window._isbnTimer);
+    window._isbnTimer=setTimeout(function(){onISBNInput(title);},400);
+    return;
+  }
   // Show searching indicator immediately
   document.getElementById("ab-lookup-title").textContent="Searching...";
   document.getElementById("ab-lookup-author").textContent="";
@@ -5294,10 +5367,11 @@ function useAddBookMatch(){
   if((!isbnInput.value||isbnInput.value.trim()==="")&&_addBookMatch.isbn){
     isbnInput.value=_addBookMatch.isbn;
   }
-  // Set cover URLs on the data if this is a new book
+  // Store fetched cover URL in hidden field so saveBook uses it
   if(_addBookMatch.coverUrl){
-    // Store for use in saveBook
     isbnInput.setAttribute("data-cover",_addBookMatch.coverUrl);
+    var covHid=document.getElementById("ab-cover");
+    if(covHid) covHid.value=_addBookMatch.coverUrl;
   }
   document.getElementById("ab-lookup-result").style.display="none";
 }
@@ -5702,6 +5776,45 @@ function fetchCoverByTitle(book){
 }
 
 // Run cover fetch for all books without covers — called once after load
+var _syncLog=JSON.parse(localStorage.getItem("summarySyncLog")||"[]");
+function addSyncLogEntry(count){
+  var now=new Date();
+  var label=now.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+" at "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  _syncLog.unshift({count:count,time:label});
+  if(_syncLog.length>20) _syncLog.pop();
+  try{localStorage.setItem("summarySyncLog",JSON.stringify(_syncLog));}catch(e){}
+  renderSyncLog();
+}
+function renderSyncLog(){
+  var list=document.getElementById("bk-sync-log-list");
+  var btn=document.getElementById("bk-sync-log-btn");
+  if(btn) btn.style.display=_syncLog.length?"inline-block":"none";
+  if(!list) return;
+  if(!_syncLog.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--mt);padding:6px 14px">No sync events yet.</div>';
+    return;
+  }
+  list.innerHTML=_syncLog.map(function(e){
+    return '<div style="padding:6px 14px;font-size:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px">'+
+      '<span style="color:var(--tx);font-weight:600">📖 '+e.count+' summar'+(e.count>1?"ies":"y")+' fetched</span>'+
+      '<span style="color:var(--mt);white-space:nowrap">'+e.time+'</span>'+
+      '</div>';
+  }).join("");
+}
+function toggleSyncLog(){
+  var d=document.getElementById("bk-sync-log-dropdown");
+  if(!d) return;
+  var open=d.style.display==="block";
+  d.style.display=open?"none":"block";
+  if(!open) renderSyncLog();
+}
+// Close dropdown when clicking outside
+document.addEventListener("click",function(e){
+  var btn=document.getElementById("bk-sync-log-btn");
+  var dd=document.getElementById("bk-sync-log-dropdown");
+  if(dd&&dd.style.display==="block"&&!dd.contains(e.target)&&e.target!==btn)
+    dd.style.display="none";
+});
 function syncMissingSummaries(){
   // Find books without summaries that have an ISBN
   var booksNeedingSummary = DB.books.filter(function(b){
@@ -5716,44 +5829,70 @@ function syncMissingSummaries(){
     "https://api.allorigins.win/raw?url="
   ];
 
-  // Test if Google Books is available first
+  // Test proxies in order until one works, then use it for all books
   var testUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:9780061351341&maxResults=1&fields=items(volumeInfo(description))";
-  fetch(proxies[0]+encodeURIComponent(testUrl))
-    .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
-    .then(function(data){
-      if(!data.items||!data.items.length) throw new Error("no data");
-      // Google Books is up! Process books in batches of 5 with 2s delay
-      console.log("Google Books available — syncing summaries for "+booksNeedingSummary.length+" books");
-      var idx=0;
-      function processNext(){
-        if(idx>=booksNeedingSummary.length) {
-          console.log("Summary sync complete!");
-          return;
-        }
-        var b=booksNeedingSummary[idx++];
-        var url="https://www.googleapis.com/books/v1/volumes?q=isbn:"+b.isbn+"&maxResults=1&fields=items(volumeInfo(description))";
-        fetch(proxies[0]+encodeURIComponent(url))
-          .then(function(r){return r.json();})
-          .then(function(d){
-            if(d.items&&d.items.length&&d.items[0].volumeInfo.description){
-              var s=d.items[0].volumeInfo.description;
-              b.summary=s;
-              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s})
-                .catch(function(){});
-            }
-          })
-          .catch(function(){})
-          .finally(function(){
-            // Process next book after 500ms delay to avoid rate limiting
-            setTimeout(processNext, 500);
-          });
-      }
-      processNext();
-    })
-    .catch(function(){
-      // Google Books still down — try again in 30 minutes
+  function tryProxy(proxyIdx){
+    if(proxyIdx>=proxies.length){
+      console.log("Summary sync: all proxies down, retrying in 30 min");
       setTimeout(syncMissingSummaries, 30*60*1000);
-    });
+      return;
+    }
+    fetch(proxies[proxyIdx]+encodeURIComponent(testUrl))
+      .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
+      .then(function(data){
+        if(!data.items||!data.items.length) throw new Error("no data");
+        var workingProxy=proxies[proxyIdx];
+        console.log("Summary sync: using proxy "+proxyIdx+" for "+booksNeedingSummary.length+" books");
+        var idx=0;
+        var synced=0;
+        function processNext(){
+          if(idx>=booksNeedingSummary.length){
+            if(synced>0){
+              saveData();
+              renderBooks();
+              var notice=document.getElementById("bk-summary-notice");
+              if(notice){
+                notice.textContent="📖 "+synced+" summar"+(synced>1?"ies":"y")+" auto-fetched";
+                notice.style.display="block";
+                notice.title="Auto-fetched from Google Books for "+synced+" book"+(synced>1?"s":"")+" that had no summary.";
+                setTimeout(function(){
+                  notice.style.transition="opacity 1s";
+                  notice.style.opacity="0";
+                  setTimeout(function(){notice.style.display="none";notice.style.opacity="1";notice.style.transition="";},1000);
+                }, 120000);
+              }
+              addSyncLogEntry(synced);
+              showToast("Summaries updated for "+synced+" book"+(synced>1?"s":""),"success");
+            }
+            console.log("Summary sync complete! Updated: "+synced);
+            return;
+          }
+          var b=booksNeedingSummary[idx++];
+          var url="https://www.googleapis.com/books/v1/volumes?q=isbn:"+b.isbn+"&maxResults=1&fields=items(volumeInfo(description))";
+          fetch(workingProxy+encodeURIComponent(url))
+            .then(function(r){return r.json();})
+            .then(function(d){
+              if(d.items&&d.items.length&&d.items[0].volumeInfo&&d.items[0].volumeInfo.description){
+                var s=d.items[0].volumeInfo.description;
+                if(s.length>600) s=s.slice(0,600)+"...";
+                b.summary=s;
+                synced++;
+                supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s})
+                  .catch(function(){});
+              }
+            })
+            .catch(function(){})
+            .finally(function(){
+              setTimeout(processNext, 600);
+            });
+        }
+        processNext();
+      })
+      .catch(function(){
+        tryProxy(proxyIdx+1);
+      });
+  }
+  tryProxy(0);
 }
 
 function fetchMissingCovers(){
