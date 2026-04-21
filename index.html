@@ -744,7 +744,7 @@ tr:hover td{background:#fafaf8;}
         <div id="bk-qr-stats" style="display:flex;gap:1rem;font-size:12px;flex-wrap:wrap;align-items:center"></div>
         <div style="display:flex;align-items:center;gap:6px;position:relative">
           <div id="bk-summary-notice" style="display:none;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:#E6F1FB;color:#185FA5;white-space:nowrap"></div>
-          <button id="bk-sync-log-btn" onclick="toggleSyncLog()" title="Summary sync history" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--bd);cursor:pointer;padding:4px 10px;font-size:12px;font-weight:600;color:var(--mt);border-radius:20px;" onmouseover="this.style.background='var(--al)';this.style.color='var(--ac)'" onmouseout="this.style.background='var(--bg2)';this.style.color='var(--mt)'">&#128203; Summary log</button>
+          <button id="bk-sync-log-btn" onclick="toggleSyncLog()" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--bd);cursor:pointer;padding:4px 10px;font-size:12px;font-weight:600;color:var(--mt);border-radius:20px;" onmouseover="this.style.background='var(--al)';this.style.color='var(--ac)'" onmouseout="this.style.background='var(--bg2)';this.style.color='var(--mt)'">&#128203; Summary log</button>
           <div id="bk-sync-log-dropdown" style="display:none;position:absolute;right:0;top:34px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 0;min-width:300px;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.13);z-index:500">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);padding:0 14px 6px;border-bottom:1px solid var(--bd);margin-bottom:4px">Summary sync history</div>
             <div id="bk-sync-log-list" style="max-height:220px;overflow-y:auto;padding:4px 0"></div>
@@ -754,6 +754,14 @@ tr:hover td{background:#fafaf8;}
       <div class="tbl-wrap">
         <table><thead><tr><th>Book ID</th><th>Book</th><th>Author</th><th>ISBN-13</th><th>Age</th><th>Genre</th><th>Status</th><th style="text-align:center">Barcode label</th><th>Actions</th></tr></thead>
         <tbody id="books-tbody"></tbody></table>
+      </div>
+      <div id="bk-pagination" style="display:none;margin-top:.75rem;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <div id="bk-page-info" style="font-size:12px;color:var(--mt)"></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="bk-prev-btn" onclick="bkChangePage(-1)" class="btn btn-ghost" style="font-size:12px;padding:4px 12px">← Prev</button>
+          <div id="bk-page-nums" style="display:flex;gap:4px"></div>
+          <button id="bk-next-btn" onclick="bkChangePage(1)" class="btn btn-ghost" style="font-size:12px;padding:4px 12px">Next →</button>
+        </div>
       </div>
     </div>
 
@@ -1307,7 +1315,7 @@ function loadFromSupabase() {
     // Auto-fetch covers disabled — causes rate limit errors with 1153 books
     // Start background summary sync after 5 seconds
     setTimeout(syncMissingSummaries, 5000);
-    setTimeout(function(){renderSyncLog();}, 100);
+    setTimeout(function(){renderSyncLog();},100);
     // Use Edit book → ISBN field to add covers manually
   }).catch(function(err) {
     console.error("Supabase load error:", err);
@@ -1723,9 +1731,21 @@ function renderBooks(){
     var mqr=!qrFilter||(qrFilter==="printed"&&b.qrPrinted===true)||(qrFilter==="pending"&&!b.qrPrinted);
     return ms&&ma&&mg&&mqr;
   });
+  _bkPage=0;
+  _bkFilteredList=list;
+  renderBooksPage();
+}
+var _bkPage=0,_bkPageSize=50,_bkFilteredList=[];
+function bkChangePage(delta){
+  _bkPage=Math.max(0,Math.min(_bkPage+delta,Math.max(0,Math.ceil(_bkFilteredList.length/_bkPageSize)-1)));
+  renderBooksPage();
+}
+function renderBooksPage(){
+  var start=_bkPage*_bkPageSize;
+  var page=_bkFilteredList.slice(start,start+_bkPageSize);
   var tbody=document.getElementById("books-tbody");tbody.innerHTML="";
-  if(list.length===0){tbody.innerHTML="<tr><td colspan='9' class='empty'>No books found</td></tr>";return;}
-  list.forEach(function(b){
+  if(!page.length){tbody.innerHTML="<tr><td colspan='9' class='empty'>"+((_bkFilteredList.length===0)?"No books found":"")+"</td></tr>";}
+  page.forEach(function(b){
     var tr=document.createElement("tr");
     var cell=document.createElement("td");
     var bkcell=document.createElement("div");bkcell.className="bk-cell";
@@ -1798,8 +1818,7 @@ function renderBooks(){
     var delBtn=document.createElement("button");delBtn.className="btn btn-danger";delBtn.style.cssText="font-size:12px;padding:4px 10px";delBtn.textContent="Delete";
     (function(bidx,btitle){delBtn.addEventListener("click",function(){
       confirmDel("Delete book","Delete '"+btitle+"'? This cannot be undone.",function(){
-        var bk=DB.books[bidx];
-        var bid=bk?bk.id:null;
+        var bk=DB.books[bidx];var bid=bk?bk.id:null;
         DB.books.splice(bidx,1);
         if(bid&&bid.trim()) deleteBook_DB(bid).catch(function(e){showToast("DB delete failed: "+e.message,"error");});
         else if(bk) supaFetch("books?title=eq."+encodeURIComponent(bk.title)+"&author=eq."+encodeURIComponent(bk.author),"DELETE").catch(function(){});
@@ -1827,6 +1846,13 @@ function renderBooks(){
     tr.appendChild(idCell);tr.appendChild(cell);tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tr.appendChild(td4);tr.appendChild(td5);tr.appendChild(qrTd);tr.appendChild(actTd);
     tbody.appendChild(tr);
   });
+  var total=_bkFilteredList.length,totalPages=Math.max(1,Math.ceil(total/_bkPageSize));
+  var pg=document.getElementById("bk-pagination"),info=document.getElementById("bk-page-info"),prev=document.getElementById("bk-prev-btn"),next=document.getElementById("bk-next-btn"),nums=document.getElementById("bk-page-nums");
+  if(pg) pg.style.display=total>_bkPageSize?"flex":"none";
+  if(info) info.textContent="Showing "+Math.min(start+1,total)+"–"+Math.min(start+_bkPageSize,total)+" of "+total+" books";
+  if(prev) prev.disabled=_bkPage===0;
+  if(next) next.disabled=_bkPage>=totalPages-1;
+  if(nums){nums.innerHTML="";for(var pi=Math.max(0,_bkPage-2);pi<=Math.min(totalPages-1,_bkPage+2);pi++){(function(p){var b=document.createElement("button");b.textContent=p+1;b.className="btn "+(p===_bkPage?"btn-primary":"btn-ghost");b.style.cssText="font-size:12px;padding:4px 10px;min-width:32px";b.onclick=function(){_bkPage=p;renderBooksPage();};nums.appendChild(b);})(pi);}}
 }
 function openAddBook(){
   editBookId=null;
@@ -5525,10 +5551,7 @@ function filterMemberDropdown(){
   var dd=document.getElementById("member-dropdown");
   dd.innerHTML="";
   var hits=DB.members.filter(function(m){
-    try{
-      if(!q) return true;
-      return ((m.fname||"")+" "+(m.lname||"")).toLowerCase().indexOf(q)>=0;
-    }catch(e){return false;}
+    try{if(!q)return true;return ((m.fname||"")+" "+(m.lname||"")).toLowerCase().indexOf(q)>=0;}catch(e){return false;}
   }).slice(0,10);
   if(hits.length===0){
     dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No members found</div>";
@@ -5746,44 +5769,49 @@ function syncMissingSummaries(){
     "https://api.allorigins.win/raw?url="
   ];
 
-  // Test if Google Books is available first
   var testUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:9780061351341&maxResults=1&fields=items(volumeInfo(description))";
-  fetch(proxies[0]+encodeURIComponent(testUrl))
-    .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
-    .then(function(data){
-      if(!data.items||!data.items.length) throw new Error("no data");
-      // Google Books is up! Process books in batches of 5 with 2s delay
-      console.log("Google Books available — syncing summaries for "+booksNeedingSummary.length+" books");
-      var idx=0;
+  function tryProxy(proxyIdx){
+    if(proxyIdx>=proxies.length){console.log("All proxies down, retrying in 30 min");setTimeout(syncMissingSummaries,30*60*1000);return;}
+    fetch(proxies[proxyIdx]+encodeURIComponent(testUrl))
+      .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
+      .then(function(data){
+        if(!data.items||!data.items.length) throw new Error("no data");
+      var workingProxy=proxies[proxyIdx];
+      var idx=0,synced=0;
       function processNext(){
-        if(idx>=booksNeedingSummary.length) {
-          console.log("Summary sync complete!");
+        if(idx>=booksNeedingSummary.length){
+          if(synced>0){
+            saveData();renderBooks();
+            var notice=document.getElementById("bk-summary-notice");
+            if(notice){notice.textContent="📖 "+synced+" summar"+(synced>1?"ies":"y")+" auto-fetched";notice.style.display="block";setTimeout(function(){notice.style.transition="opacity 1s";notice.style.opacity="0";setTimeout(function(){notice.style.display="none";notice.style.opacity="1";notice.style.transition="";},1000);},120000);}
+            addSyncLogEntry(synced);
+            showToast("Summaries updated for "+synced+" book"+(synced>1?"s":""),"success");
+          }
+          console.log("Summary sync complete! Updated: "+synced);
           return;
         }
         var b=booksNeedingSummary[idx++];
         var url="https://www.googleapis.com/books/v1/volumes?q=isbn:"+b.isbn+"&maxResults=1&fields=items(volumeInfo(description))";
-        fetch(proxies[0]+encodeURIComponent(url))
+        fetch(workingProxy+encodeURIComponent(url))
           .then(function(r){return r.json();})
           .then(function(d){
-            if(d.items&&d.items.length&&d.items[0].volumeInfo.description){
+            if(d.items&&d.items.length&&d.items[0].volumeInfo&&d.items[0].volumeInfo.description){
               var s=d.items[0].volumeInfo.description;
-              b.summary=s;
-              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s})
-                .catch(function(){});
+              if(s.length>600)s=s.slice(0,600)+"...";
+              b.summary=s;synced++;
+              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
             }
           })
           .catch(function(){})
-          .finally(function(){
-            // Process next book after 500ms delay to avoid rate limiting
-            setTimeout(processNext, 500);
-          });
+          .finally(function(){setTimeout(processNext,600);});
       }
       processNext();
     })
     .catch(function(){
-      // Google Books still down — try again in 30 minutes
-      setTimeout(syncMissingSummaries, 30*60*1000);
+      tryProxy(proxyIdx+1);
     });
+  }
+  tryProxy(0);
 }
 
 function fetchMissingCovers(){
@@ -6260,38 +6288,32 @@ function addSyncLogEntry(count){
   var now=new Date();
   var label=now.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+" at "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   _syncLog.unshift({count:count,time:label});
-  if(_syncLog.length>20) _syncLog.pop();
+  if(_syncLog.length>20)_syncLog.pop();
   try{localStorage.setItem("summarySyncLog",JSON.stringify(_syncLog));}catch(e){}
   renderSyncLog();
 }
 function renderSyncLog(){
   var list=document.getElementById("bk-sync-log-list");
-  if(!list) return;
+  if(!list)return;
   if(!_syncLog.length){
     var pending=DB&&DB.books?DB.books.filter(function(b){return (!b.summary||!b.summary.trim())&&b.isbn&&b.isbn!=="N/A";}).length:0;
     list.innerHTML='<div style="font-size:12px;color:var(--mt);padding:8px 14px;line-height:1.6">No summaries fetched yet.'+(pending>0?'<br><span style="color:#854F0B">⏳ '+pending+' book'+(pending>1?'s':'')+' pending — auto-fetches when Google Books API recovers.</span>':'<br><span style="color:#0F6E56">✅ All books have summaries.</span>')+'</div>';
     return;
   }
   var total=_syncLog.reduce(function(sum,e){return sum+e.count;},0);
-  list.innerHTML='<div style="padding:6px 14px 8px;font-size:12px;color:#0F6E56;font-weight:600;border-bottom:1px solid var(--bd)">✔ '+total+' summar'+(total>1?'ies':'y')+' fetched across '+_syncLog.length+' sync'+(_syncLog.length>1?'s':'')+' </div>'+
-  _syncLog.map(function(e){
-    return '<div style="padding:6px 14px;font-size:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px">'+
-      '<span style="color:var(--tx);font-weight:600">✔ '+e.count+' summar'+(e.count>1?'ies':'y')+' fetched</span>'+
-      '<span style="color:var(--mt);white-space:nowrap">'+e.time+'</span></div>';
-  }).join("");
+  list.innerHTML='<div style="padding:6px 14px 8px;font-size:12px;color:#0F6E56;font-weight:600;border-bottom:1px solid var(--bd)">✔ '+total+' summar'+(total>1?'ies':'y')+' fetched across '+_syncLog.length+' sync'+(_syncLog.length>1?'s':'')+'</div>'+_syncLog.map(function(e){return '<div style="padding:6px 14px;font-size:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px"><span style="color:var(--tx);font-weight:600">✔ '+e.count+' summar'+(e.count>1?'ies':'y')+' fetched</span><span style="color:var(--mt);white-space:nowrap">'+e.time+'</span></div>';}).join("");
 }
 function toggleSyncLog(){
   var d=document.getElementById("bk-sync-log-dropdown");
-  if(!d) return;
+  if(!d)return;
   var open=d.style.display==="block";
   d.style.display=open?"none":"block";
-  if(!open) renderSyncLog();
+  if(!open)renderSyncLog();
 }
 document.addEventListener("click",function(e){
   var btn=document.getElementById("bk-sync-log-btn");
   var dd=document.getElementById("bk-sync-log-dropdown");
-  if(dd&&dd.style.display==="block"&&!dd.contains(e.target)&&e.target!==btn)
-    dd.style.display="none";
+  if(dd&&dd.style.display==="block"&&!dd.contains(e.target)&&e.target!==btn)dd.style.display="none";
 });
 </script>
 </body>
