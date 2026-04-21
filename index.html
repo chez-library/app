@@ -1109,7 +1109,7 @@ tr:hover td{background:#fafaf8;}
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field"><label>Email</label><input type="email" id="am-email"/></div>
+      <div class="field"><label>Email <span style="font-weight:400;color:var(--mt)">(optional)</span></label><input type="email" id="am-email"/></div>
       <div class="field"><label>Mobile no.</label><input type="text" id="am-phone" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/></div>
     </div>
     <div id="am-err" style="display:none;background:#FCEAEA;border:1px solid #F09595;border-radius:8px;padding:10px 14px;font-size:13px;color:#A32D2D;margin-bottom:.75rem;line-height:1.8"></div>
@@ -1975,8 +1975,7 @@ function saveMember(){
   if(!block) errors.push("• Block must be selected");
   if(!flat) errors.push("• Flat number is required");
   else if(!/^[1-9][0-9]{0,3}$/.test(flat)) errors.push("• Flat number must be 1–4 digits and cannot start with 0");
-  if(!email) errors.push("• Email address is required");
-  else if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)) errors.push("• Please enter a valid email address");
+  if(email&&!/^[^@]+@[^@]+\.[^@]+$/.test(email)) errors.push("• Please enter a valid email address");
   if(!phone) errors.push("• Mobile number is required");
   else if(!/^[0-9]{10}$/.test(phone)) errors.push("• Mobile number must be exactly 10 digits");
   if(errors.length>0){
