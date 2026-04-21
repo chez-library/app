@@ -744,8 +744,8 @@ tr:hover td{background:#fafaf8;}
         <div id="bk-qr-stats" style="display:flex;gap:1rem;font-size:12px;flex-wrap:wrap;align-items:center"></div>
         <div style="display:flex;align-items:center;gap:6px;position:relative">
           <div id="bk-summary-notice" style="display:none;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:#E6F1FB;color:#185FA5;white-space:nowrap"></div>
-          <button id="bk-sync-log-btn" onclick="toggleSyncLog()" title="Summary sync history" style="display:none;background:none;border:none;cursor:pointer;padding:2px 5px;font-size:15px;color:var(--mt);line-height:1;border-radius:6px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">&#128203;</button>
-          <div id="bk-sync-log-dropdown" style="display:none;position:absolute;right:0;top:28px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 0;min-width:300px;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.13);z-index:500">
+          <button id="bk-sync-log-btn" onclick="toggleSyncLog()" title="Summary sync history" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--bd);cursor:pointer;padding:4px 10px;font-size:12px;font-weight:600;color:var(--mt);border-radius:20px;" onmouseover="this.style.background='var(--al)';this.style.color='var(--ac)'" onmouseout="this.style.background='var(--bg2)';this.style.color='var(--mt)'">&#128203; Summary log</button>
+          <div id="bk-sync-log-dropdown" style="display:none;position:absolute;right:0;top:34px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 0;min-width:300px;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.13);z-index:500">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);padding:0 14px 6px;border-bottom:1px solid var(--bd);margin-bottom:4px">Summary sync history</div>
             <div id="bk-sync-log-list" style="max-height:220px;overflow-y:auto;padding:4px 0"></div>
           </div>
@@ -791,13 +791,13 @@ tr:hover td{background:#fafaf8;}
             <div style="width:130px;flex-shrink:0">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
               <input type="text" id="iss-book-id" placeholder="B/112" autocomplete="off"
-                oninput="clearTimeout(window._issIdTimer);onBookIdInput(this,'issue');window._issIdTimer=setTimeout(filterIssueByBookId,300)"
-                onkeydown="if(event.key==='Enter'){clearTimeout(window._issIdTimer);filterIssueByBookId();return;}if(/^[0-9]$/.test(event.key)&&/^[A-E]$/i.test(this.value)){event.preventDefault();this.value=this.value.toUpperCase()+'/'+event.key;onBookIdInput(this,'issue');}" onblur="closeBookIdDropdown(this)"
+                oninput="clearTimeout(window._issIdTimer);window._issIdTimer=setTimeout(filterIssueByBookId,300)"
+                onkeydown="if(event.key==='Enter'){clearTimeout(window._issIdTimer);filterIssueByBookId();}"
                 style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
             <div style="position:relative;flex:1">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book title</label>
-              <input type="text" id="iss-book-search" placeholder="Type title to search available books..." autocomplete="off" oninput="if(this.value){var bid=document.getElementById('iss-book-id');if(bid&&bid.value){bid.value='';bid.style.borderColor='';this.style.color='';this.placeholder='Type title to search available books...';}};filterBookDropdown()" onfocus="filterBookDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
+              <input type="text" id="iss-book-search" placeholder="Type title to search available books..." autocomplete="off" oninput="filterBookDropdown()" onfocus="filterBookDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
               <input type="hidden" id="iss-book"/>
               <div id="book-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
             </div>
@@ -866,13 +866,13 @@ tr:hover td{background:#fafaf8;}
             <div style="width:130px;flex-shrink:0">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book ID</label>
               <input type="text" id="ret-book-id" placeholder="B/112" autocomplete="off"
-                oninput="clearTimeout(window._retIdTimer);onBookIdInput(this,'return');window._retIdTimer=setTimeout(filterReturnByBookId,300)"
-                onkeydown="if(event.key==='Enter'){clearTimeout(window._retIdTimer);filterReturnByBookId();return;}if(/^[0-9]$/.test(event.key)&&/^[A-E]$/i.test(this.value)){event.preventDefault();this.value=this.value.toUpperCase()+'/'+event.key;onBookIdInput(this,'return');}" onblur="closeBookIdDropdown(this)"
+                oninput="clearTimeout(window._retIdTimer);window._retIdTimer=setTimeout(filterReturnByBookId,300)"
+                onkeydown="if(event.key==='Enter'){clearTimeout(window._retIdTimer);filterReturnByBookId();}"
                 style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg);font-family:monospace"/>
             </div>
             <div style="position:relative;flex:1">
               <label style="font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Book title</label>
-              <input type="text" id="ret-book-search" placeholder="Type title to search..." autocomplete="off" oninput="if(this.value){var rid=document.getElementById('ret-book-id');if(rid&&rid.value){rid.value='';rid.style.borderColor='';this.style.color='';this.placeholder='Type title to search...';}};filterReturnDropdown()" onfocus="filterReturnDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
+              <input type="text" id="ret-book-search" placeholder="Type title to search..." autocomplete="off" oninput="filterReturnDropdown()" onfocus="filterReturnDropdown()" style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;background:var(--bg)"/>
               <input type="hidden" id="ret-book"/>
               <div id="return-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:2px"></div>
             </div>
@@ -986,6 +986,7 @@ tr:hover td{background:#fafaf8;}
             <div id="export-supa-label" style="font-size:11px;color:#555">Starting migration…</div>
           </div>
         </div>
+        <button id="export-supa-btn" onclick="exportToSupabase()" style="background:#0F6E56;color:white;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">⬆ Export to Supabase</button>
       </div>
       <div class="panel-hdr">
         <h2>Manage users</h2>
@@ -1004,16 +1005,7 @@ tr:hover td{background:#fafaf8;}
 <div class="modal-ov" id="m-addbook">
   <div class="modal-box" style="max-height:90vh;overflow-y:auto;max-width:500px">
     <h3 id="addbook-title">Add book</h3>
-    <div style="display:grid;grid-template-columns:160px 1fr;gap:10px">
-      <div class="field">
-        <label>Book ID</label>
-        <input type="text" id="ab-bookid" placeholder="e.g. C/550" style="font-family:monospace;width:100%"
-          oninput="this.value=this.value.toUpperCase()"
-          onblur="var v=this.value.trim();if(v&&!/^[A-E]\/[1-9]\d{0,3}$/.test(v)){this.style.borderColor='#C0392B';}else{this.style.borderColor='';}"/>
-        <div id="ab-bookid-err" style="font-size:11px;color:#C0392B;margin-top:3px;display:none">Use format A/1 to E/9999. Prefix must match age group (A=0–4, B=5–7, C=8–12, D=13–17, E=Adults)</div>
-      </div>
-      <div class="field"><label>Title</label><input type="text" id="ab-title" oninput="scheduleAddBookLookup()" style="width:100%"/></div>
-    </div>
+    <div class="field"><label>Title</label><input type="text" id="ab-title" oninput="scheduleAddBookLookup()"/></div>
     <div class="field"><label>Author</label><input type="text" id="ab-author" oninput="scheduleAddBookLookup()"/></div>
     <!-- Cover preview from title+author lookup -->
     <div id="ab-lookup-result" style="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:.75rem">
@@ -1035,15 +1027,6 @@ tr:hover td{background:#fafaf8;}
       <label>ISBN-13</label>
       <input type="text" id="ab-isbn" placeholder="Enter manually or use barcode scanner" style="width:100%" oninput="clearTimeout(window._isbnTimer);window._isbnTimer=setTimeout(function(){onISBNInput(document.getElementById('ab-isbn').value);},400)"/>
       <div id="ab-isbn-status" style="font-size:12px;margin-top:5px;display:none"></div>
-      <!-- Cover preview shown after ISBN lookup -->
-      <div id="ab-isbn-cover-wrap" style="display:none;margin-top:10px;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px">
-        <img id="ab-isbn-cover-img" src="" style="width:44px;height:62px;object-fit:cover;border-radius:4px;border:1px solid var(--bd);flex-shrink:0" onerror="document.getElementById('ab-isbn-cover-wrap').style.display='none'"/>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#0F6E56">✅ Cover found</div>
-          <div id="ab-isbn-cover-title" style="font-size:12px;color:var(--tx);margin-top:2px;font-weight:500"></div>
-          <div id="ab-isbn-cover-author" style="font-size:11px;color:var(--mt);margin-top:1px"></div>
-        </div>
-      </div>
     </div>
     <div class="field">
       <label>Book summary <span style="font-weight:400;color:var(--mt)">(optional — auto-fetched if ISBN provided)</span></label>
@@ -1068,8 +1051,6 @@ tr:hover td{background:#fafaf8;}
         </select>
       </div>
     </div>
-    <!-- Hidden field to carry the fetched cover URL through to saveBook -->
-    <input type="hidden" id="ab-cover" value=""/>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('m-addbook')">Cancel</button>
       <button class="btn btn-primary" id="addbook-btn" onclick="saveBook()">Add book</button>
@@ -1166,7 +1147,7 @@ tr:hover td{background:#fafaf8;}
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-
+// Early-load globals so inline onclick handlers work before main script
 function hsearch(){
   var q=document.getElementById("hs").value.trim();
   if(!q)return;
@@ -1175,10 +1156,15 @@ function hsearch(){
   if(typeof goPublic==="function")goPublic("catalog");
   if(typeof upd==="function")upd();
 }
-
-var BOOK_DATA = []; 
+// ============================================================
+// DATA STORE
+// ============================================================
+var BOOK_DATA = [{"id": "B/112", "title": "My Weird School : 1 : Miss Daisy is crazy", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507046", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507046-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507046&printsec=frontcover&img=1&zoom=1", "summary": "A.J.'s teacher Miss Daisy can't do maths or spell and relies on her student to teach her! A hilarious start to the My Weird School series."}, {"id": "B/113", "title": "My Weird School : 2 : Mr Klutz is nuts", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507053", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507053-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507053&printsec=frontcover&img=1&zoom=1", "summary": "Mr Klutz the principal does the craziest stunts to motivate students in this laugh-out-loud second book of the My Weird School series."}, {"id": "B/114", "title": "My Weird School : 3 : Mrs Roopy is loopy", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507060", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507060-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507060&printsec=frontcover&img=1&zoom=1"}, {"id": "B/115", "title": "My Weird School : 4 : Miss Hanna is Bananas", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507077", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507077-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507077&printsec=frontcover&img=1&zoom=1"}, {"id": "B/116", "title": "My Weird School : 6 : Mr Hynde is out of his mind", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507107", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507107-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507107&printsec=frontcover&img=1&zoom=1"}, {"id": "B/117", "title": "My Weird School : 7 : Miss Kraft is Daft", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507114", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507114-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507114&printsec=frontcover&img=1&zoom=1"}, {"id": "B/118", "title": "My Weird School : 8 : Miss Lagrange is strange", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507121", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507121-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507121&printsec=frontcover&img=1&zoom=1"}, {"id": "B/119", "title": "My Weird School : 9 : Miss Lazar is bizarre", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507138", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507138-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507138&printsec=frontcover&img=1&zoom=1"}, {"id": "B/120", "title": "My Weird School : 10 : Mr. Docker is off his rocker", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507145", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507145-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507145&printsec=frontcover&img=1&zoom=1"}, {"id": "B/121", "title": "My Weird School : 12 : Ms. Todd is odd", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507169", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507169-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507169&printsec=frontcover&img=1&zoom=1"}, {"id": "B/122", "title": "My Weird School : 14 : Miss Holly is too Jolly", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507183", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507183-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507183&printsec=frontcover&img=1&zoom=1"}, {"id": "B/123", "title": "My Weird School : 15 : Mr Macky is Wacky", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507190", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507190-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507190&printsec=frontcover&img=1&zoom=1"}, {"id": "B/124", "title": "My Weird School : 16 : Ms. Coco is Loco", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507206", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507206-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507206&printsec=frontcover&img=1&zoom=1"}, {"id": "B/125", "title": "My Weird School : 17 : Miss Suki is Kooky", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507213", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507213-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507213&printsec=frontcover&img=1&zoom=1"}, {"id": "B/126", "title": "My Weird School : 18 : Mrs. Yonker is bonkers", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507220", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507220-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507220&printsec=frontcover&img=1&zoom=1"}, {"id": "B/127", "title": "My Weird School : 5 : Miss Small is off the wall", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507091", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507091-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507091&printsec=frontcover&img=1&zoom=1"}, {"id": "B/128", "title": "My Weird School : 20 : Mr Louie is screwy", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507244", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507244-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507244&printsec=frontcover&img=1&zoom=1"}, {"id": "B/129", "title": "My Weird School : 13 : Mrs Patty is Batty", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507176", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507176-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507176&printsec=frontcover&img=1&zoom=1"}, {"id": "B/130", "title": "My Weird School : 21 : Ms. Krup cracks me up", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507251", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507251-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507251&printsec=frontcover&img=1&zoom=1"}, {"id": "B/131", "title": "My Weird School : 19 : Dr. Carbles is losing his marbles", "author": "Dan Gutman", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780060507237", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780060507237-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780060507237&printsec=frontcover&img=1&zoom=1"}, {"id": "D/132", "title": "Treasure Island", "author": "R.L. Stevenson", "age": "Middle grade (8–12)", "genre": "Adventure & fantasy", "isbn": "9780141321011", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780141321011-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780141321011&printsec=frontcover&img=1&zoom=1", "summary": "Young Jim Hawkins discovers a treasure map and sets sail to a remote island, encountering the cunning pirate Long John Silver along the way."}, {"id": "C/133", "title": "Journey to the centre of earth", "author": "Jules Verne", "age": "Middle grade (8–12)", "genre": "Science & nature", "isbn": "9780192717375", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780192717375-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780192717375&printsec=frontcover&img=1&zoom=1", "summary": "Professor Lidenbrock and his nephew descend into a volcano and discover a vast underground world with prehistoric creatures and an ancient sea."}, {"id": "C/134", "title": "Jason and the Argonauts", "author": "Felicity Brooks", "age": "Middle grade (8–12)", "genre": "History & culture", "isbn": "9780746096291", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780746096291-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780746096291&printsec=frontcover&img=1&zoom=1", "summary": "The legendary hero Jason assembles the Argonauts to sail to Colchis and retrieve the magical Golden Fleece in this classic Greek adventure."}, {"id": "C/135", "title": "Wilderness Champion", "author": "Joseph Wharton Lippincott", "age": "Middle grade (8–12)", "genre": "Adventure & fantasy", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "D/136", "title": "Ruskin Bond - Collected Short Stories", "author": "Ruskin Bond", "age": "Young adult (13–17)", "genre": "Fiction", "isbn": "9780143028512", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780143028512-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780143028512&printsec=frontcover&img=1&zoom=1", "summary": "Warm, nostalgic short stories by Ruskin Bond set in the hills of India, capturing childhood friendships, nature and the gentle pace of life."}, {"id": "C/137", "title": "Found", "author": "Margaret Peterson Haddix", "age": "Middle grade (8–12)", "genre": "Adventure & fantasy", "isbn": "9781416954095", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9781416954095-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9781416954095&printsec=frontcover&img=1&zoom=1", "summary": "Jonah discovers he was one of 36 babies who mysteriously appeared on a plane and begins to unravel a conspiracy about missing children."}, {"id": "C/138", "title": "George's Cosmic Treasure Hunt", "author": "Lucy & Stephen Hawking", "age": "Middle grade (8–12)", "genre": "Science & nature", "isbn": "9780385615341", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780385615341-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780385615341&printsec=frontcover&img=1&zoom=1", "summary": "George and Annie go on a cosmic adventure using a super-computer called Cosmos, learning about black holes, planets and the universe."}, {"id": "D/139", "title": "The immortals of meluha", "author": "Amish", "age": "Adults", "genre": "Fiction", "isbn": "9789380658742", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9789380658742-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9789380658742&printsec=frontcover&img=1&zoom=1", "summary": "Shiva, a Tibetan tribesman, discovers he may be the legendary Neelkanth, destined to destroy evil and save the Meluhan civilisation."}, {"id": "C/140", "title": "Gulliver's Travels", "author": "Jonathan Swift", "age": "Middle grade (8–12)", "genre": "Adventure & fantasy", "isbn": "9780141321028", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780141321028-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780141321028&printsec=frontcover&img=1&zoom=1", "summary": "Gulliver travels to strange lands — Lilliput where people are tiny, Brobdingnag where they are giants — a witty satire on society and human nature."}, {"id": "C/141", "title": "Nevous conditions", "author": "Tsitsi Dangerambga", "age": "Young adult (13–17)", "genre": "Fiction", "isbn": "9780954702335", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780954702335-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780954702335&printsec=frontcover&img=1&zoom=1"}, {"id": "C/142", "title": "The Adventures of Wishing Chair", "author": "Enid Blyton", "age": "Early readers (5–7)", "genre": "Adventure & fantasy", "isbn": "9780603565953", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780603565953-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780603565953&printsec=frontcover&img=1&zoom=1", "summary": "Two siblings discover a magical wishing-chair that flies them to enchanted lands where they meet fairies, goblins and magical creatures."}, {"id": "D/143", "title": "The Alchemist", "author": "Paulo Coelho", "age": "Adults", "genre": "Fiction", "isbn": "9780722532935", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780722532935-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780722532935&printsec=frontcover&img=1&zoom=1", "summary": "A young Andalusian shepherd travels from Spain to Egypt pursuing a dream of treasure, learning to follow his heart and listen to the soul of the world."}, {"id": "D/144", "title": "The Archie Comics Digest No 42", "author": "Unknown", "age": "Middle grade (8–12)", "genre": "Arts & creativity", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "D/145", "title": "The Archie Comis Digest No 53", "author": "Unknown", "age": "Middle grade (8–12)", "genre": "Arts & creativity", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "D/146", "title": "The Archie Comis Digest No 94", "author": "Digest Magazine", "age": "Middle grade (8–12)", "genre": "Arts & creativity", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "C/147", "title": "The Nine Hats Reader For Sustained Reading No 6", "author": "Unknown", "age": "Early readers (5–7)", "genre": "Reference & learning", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "C/148", "title": "The Nine Hats Reader For Sustained Reading No 7", "author": "Unknown", "age": "Early readers (5–7)", "genre": "Reference & learning", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "D/149", "title": "Raavan Enemy of Aaryavarta", "author": "Amish", "age": "Adults", "genre": "Fiction", "isbn": "9789380658773", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9789380658773-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9789380658773&printsec=frontcover&img=1&zoom=1", "summary": "The story of Raavan — demon king of Lanka — told from his perspective, exploring how a gifted but flawed man chose the path of darkness."}, {"id": "D/150", "title": "The world of Nagaraj", "author": "R K Narayan", "age": "Adults", "genre": "Fiction", "isbn": "9780140119268", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780140119268-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780140119268&printsec=frontcover&img=1&zoom=1", "summary": "A gentle, humorous story of Nagaraj in the fictional town of Malgudi, navigating family life and his unfulfilled dream of writing a book."}, {"id": "E/151", "title": "Shikhandi and other tales they don't tell you", "author": "Devdutt Pattanaik", "age": "Young adult (13–17)", "genre": "History & culture", "isbn": "9789381398302", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9789381398302-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9789381398302&printsec=frontcover&img=1&zoom=1", "summary": "Devdutt Pattanaik retells stories of Hindu mythological characters who defied gender norms, including Shikhandi, with beautiful illustrations."}, {"id": "E/152", "title": "Jaya An illustrated retelling of Mahabharata", "author": "Devdutt Pattanaik", "age": "Young adult (13–17)", "genre": "History & culture", "isbn": "9780143104254", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780143104254-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780143104254&printsec=frontcover&img=1&zoom=1", "summary": "A richly illustrated retelling of the Mahabharata — the great Indian epic of the Pandavas and Kauravas — accessible for modern readers."}, {"id": "D/153", "title": "Word power made easy", "author": "Norman Lewis", "age": "Self-help & management (16+)", "genre": "Reference & learning", "isbn": "9780671744106", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780671744106-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780671744106&printsec=frontcover&img=1&zoom=1", "summary": "A comprehensive vocabulary guide teaching word roots, prefixes and suffixes to help readers master thousands of English words."}, {"id": "D/154", "title": "More Puzzles", "author": "Shakuntala Devi", "age": "General (16+)", "genre": "Reference & learning", "isbn": "9780863112850", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780863112850-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780863112850&printsec=frontcover&img=1&zoom=1", "summary": "Brain-teasing mathematical and logical puzzles from Shakuntala Devi, the human computer, designed to sharpen mental agility."}, {"id": "D/155", "title": "Puzzles to Puzzle You", "author": "Shakuntala Devi", "age": "General (16+)", "genre": "Reference & learning", "isbn": "9780863112843", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780863112843-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780863112843&printsec=frontcover&img=1&zoom=1", "summary": "Over 300 mind-bending puzzles covering mathematics, logic and lateral thinking by Shakuntala Devi for puzzle enthusiasts of all ages."}, {"id": "D/156", "title": "The books of Number", "author": "Shakuntala Devi", "age": "General (16+)", "genre": "Reference & learning", "isbn": "9780863112867", "status": "available", "cover": "https://covers.openlibrary.org/b/isbn/9780863112867-M.jpg", "cover2": "https://books.google.com/books/content?vid=ISBN9780863112867&printsec=frontcover&img=1&zoom=1"}, {"id": "D/157", "title": "Brain Teasers", "author": "Ravi Narula", "age": "General (16+)", "genre": "Reference & learning", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "C/158", "title": "1000 Animal Quiz", "author": "Maneka Gandhi", "age": "Middle grade (8–12)", "genre": "Science & nature", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "D/159", "title": "Target The Daily Express World Game", "author": "Express Books", "age": "General (16+)", "genre": "Reference & learning", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}, {"id": "C/161", "title": "Tinkle Double Digest (No. 77)", "author": "Amar chitra katha", "age": "Middle grade (8–12)", "genre": "Arts & creativity", "isbn": "N/A", "status": "available", "cover": null, "cover2": null}];
 var COLORS=[["#FAEEDA","#854F0B"],["#E1F5EE","#0F6E56"],["#EEEDFE","#534AB7"],["#FAECE7","#993C1D"],["#E6F1FB","#185FA5"],["#FBEAF0","#993556"],["#EAF3DE","#3B6D11"],["#F1EFE8","#5F5E5A"]];
 
+// ============================================================
+// SUPABASE CONFIG
+// ============================================================
 var SUPA_URL = "https://aoolikgczoblizwjtynf.supabase.co";
 var SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvb2xpa2djem9ibGl6d2p0eW5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODYzMzksImV4cCI6MjA5MDY2MjMzOX0.sLmMLb2ETSubWehXf-5EU6n19CSoPbFjOCI_L_YvFiU";
 
@@ -1189,7 +1175,7 @@ function supaFetch(path, method, body) {
     "Content-Type": "application/json",
     "Prefer": method === "POST" ? "return=representation,resolution=merge-duplicates" : (method === "PATCH" || method === "PUT" ? "return=representation" : "count=exact")
   };
-  
+  // Allow up to 5000 rows for GET requests
   if(!method || method === "GET") headers["Range"] = "0-4999";
   return fetch(SUPA_URL + "/rest/v1/" + path, {
     method: method || "GET",
@@ -1201,16 +1187,17 @@ function supaFetch(path, method, body) {
   });
 }
 
+// ── DB is kept in memory as before, Supabase is the source of truth ──
 function saveData() {
-  
-  
+  // No-op: all writes go directly to Supabase via specific save functions
+  // localStorage kept as fallback cache only
   try { localStorage.setItem("chezlib_cache", JSON.stringify({
     books: DB.books, members: DB.members, transactions: DB.transactions
   })); } catch(e) {}
 }
 
 function loadData() {
-  
+  // Return defaults synchronously; async load from Supabase happens after page load
   var def = {
     users:[
       {id:"u1",name:"Jayasuryan",username:"Jayan",password:"Jayan@77",role:"master_admin",created:"2024-01-01"},
@@ -1224,7 +1211,7 @@ function loadData() {
     ],
     books: [], members: [], transactions: [], activity: []
   };
-  
+  // Try localStorage cache for instant load
   try {
     var c = localStorage.getItem("chezlib_cache");
     if (c) {
@@ -1237,11 +1224,12 @@ function loadData() {
   return def;
 }
 
+// ── Load all data from Supabase ──
 function loadFromSupabase() {
   var loading = document.getElementById("supabase-loading");
   if (loading) loading.style.display = "flex";
 
-  
+  // Fetch books in batches of 1000 to bypass Supabase row limit
   function fetchAllBooks(offset, accumulated) {
     offset = offset || 0;
     accumulated = accumulated || [];
@@ -1261,7 +1249,7 @@ function loadFromSupabase() {
     supaFetch("transactions?order=date"),
     supaFetch("users?order=created")
   ]).then(function(results) {
-    
+    // Map Supabase snake_case to our camelCase
     DB.books = (results[0] || []).map(function(b) {
       return {
         id: b.id, title: b.title, author: b.author, isbn: b.isbn,
@@ -1288,7 +1276,7 @@ function loadFromSupabase() {
         date: t.date, due: t.due_date, returnDate: t.return_date
       };
     });
-    
+    // Load users from Supabase — override localStorage
     if(results[3] && results[3].length){
       DB.users = results[3].map(function(u){
         return {
@@ -1296,15 +1284,16 @@ function loadFromSupabase() {
           password: u.password, role: u.role, created: u.created
         };
       });
+      // Re-sync currentUser with Supabase data
       window.supabaseUsersReady = true;
       if(currentUser){
         var refreshed = DB.users.find(function(u){return u.username===currentUser.username;});
         if(refreshed) currentUser = refreshed;
       }
     }
-    saveData(); 
+    saveData(); // update cache
     if (loading) loading.style.display = "none";
-    
+    // Refresh all UI
     renderPub("pub-hbooks", DB.books);
     renderNewArrivals();
     renderPopularBooks();
@@ -1315,12 +1304,11 @@ function loadFromSupabase() {
     var tot2=document.getElementById("pub-total2");if(tot2)tot2.textContent=DB.books.length;
     updateActiveMembers();
     refreshDashboard();
-    
-    
+    // Auto-fetch covers disabled — causes rate limit errors with 1153 books
+    // Start background summary sync after 5 seconds
     setTimeout(syncMissingSummaries, 5000);
-    
     setTimeout(function(){renderSyncLog();}, 100);
-    
+    // Use Edit book → ISBN field to add covers manually
   }).catch(function(err) {
     console.error("Supabase load error:", err);
     if (loading) loading.style.display = "none";
@@ -1328,6 +1316,7 @@ function loadFromSupabase() {
   });
 }
 
+// ── Book CRUD ──
 function saveBook_DB(book) {
   var row = {
     id: book.id, title: book.title, author: book.author, isbn: book.isbn,
@@ -1339,11 +1328,7 @@ function saveBook_DB(book) {
     no_id: book.noId || false, qr_printed: book.qrPrinted || false,
     barcode: book.barcode || null
   };
-  // If book has no id yet, try matching by isbn+title in Supabase
-  var supaQuery = book.id && book.id.trim()
-    ? "books?id=eq." + encodeURIComponent(book.id)
-    : "books?title=eq." + encodeURIComponent(book.title) + "&author=eq." + encodeURIComponent(book.author);
-  return supaFetch(supaQuery, "PATCH", row)
+  return supaFetch("books?id=eq." + encodeURIComponent(book.id), "PATCH", row)
     .then(function(r) {
       if (!r || !r.length) return supaFetch("books", "POST", row);
       return r;
@@ -1363,6 +1348,7 @@ function updateBookStatus_DB(bookId, status, issuedTo, issuedDate, dueDate) {
   });
 }
 
+// ── Member CRUD ──
 function saveMember_DB(member) {
   var row = {
     id: member.id, fname: member.fname, lname: member.lname,
@@ -1381,6 +1367,7 @@ function deleteMember_DB(memberId) {
   return supaFetch("members?id=eq." + memberId, "DELETE");
 }
 
+// ── Transaction log ──
 function logTransaction_DB(txn) {
   var row = {
     id: txn.id || ("TXN" + Date.now()),
@@ -1393,10 +1380,12 @@ function logTransaction_DB(txn) {
   return supaFetch("transactions", "POST", row);
 }
 
+// ── QR printed status ──
 function saveQrPrinted_DB(bookId, printed) {
   return supaFetch("books?id=eq." + encodeURIComponent(bookId), "PATCH", {qr_printed: printed});
 }
 
+// ── Toast notification ──
 function showToast(msg, type) {
   var t = document.createElement("div");
   t.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);background:" + (type==="error"?"#C0392B":"#178A6A") + ";color:white";
@@ -1417,16 +1406,68 @@ function loadData(){
       {id:"u4",name:"Arjun Menon",username:"arjun",password:"vol123",role:"volunteer",created:"2024-07-15"},
       {id:"u5",name:"Chez",username:"Chez",password:"Bangalore",role:"volunteer",created:"2026-03-28"}
     ],
-    members: [],
-    books: [],
-    transactions: [],
-    activity: []
+    members:[
+      {id:"MEM001",fname:"Aanya",lname:"Sharma",email:"aanya@email.com",phone:"9876543210",block:"Kensington",flatNo:"12A",flatFull:"Kensington - Flat 12A",joined:"2024-03-01",booksOut:[]},
+      {id:"MEM002",fname:"Rohan",lname:"Verma",email:"rohan@email.com",phone:"9876543211",block:"Mayfair",flatNo:"4B",flatFull:"Mayfair - Flat 4B",joined:"2024-03-15",booksOut:[]},
+      {id:"MEM003",fname:"Priya",lname:"Nair",email:"priya@email.com",phone:"9876543212",block:"Primrose",flatNo:"7C",flatFull:"Primrose - Flat 7C",joined:"2024-04-01",booksOut:[]},
+      {id:"MEM004",fname:"Kabir",lname:"Singh",email:"kabir@email.com",phone:"9876543213",joined:"2024-05-10",booksOut:[]},
+      {id:"MEM005",fname:"Meera",lname:"Iyer",email:"meera@email.com",phone:"9876543214",joined:"2024-06-20",booksOut:[]},
+      {id:"MEM006",fname:"Tanvi",lname:"Bose",email:"tanvi@email.com",phone:"9876543215",joined:"2024-07-01",booksOut:[]},
+      {id:"MEM007",fname:"Dev",lname:"Pillai",email:"dev@email.com",phone:"9876543216",joined:"2024-08-05",booksOut:[]}
+    ],
+    books: BOOK_DATA.map(function(b,i){
+      var issued=[
+        {id:"B/112",to:"MEM001",issuedDate:"2026-03-01",dueDate:"2026-03-22",issuedBy:"Sunita Rao",issuedById:"u3"},
+        {id:"B/113",to:"MEM002",issuedDate:"2026-03-05",dueDate:"2026-03-26",issuedBy:"Sunita Rao",issuedById:"u3"},
+        {id:"D/143",to:"MEM003",issuedDate:"2026-02-10",dueDate:"2026-03-03",issuedBy:"Arjun Menon",issuedById:"u4"},
+        {id:"D/132",to:"MEM004",issuedDate:"2026-02-15",dueDate:"2026-03-08",issuedBy:"Arjun Menon",issuedById:"u4",summary:"A classic adventure story about young Jim Hawkins who discovers a treasure map and sets sail for a remote island, encountering the cunning pirate Long John Silver along the way."},
+        {id:"E/152",to:"MEM005",issuedDate:"2026-03-10",dueDate:"2026-03-31",issuedBy:"Sunita Rao",issuedById:"u3",summary:"A richly illustrated retelling of the Mahabharata — the great Indian epic of the Pandavas and Kauravas — making the ancient story accessible and vivid for modern readers."},
+        {id:"C/138",to:"MEM006",issuedDate:"2026-03-12",dueDate:"2026-04-02",issuedBy:"Arjun Menon",issuedById:"u4",summary:"George and his friend Annie go on a cosmic adventure through space using a super-computer called Cosmos, learning about black holes, planets and the universe."},
+        {id:"D/139",to:"MEM001",issuedDate:"2026-02-20",dueDate:"2026-03-13",issuedBy:"Sunita Rao",issuedById:"u3",summary:"Set in ancient India, Shiva — a Tibetan tribesman — discovers he may be the legendary Neelkanth, destined to destroy evil and save the Meluhan civilisation."},
+        {id:"B/120",to:"MEM007",issuedDate:"2026-03-15",dueDate:"2026-04-05",issuedBy:"Arjun Menon",issuedById:"u4"}
+      ];
+      var match=issued.find(function(x){return x.id===b.id;});
+      if(match){return Object.assign({},b,{status:"checked",issuedTo:match.to,issuedDate:match.issuedDate,dueDate:match.dueDate,issuedBy:match.issuedBy,issuedById:match.issuedById,summary:b.summary||""});}
+      return Object.assign({},b,{status:b.status||"available",issuedTo:null,issuedDate:null,dueDate:null,issuedBy:null,issuedById:null,summary:b.summary||""});
+    }),
+    transactions:[
+      {type:"issue",bookId:"B/112",memberId:"MEM001",date:"2026-03-01",due:"2026-03-22",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"B/113",memberId:"MEM002",date:"2026-03-05",due:"2026-03-26",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"D/143",memberId:"MEM003",date:"2026-02-10",due:"2026-03-03",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"issue",bookId:"D/132",memberId:"MEM004",date:"2026-02-15",due:"2026-03-08",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"issue",bookId:"E/152",memberId:"MEM005",date:"2026-03-10",due:"2026-03-31",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"C/138",memberId:"MEM006",date:"2026-03-12",due:"2026-04-02",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"issue",bookId:"D/139",memberId:"MEM001",date:"2026-02-20",due:"2026-03-13",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"B/120",memberId:"MEM007",date:"2026-03-15",due:"2026-04-05",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"return",bookId:"C/133",memberId:"MEM002",date:"2026-03-10",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"C/133",memberId:"MEM002",date:"2026-02-25",due:"2026-03-10",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"return",bookId:"C/140",memberId:"MEM003",date:"2026-03-05",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"issue",bookId:"C/140",memberId:"MEM003",date:"2026-02-18",due:"2026-03-05",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"return",bookId:"B/114",memberId:"MEM001",date:"2026-03-20",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"B/114",memberId:"MEM001",date:"2026-03-05",due:"2026-03-20",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"return",bookId:"D/149",memberId:"MEM004",date:"2026-03-15",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"issue",bookId:"D/149",memberId:"MEM004",date:"2026-03-01",due:"2026-03-15",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {type:"return",bookId:"B/115",memberId:"MEM005",date:"2026-03-22",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {type:"issue",bookId:"B/115",memberId:"MEM005",date:"2026-03-08",due:"2026-03-22",issuedBy:"Sunita Rao",issuedById:"u3"}
+    ],
+    activity:[
+      {msg:"Issued 'My Weird School #10' to Dev Pillai",user:"Arjun Menon",time:"10:32 AM"},
+      {msg:"Returned 'Ms. Hannah is Bananas' from Meera Iyer",user:"Sunita Rao",time:"10:15 AM"},
+      {msg:"Issued 'George's Cosmic Treasure Hunt' to Tanvi Bose",user:"Arjun Menon",time:"9:58 AM"},
+      {msg:"Added member: Dev Pillai",user:"Sunita Rao",time:"9:45 AM"},
+      {msg:"Returned 'Puzzles to Puzzle You' from Kabir Singh",user:"Arjun Menon",time:"9:30 AM"},
+      {msg:"Issued 'Jaya: Mahabharata' to Meera Iyer",user:"Sunita Rao",time:"9:12 AM"},
+      {msg:"Issued 'The Alchemist' to Priya Nair",user:"Arjun Menon",time:"Yesterday"},
+      {msg:"Issued 'Treasure Island' to Kabir Singh",user:"Arjun Menon",time:"Yesterday"},
+      {msg:"Returned 'Gulliver's Travels' from Priya Nair",user:"Sunita Rao",time:"Yesterday"},
+      {msg:"Issued 'Immortals of Meluha' to Aanya Sharma",user:"Sunita Rao",time:"2 days ago"}
+    ]
   };
   try{
     var s=localStorage.getItem("chezlib_data");
     if(s){
       var d=JSON.parse(s);
-      
+      // Always sync summaries from BOOK_DATA
       if(d.books){
         d.books=d.books.map(function(b){
           var src=BOOK_DATA.find(function(x){return x.id===b.id;});
@@ -1434,7 +1475,7 @@ function loadData(){
           return b;
         });
       }
-      
+      // Always sync hardcoded users — ensures new/updated credentials work
       if(!d.users) d.users=[];
       def.users.forEach(function(du){
         var existing=d.users.find(function(u){return u.id===du.id;});
@@ -1458,6 +1499,9 @@ var currentUser=null;
 var aF="All",gF="All",sq="";
 var editBookId=null, editMemberId=null;
 
+// ============================================================
+// AUTH
+// ============================================================
 function showLogin(){showPage("page-login");(function(){var _e=document.getElementById("login-err");if(_e)_e.style.display="none"})();}
 function showPublic(){showPage("page-public");}
 
@@ -1470,10 +1514,9 @@ function doLogin(){
   var u=document.getElementById("li-user").value.trim();
   var p=document.getElementById("li-pass").value;
   var errEl=document.getElementById("login-err");
-  // If Supabase users haven't loaded yet, show loading message and retry
   if(!window.supabaseUsersReady){
     if(errEl){errEl.textContent="Still connecting to database, please try again in a moment...";errEl.style.display="block";errEl.style.color="#854F0B";errEl.style.background="#FFF3CD";}
-    setTimeout(doLogin, 2000);
+    setTimeout(doLogin,2000);
     return;
   }
   if(errEl){errEl.style.color="#A32D2D";errEl.style.background="#FCEAEA";errEl.textContent="Incorrect username or password.";}
@@ -1498,13 +1541,16 @@ function setupStaffUI(){
   var isAdmin=currentUser.role==="master_admin"||currentUser.role==="backup_admin";
   setupStaffUIExtra();
   document.querySelectorAll(".admin-only").forEach(function(el){el.style.display=isAdmin?"":"none";});
-  
+  // master admin can add backup admins, backup admin can only add volunteers
   if(document.getElementById("au-backup-opt")){
     (function(){var _e=document.getElementById("au-backup-opt");if(_e)_e.style.display=currentUser.role==="master_admin"?"":"none"})();
   }
   refreshDashboard();
 }
 
+// ============================================================
+// NAVIGATION
+// ============================================================
 function showPage(id){
   document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");});
   var pg=document.getElementById(id);if(pg)pg.classList.add("active");
@@ -1518,7 +1564,7 @@ function showPanel(id){
   document.querySelectorAll("#page-staff .panel").forEach(function(p){p.classList.remove("active");});
   var sp=document.getElementById(id);if(sp)sp.classList.add("active");
   document.querySelectorAll(".sidebar a").forEach(function(a){a.classList.remove("active");});
-  
+  // Close sidebar on mobile after selection
   var sb=document.getElementById("sidebar");
   if(sb&&window.innerWidth<=768)sb.classList.remove("mob-open");
   var smap={"p-dashboard":"s-dashboard","p-books":"s-books","p-members":"s-members","p-issue":"s-issue","p-reports":"s-reports","p-users":"s-users"};
@@ -1557,7 +1603,7 @@ function goPublic(panel){
   if(panel==="catalog"){switchCatalogTab('list');upd();}
   if(panel==="suggest") renderSuggestions();
   if(panel==="pending") { var li=document.getElementById("pub-lookup-input"); if(li) li.focus(); }
-  
+  // Sync tab styles
   ["home","catalog","pending","about","suggest"].forEach(function(t){
     var active=t===panel;
     var on="padding:6px 14px;font-size:13px;font-weight:600;border:none;border-radius:20px;cursor:pointer;background:var(--ac);color:#fff;";
@@ -1571,6 +1617,9 @@ function goPublic(panel){
   });
 }
 
+// ============================================================
+// HELPERS
+// ============================================================
 function gc(id){var s=0;for(var i=0;i<id.length;i++)s+=id.charCodeAt(i);return COLORS[s%COLORS.length];}
 function ini(t){var w=t.split(" ");return((w[0]||"")[0]||"").toUpperCase()+((w[1]||"")[0]||"").toUpperCase();}
 function fmtDate(d){if(!d)return"-";var dt=new Date(d);return dt.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});}
@@ -1618,6 +1667,9 @@ function makeCoverThumb(b){
   return wrap;
 }
 
+// ============================================================
+// DASHBOARD
+// ============================================================
 function refreshDashboard(){
   var issued=DB.books.filter(function(b){return b.status==="checked";});
   var today=todayStr();
@@ -1643,12 +1695,15 @@ function refreshDashboard(){
   });
 }
 
+// ============================================================
+// BOOKS
+// ============================================================
 function renderBooks(){
   var q=(document.getElementById("bk-search").value||"").toLowerCase();
   var gf=document.getElementById("bk-filter").value;
-  
+  // No-ID warning
   showNoIdWarning();
-  
+  // QR stats
   var statsEl=document.getElementById("bk-qr-stats");
   if(statsEl){
     var totalBooks=DB.books.length;
@@ -1679,13 +1734,13 @@ function renderBooks(){
     bkcell.appendChild(ttl);
     var statusCls=b.status==="available"?"b-green":b.status==="checked"?"b-amber":"b-blue";
     var statusLbl=b.status==="available"?"Available":b.status==="checked"?"On loan":"Digital";
-    
+    // Build all cells as DOM elements — no innerHTML mixing
     var td1=document.createElement("td");td1.style.cssText="color:var(--mt);font-size:12px";td1.textContent=b.author;
     var td2=document.createElement("td");td2.style.cssText="font-size:11px;color:var(--mt)";td2.textContent=b.isbn&&b.isbn!=="N/A"?b.isbn:"-";
     var td3=document.createElement("td");var ageSp=document.createElement("span");ageSp.className="badge b-purple";ageSp.style.fontSize="10px";ageSp.textContent=b.age.split(" (")[0];td3.appendChild(ageSp);
     var td4=document.createElement("td");td4.style.cssText="font-size:12px";td4.textContent=b.genre;
     var td5=document.createElement("td");var stSp=document.createElement("span");stSp.className="badge "+statusCls;stSp.textContent=statusLbl;td5.appendChild(stSp);
-    
+    // QR printed cell
     var qrTd=document.createElement("td");qrTd.style.cssText="text-align:center";
     var qrChk=document.createElement("input");qrChk.type="checkbox";qrChk.title="Mark barcode label as printed";
     qrChk.checked=b.qrPrinted===true;qrChk.style.cssText="width:16px;height:16px;cursor:pointer;accent-color:var(--ac)";
@@ -1693,7 +1748,7 @@ function renderBooks(){
     qrChk.checked=b.qrPrinted===true;qrChk.style.cssText="width:16px;height:16px;cursor:pointer;accent-color:var(--ac)";
     (function(bid,row){qrChk.addEventListener("change",function(){
       var checked=qrChk.checked;
-      
+      // Revert visually until confirmed
       qrChk.checked=!checked;
       if(checked){
         confirmAction(
@@ -1736,7 +1791,7 @@ function renderBooks(){
     if(b.qrPrinted)tr.style.opacity="0.6";
     var qrLbl=document.createElement("div");qrLbl.style.cssText="font-size:10px;color:"+(b.qrPrinted?"#0F6E56":"#C0392B")+";margin-top:2px;font-weight:600";
     qrLbl.textContent=b.qrPrinted?"Printed":"Pending";qrTd.appendChild(qrChk);qrTd.appendChild(qrLbl);
-    
+    // Actions cell
     var actTd=document.createElement("td");
     var editBtn=document.createElement("button");editBtn.className="btn btn-ghost";editBtn.style.cssText="font-size:12px;padding:4px 10px;margin-right:4px";editBtn.textContent="Edit";
     (function(bidx){editBtn.addEventListener("click",function(){openEditBook(bidx);});})(DB.books.indexOf(b));
@@ -1753,8 +1808,8 @@ function renderBooks(){
     });})(DB.books.indexOf(b),b.title);
     var actWrap=document.createElement("div");actWrap.style.cssText="display:flex;flex-direction:column;gap:4px;align-items:flex-start";
     actWrap.appendChild(editBtn);actWrap.appendChild(delBtn);actTd.appendChild(actWrap);
-    
-    
+    // Assemble row
+    // Book ID cell — first column
     var idCell=document.createElement("td");
     if(b.id&&b.id.trim()){
       var idSpan=document.createElement("span");
@@ -1767,7 +1822,7 @@ function renderBooks(){
       noIdSpan.textContent="⚠ No ID";
       idCell.appendChild(noIdSpan);
     }
-    
+    // assemble book cell
     cell.appendChild(bkcell);
     tr.appendChild(idCell);tr.appendChild(cell);tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tr.appendChild(td4);tr.appendChild(td5);tr.appendChild(qrTd);tr.appendChild(actTd);
     tbody.appendChild(tr);
@@ -1777,47 +1832,24 @@ function openAddBook(){
   editBookId=null;
   document.getElementById("addbook-title").textContent="Add book";
   document.getElementById("addbook-btn").textContent="Add book";
-  ["ab-title","ab-author","ab-isbn","ab-summary","ab-cover","ab-bookid"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
-  var bkidErr=document.getElementById("ab-bookid-err");if(bkidErr)bkidErr.style.display="none";
+  ["ab-title","ab-author","ab-isbn","ab-summary"].forEach(function(id){document.getElementById(id).value="";});
   var lp=document.getElementById("ab-lookup-result");if(lp)lp.style.display="none";
-  var ltEl=document.getElementById("ab-lookup-title");if(ltEl)ltEl.textContent="";
-  var laEl=document.getElementById("ab-lookup-author");if(laEl)laEl.textContent="";
-  var liEl=document.getElementById("ab-lookup-isbn");if(liEl)liEl.textContent="";
-  var lcEl=document.getElementById("ab-lookup-cover");if(lcEl){lcEl.src="";lcEl.style.display="none";}
-  var covW=document.getElementById("ab-isbn-cover-wrap");if(covW)covW.style.display="none";
-  var st=document.getElementById("ab-isbn-status");if(st)st.style.display="none";
   _addBookMatch=null;clearTimeout(_addBookTimer);
   var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
-  
-  setTimeout(function(){var el=document.getElementById("ab-isbn");if(el)el.focus();},80);
 }
 function openEditBook(idx){
   var b=typeof idx==="number"?DB.books[idx]:DB.books.find(function(x){return x.id===idx;});
   if(!b)return;
   editBookId=b.id;
-  var editBookIdx=typeof idx==="number"?idx:DB.books.indexOf(b);
-  window._editBookIdx=editBookIdx;
-  
-  _addBookMatch=null;clearTimeout(_addBookTimer);
-  var lp=document.getElementById("ab-lookup-result");if(lp){lp.style.display="none";}
-  // Wipe stale lookup panel content so it can't flash back
-  var ltEl=document.getElementById("ab-lookup-title");if(ltEl)ltEl.textContent="";
-  var laEl=document.getElementById("ab-lookup-author");if(laEl)laEl.textContent="";
-  var liEl=document.getElementById("ab-lookup-isbn");if(liEl)liEl.textContent="";
-  var lcEl=document.getElementById("ab-lookup-cover");if(lcEl){lcEl.src="";lcEl.style.display="none";}
-  var covW2=document.getElementById("ab-isbn-cover-wrap");if(covW2)covW2.style.display="none";
-  var st=document.getElementById("ab-isbn-status");if(st)st.style.display="none";
+  window._editBookIdx=typeof idx==="number"?idx:DB.books.indexOf(b);
   document.getElementById("addbook-title").textContent="Edit book";
   document.getElementById("addbook-btn").textContent="Save changes";
   document.getElementById("ab-title").value=b.title;
   document.getElementById("ab-author").value=b.author;
-  var bkidEl=document.getElementById("ab-bookid");if(bkidEl){bkidEl.value=b.id&&b.id.trim()?b.id:"";bkidEl.style.borderColor="";}
   document.getElementById("ab-isbn").value=b.isbn&&b.isbn!="N/A"?b.isbn:"";
   document.getElementById("ab-age").value=b.age;
   document.getElementById("ab-genre").value=b.genre;
   document.getElementById("ab-summary").value=b.summary||"";
-  // Pre-populate cover with existing value so it isn't wiped on re-save
-  var covHid=document.getElementById("ab-cover");if(covHid)covHid.value=b.cover||"";
   var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveBook(){
@@ -1826,78 +1858,30 @@ function saveBook(){
   var isbn=document.getElementById("ab-isbn").value.trim()||"N/A";
   var age=document.getElementById("ab-age").value;
   var genre=document.getElementById("ab-genre").value;
-  var bookIdInput=document.getElementById("ab-bookid");
-  var manualBookId=bookIdInput?bookIdInput.value.trim().toUpperCase():"";
-  if(bookIdInput) bookIdInput.value=manualBookId;
-  var bkidErr=document.getElementById("ab-bookid-err");
-  function showBkIdErr(msg){if(bkidErr){bkidErr.textContent=msg;bkidErr.style.display="block";}if(bookIdInput)bookIdInput.style.borderColor="#C0392B";}
-  function clearBkIdErr(){if(bkidErr)bkidErr.style.display="none";if(bookIdInput)bookIdInput.style.borderColor="";}
-  
-  if(!manualBookId){
-    showBkIdErr("Book ID is required — use format A/1 to E/9999");return;
-  }
-  if(manualBookId){
-    
-    if(!/^[A-E]\/[1-9]\d{0,3}$/.test(manualBookId)){
-      showBkIdErr("Format must be A/1 to E/9999 — no leading zeros");return;
-    }
-    // Rule 2: Prefix should match age group — warn but don't block
-    var expectedPrefix=getAgePrefix(age);
-    var enteredPrefix=manualBookId.charAt(0);
-    var prefixAgeNames={"A":"Picture books","B":"Early readers","C":"Middle grade","D":"Young adult","E":"Adults/General"};
-    if(bkidErr&&enteredPrefix!==expectedPrefix){
-      bkidErr.textContent="⚠ Note: Prefix "+enteredPrefix+" is usually for "+prefixAgeNames[enteredPrefix]+", but selected age is "+prefixAgeNames[expectedPrefix]||age+". Saving anyway.";
-      bkidErr.style.color="#854F0B";
-      bkidErr.style.display="block";
-    }
-    
-    var enteredNum=parseInt(manualBookId.split("/")[1],10);
-    var numConflict=DB.books.find(function(b){
-      if(!b.id||b.id===editBookId) return false;
-      var m=b.id.match(/^[A-E]\/([1-9]\d{0,3})$/);
-      return m&&parseInt(m[1],10)===enteredNum;
-    });
-    if(numConflict){
-      showBkIdErr("Number "+enteredNum+" is already used by "+numConflict.id+" ("+numConflict.title+")");return;
-    }
-    clearBkIdErr();
-  }
   if(!title||!author)return;
-  
-  var fetchedCover=document.getElementById("ab-cover")?document.getElementById("ab-cover").value.trim():"";
-  var coverUrl=fetchedCover||(isbn!="N/A"?"https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg":null);
-  var cover2Url=isbn!="N/A"?"https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1":null;
   if(editBookId!==null&&editBookId!==undefined){
     var b=window._editBookIdx!==undefined?DB.books[window._editBookIdx]:DB.books.find(function(x){return x.id===editBookId;});
     if(b){b.title=title;b.author=author;b.isbn=isbn;b.age=age;b.genre=genre;
       b.summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
-      if(coverUrl) b.cover=coverUrl;
-      if(cover2Url) b.cover2=cover2Url;
-      if(manualBookId&&manualBookId!==editBookId){
-        var oldId=b.id;
-        b.id=manualBookId;b.noId=false;
-        // Update any transactions that reference the old ID
-        if(oldId) DB.transactions.forEach(function(t){if(t.bookId===oldId)t.bookId=manualBookId;});
-        // Update Supabase transactions too
-        if(oldId) supaFetch("transactions?book_id=eq."+encodeURIComponent(oldId),"PATCH",{book_id:manualBookId}).catch(function(){});
-      }
+      if(isbn!="N/A"){b.cover="https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";b.cover2="https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";}
       logActivity("Edited book: "+title);}
   }else{
-    var newId=manualBookId;var noIdFlag=false;
+    var newId="";var noIdFlag=true;
     var summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
-    var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:coverUrl,cover2:cover2Url,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag};
+    var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:null,cover2:null,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag};
+    if(isbn!="N/A"){newB.cover="https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";newB.cover2="https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";}
     DB.books.push(newB);
     logActivity("Added book: "+title+" [New arrival]");
   }
-  var bookToSave=window._editBookIdx!==undefined?DB.books[window._editBookIdx]:null;
-  if(!bookToSave&&editBookId) bookToSave=DB.books.find(function(b){return b.id===editBookId;});
-  if(!bookToSave) bookToSave=newB;
-  saveBook_DB(bookToSave).then(function(){showToast("Book saved","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
+  saveBook_DB(editBookId?DB.books.find(function(b){return b.id===editBookId;})||newB:newB).then(function(){showToast("Book saved","success");}).catch(function(e){showToast("Save failed: "+e.message,"error");});
   saveData();closeModal("m-addbook");renderBooks();refreshDashboard();
 }
 
+// ============================================================
+// MEMBERS
+// ============================================================
 function renderMembers(){
-  
+  // Show bulk upload buttons for admin/backup_admin only
   var adminBtns=document.getElementById("member-admin-btns");
   if(adminBtns){
     var isAdmin=currentUser&&(currentUser.role==="master_admin"||currentUser.role==="backup_admin");
@@ -2000,6 +1984,9 @@ function saveMember(){
   saveData();closeModal("m-addmember");renderMembers();refreshDashboard();
 }
 
+// ============================================================
+// ISSUE / RETURN
+// ============================================================
 function showMsg(elId,msg,ok){
   var el=document.getElementById(elId);
   el.textContent=msg;el.style.display="block";
@@ -2016,13 +2003,13 @@ function issueBook(isOverride, overrideComment){
   if(!m)return showMsg("iss-msg","Member not selected. Please search and select a member.",false);
   if(!b)return showMsg("iss-msg","Book not selected. Please search and select a book.",false);
   if(b.status==="checked")return showMsg("iss-msg","This book is already on loan.",false);
-  
+  // Warn if book has no ID assigned
   if(!b.id||b.id.trim()===""){
     showMsg("iss-msg","⚠ This book has no Book ID. Please assign one in the Books panel before issuing.",false);
     return;
   }
 
-  
+  // Block if pending and not an override
   var pending=DB.books.filter(function(x){return x.issuedTo===mid&&x.status==="checked";});
   if(pending.length>0&&!isOverride)return;
 
@@ -2036,7 +2023,7 @@ function issueBook(isOverride, overrideComment){
   logTransaction_DB(txn).catch(function(e){console.error("Issue log failed:",e);});
   saveData();renderIssued();refreshDashboard();
 
-  
+  // Reset pending warning & buttons
   var submitBtn=document.getElementById("iss-submit-btn");
   submitBtn.disabled=false;submitBtn.style.opacity="1";submitBtn._override=false;
   el=document.getElementById("iss-override-btn");if(el)el.style.display="none";
@@ -2046,7 +2033,7 @@ function issueBook(isOverride, overrideComment){
   document.getElementById("iss-member").value="";document.getElementById("iss-member-search").value="";hideMemberCard();document.getElementById("iss-book").value="";document.getElementById("iss-book-search").value="";var ibi=document.getElementById("iss-book-id");if(ibi)ibi.value="";clearBookInfo();var nd=new Date();nd.setDate(nd.getDate()+10);document.getElementById("iss-due").value=nd.toISOString().split("T")[0];(function(){var _e=document.getElementById("member-dropdown");if(_e)_e.style.display="none"})();(function(){var _e=document.getElementById("book-dropdown");if(_e)_e.style.display="none"})();
 }
 function returnBook(){
-  
+  // Accept from hidden field, book-id field, or book-search field
   var bid=document.getElementById("ret-book").value.trim();
   if(!bid){
     var directId=document.getElementById("ret-book-id").value.trim();
@@ -2063,9 +2050,9 @@ function returnBook(){
   logTransaction_DB(rtxn2).catch(function(e){console.error("Return log failed:",e);});
   saveData();renderIssued();refreshDashboard();
   showMsg("ret-msg","Book returned successfully!",true);
-  
+  // Refresh returned today panel if open
   if(document.getElementById("ret-today-panel").style.display!=="none") renderReturnedToday();
-  
+  // Clear member card
   var rc=document.getElementById("ret-member-card");if(rc)rc.style.display="none";
   var rbi=document.getElementById("ret-book-id");if(rbi)rbi.value="";
   document.getElementById("ret-book").value="";document.getElementById("ret-book-search").value="";document.getElementById("ret-member").value="";document.getElementById("ret-member-search").value="";(function(){var _e=document.getElementById("return-dropdown");if(_e)_e.style.display="none"})();(function(){var _e=document.getElementById("return-member-dropdown");if(_e)_e.style.display="none"})();
@@ -2119,7 +2106,7 @@ function renderIssued(){
     var flat=(m&&m.flatNo?m.flatNo:"").toLowerCase();
     return b.title.toLowerCase().indexOf(q)>=0 || mname.indexOf(q)>=0 || block.indexOf(q)>=0 || flat.indexOf(q)>=0 || (b.issuedBy&&b.issuedBy.toLowerCase().indexOf(q)>=0) || (b.id&&b.id.toLowerCase().indexOf(q)>=0);
   });
-  
+  // Sort by issued date descending — most recent first
   list.sort(function(a,b){return (b.issuedDate||"").localeCompare(a.issuedDate||"");});
   var tbody=document.getElementById("issued-tbody");tbody.innerHTML="";
   if(list.length===0){tbody.innerHTML="<tr><td colspan='8' class='empty'>"+(dateFilter?"No books issued on "+fmtDate(dateFilter):q?"No matching books: "+q:"No books currently issued")+"</td></tr>";return;}
@@ -2127,11 +2114,11 @@ function renderIssued(){
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
     var overdue=b.dueDate&&b.dueDate<today;
     var tr=document.createElement("tr");
-    
+    // Book ID cell (first)
     var idCell=document.createElement("td");
     idCell.innerHTML="<span style='font-family:monospace;font-size:12px;font-weight:700;color:var(--ac);background:var(--bg2);padding:2px 7px;border-radius:5px;border:1px solid var(--bd)'>"+(b.id||"—")+"</span>";
     tr.appendChild(idCell);
-    
+    // Book title cell
     var cell=document.createElement("td");
     var bkcell=document.createElement("div");bkcell.className="bk-cell";
     bkcell.appendChild(makeCoverThumb(b));
@@ -2149,11 +2136,14 @@ function renderIssued(){
   });
 }
 
+// ============================================================
+// REPORTS
+// ============================================================
 function showReport(type){
   var today=todayStr();
   var out=document.getElementById("report-out");
   out.innerHTML="";
-  
+  // Highlight active button
   ["issued","overdue","members","inventory","wishlist","popular","inactive","volunteers"].forEach(function(t){
     var btn=document.getElementById("rpt-btn-"+t);
     if(!btn)return;
@@ -2170,14 +2160,13 @@ function showReport(type){
     title="Books currently issued";
     var list=DB.books.filter(function(b){return b.status==="checked";});
     if(list.length===0){out.innerHTML="<div class='empty'>No books currently issued</div>";return;}
-    var html="<div class='tbl-wrap'><table><thead><tr><th>Book ID</th><th>Book</th><th>Member</th><th>Block / Flat</th><th>Issued by</th><th>Issued</th><th>Due</th><th>Status</th></tr></thead><tbody>";
+    var html="<div class='tbl-wrap'><table><thead><tr><th>Book</th><th>Member</th><th>Block / Flat</th><th>Issued by</th><th>Issued</th><th>Due</th><th>Status</th></tr></thead><tbody>";
     list.forEach(function(b){
       var m=DB.members.find(function(x){return x.id===b.issuedTo;});
       var overdue=b.dueDate&&b.dueDate<today;
       var blockFlat=m?([(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" — ")||"-"):"-";
       var mobile=m&&m.phone?m.phone:"-";
       html+="<tr>"+
-        "<td><span style='font-family:monospace;font-size:12px;font-weight:700;color:#185FA5;background:#E6F1FB;padding:2px 7px;border-radius:5px'>"+(b.id||"—")+"</span></td>"+
         "<td style='font-weight:600'>"+b.title+"</td>"+
         "<td style='font-weight:500'>"+(m?m.fname+" "+m.lname:"-")+"</td>"+
         "<td style='font-size:12px;color:var(--mt)'>"+blockFlat+"</td>"+
@@ -2192,22 +2181,20 @@ function showReport(type){
     title="Overdue books";
     var list=DB.books.filter(function(b){return b.status==="checked"&&b.dueDate&&b.dueDate<today;});
     if(list.length===0){out.innerHTML="<div class='empty' style='color:#3B6D11'>&#x2713; No overdue books!</div>";return;}
-    list.sort(function(a,b){return (a.dueDate||"").localeCompare(b.dueDate||"");});
-    var html="<div class='tbl-wrap'><table><thead><tr><th>Book ID</th><th>Book</th><th>Member</th><th>Block / Flat</th><th>Mobile</th><th>Issued by</th><th>Due date</th><th>Days overdue</th></tr></thead><tbody>";
+    var html="<div class='tbl-wrap'><table><thead><tr><th>Book</th><th>Member</th><th>Block / Flat</th><th>Mobile</th><th>Issued by</th><th>Due date</th><th>Days overdue</th></tr></thead><tbody>";
     list.forEach(function(b){
       var m=DB.members.find(function(x){return x.id===b.issuedTo;});
       var days=Math.floor((new Date(today)-new Date(b.dueDate))/(1000*60*60*24));
       var blockFlat=m?([(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" — ")||"-"):"-";
       var mobile=m&&m.phone?m.phone:"-";
       html+="<tr style='background:#FCEAEA'>"+
-        "<td><span style='font-family:monospace;font-size:12px;font-weight:700;color:#C0392B;background:#FCEAEA;padding:2px 7px;border-radius:5px;border:1px solid #F5C6C6'>"+(b.id||"—")+"</span></td>"+
         "<td style='font-weight:600'>"+b.title+"</td>"+
         "<td style='font-weight:500'>"+(m?m.fname+" "+m.lname:"-")+"</td>"+
         "<td style='font-size:12px;color:var(--mt)'>"+blockFlat+"</td>"+
         "<td style='font-size:12px;color:var(--mt)'>"+mobile+"</td>"+
         "<td style='font-size:12px;color:var(--mt)'>"+( b.issuedBy||"-")+"</td>"+
         "<td style='color:#C0392B;font-weight:600'>"+fmtDate(b.dueDate)+"</td>"+
-        "<td style='text-align:center'><span class='badge b-red'>"+days+" day"+(days!==1?"s":"")+" overdue</span></td>"+
+        "<td><span class='badge b-red'>"+days+" day"+(days!==1?"s":"")+"</span></td>"+
       "</tr>";
     });
     out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:1rem'>"+title+" ("+list.length+")</h3>"+html+"</tbody></table></div>";
@@ -2287,24 +2274,24 @@ function showReport(type){
     });
     out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:1rem'>Inventory summary</h3>"+html+"</tbody></table></div>";
   } else if(type==="topbooks"){
-    
+    // Count borrows per book from transaction log
     var counts={};
     DB.transactions.forEach(function(t){
       if(t.type==="issue"){counts[t.bookId]=(counts[t.bookId]||0)+1;}
     });
-    
+    // Also count currently issued books that may not have a return transaction yet
     DB.books.forEach(function(b){
       if(b.status==="checked"&&b.issuedTo){
-        
+        // already counted in transactions when issued, skip double-count
       }
     });
-    
+    // Build sorted list
     var ranked=DB.books.map(function(b){
       return {book:b, count:counts[b.id]||0};
     }).filter(function(x){return x.count>0;})
       .sort(function(a,b){return b.count-a.count;});
 
-    
+    // Category summary
     var catCounts={};
     ranked.forEach(function(x){
       var g=x.book.genre;
@@ -2316,7 +2303,7 @@ function showReport(type){
       out.innerHTML="<div class='empty'>No borrowing data yet. Issue some books to see this report.</div>";return;
     }
 
-    
+    // Stat cards for top categories
     var catHtml="<div class='stat-grid' style='margin-bottom:1.5rem'>";
     topCats.slice(0,4).forEach(function(g,i){
       var cls=["green","blue","amber","red"][i]||"green";
@@ -2324,7 +2311,7 @@ function showReport(type){
     });
     catHtml+="</div>";
 
-    
+    // Top books table with bar chart column
     var maxCount=ranked[0].count;
     var tableHtml="<div class='tbl-wrap'><table><thead><tr><th>#</th><th>Book</th><th>Author</th><th>Age group</th><th>Genre</th><th>Times borrowed</th><th>Popularity</th></tr></thead><tbody>";
     ranked.forEach(function(x,i){
@@ -2344,7 +2331,7 @@ function showReport(type){
     });
     tableHtml+="</tbody></table></div>";
 
-    
+    // Purchase suggestions — top genres not well-stocked
     var suggestHtml="<div style='background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.25rem;margin-top:1.5rem'>";
     suggestHtml+="<h4 style='font-size:14px;font-weight:700;margin-bottom:.75rem;color:var(--ac)'>&#x1F6D2; Purchase suggestions</h4>";
     suggestHtml+="<p style='font-size:13px;color:var(--mt);margin-bottom:1rem'>Based on borrowing demand, consider stocking more of these categories:</p>";
@@ -2365,14 +2352,14 @@ function showReport(type){
       catHtml+tableHtml+suggestHtml;
   }
   if(type==="popular"){
-    
+    // Count borrows per book
     var counts={};
     DB.transactions.forEach(function(t){if(t.type==="issue")counts[t.bookId]=(counts[t.bookId]||0)+1;});
     var ranked=DB.books.filter(function(b){return counts[b.id]>0;})
       .sort(function(a,b2){return (counts[b2.id]||0)-(counts[a.id]||0);}).slice(0,6);
     if(ranked.length===0){out.innerHTML="<div class='empty'>No borrowing data yet. Issue some books to see this report.</div>";return;}
 
-    
+    // Genre frequency map
     var genreFreq={};
     DB.transactions.forEach(function(t){
       if(t.type!=="issue")return;
@@ -2381,7 +2368,7 @@ function showReport(type){
     });
     var topGenres=Object.keys(genreFreq).sort(function(a,b2){return genreFreq[b2]-genreFreq[a];}).slice(0,3);
 
-    
+    // Age group frequency
     var ageFreq={};
     DB.transactions.forEach(function(t){
       if(t.type!=="issue")return;
@@ -2392,7 +2379,7 @@ function showReport(type){
 
     var maxCount=counts[ranked[0].id]||1;
 
-    
+    // Build top books table
     var html2="<h3 style='font-size:15px;font-weight:700;margin-bottom:.25rem'>&#x1F525; Top borrowed books</h3>";
     html2+="<p style='font-size:13px;color:var(--mt);margin-bottom:1rem'>Based on all transaction history. Use this to guide procurement and promotions.</p>";
     html2+="<div class='tbl-wrap' style='margin-bottom:2rem'><table><thead><tr>";
@@ -2417,7 +2404,7 @@ function showReport(type){
     });
     html2+="</tbody></table></div>";
 
-    
+    // Genre insights
     html2+="<h3 style='font-size:15px;font-weight:700;margin-bottom:.25rem'>&#x1F4CA; Borrowing insights</h3>";
     html2+="<p style='font-size:13px;color:var(--mt);margin-bottom:1rem'>Patterns from your lending history.</p>";
     html2+="<div class='tbl-wrap' style='margin-bottom:2rem'><table><thead><tr><th>Category</th><th>Borrows</th><th>Books in catalog</th><th>Demand ratio</th><th>Insight</th></tr></thead><tbody>";
@@ -2437,7 +2424,7 @@ function showReport(type){
     });
     html2+="</tbody></table></div>";
 
-    
+    // Book suggestions based on popular genres
     html2+="<h3 style='font-size:15px;font-weight:700;margin-bottom:.25rem'>&#x1F6D2; Procurement suggestions</h3>";
     html2+="<p style='font-size:13px;color:var(--mt);margin-bottom:1rem'>Books to consider adding based on what members are borrowing. These are popular titles in your top genres not yet in your catalog.</p>";
 
@@ -2513,7 +2500,7 @@ function showReport(type){
     return;
   }
     if(type==="inactive"){
-    
+    // Members with no transaction in last 90 days AND no book currently out
     var cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
     var cutoffStr=cutoff.toISOString().split("T")[0];
     var inactive=DB.members.filter(function(m){
@@ -2570,11 +2557,11 @@ function showReport(type){
 
     out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:1rem'>🙋 Volunteer activity</h3>";
 
-    
+    // ── Top bar: global date filter + calendar toggle ────────────────────────
     var topBar=document.createElement("div");
     topBar.style.cssText="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap";
 
-    
+    // Global date filter
     var filterWrap=document.createElement("div");
     filterWrap.style.cssText="display:flex;align-items:center;gap:8px";
     var filterLbl=document.createElement("label");
@@ -2588,7 +2575,7 @@ function showReport(type){
     clearBtn.style.cssText="font-size:12px;padding:5px 10px;border:1px solid var(--bd);border-radius:7px;background:transparent;color:var(--mt);cursor:pointer";
     filterWrap.appendChild(filterLbl);filterWrap.appendChild(dateInput);filterWrap.appendChild(clearBtn);
 
-    
+    // Calendar toggle button
     var calToggle=document.createElement("button");
     calToggle.innerHTML="📅 Open days";
     calToggle.style.cssText="font-size:12px;padding:5px 12px;border:1px solid var(--bd);border-radius:7px;background:var(--bg2);color:var(--tx);cursor:pointer;margin-left:auto";
@@ -2596,7 +2583,7 @@ function showReport(type){
     topBar.appendChild(filterWrap);topBar.appendChild(calToggle);
     out.appendChild(topBar);
 
-    
+    // ── Mini calendar (collapsed by default) ─────────────────────────────────
     var calPanel=document.createElement("div");
     calPanel.style.cssText="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:1.25rem;max-width:340px";
     out.appendChild(calPanel);
@@ -2607,7 +2594,7 @@ function showReport(type){
 
     function buildMiniCal(){
       var yr=calState.year, mo=calState.month;
-      var firstDay=(new Date(yr,mo,1).getDay()+6)%7; 
+      var firstDay=(new Date(yr,mo,1).getDay()+6)%7; // Mon=0
       var daysInMonth=new Date(yr,mo+1,0).getDate();
       var today=new Date();
 
@@ -2647,7 +2634,7 @@ function showReport(type){
       if(!open) buildMiniCal();
     });
 
-    
+    // ── Per volunteer sections ───────────────────────────────────────────────
     function buildVolTable(vol, filterDate){
       var dates=Object.keys(volData[vol]).sort(function(a,b){return b.localeCompare(a);});
       if(filterDate) dates=dates.filter(function(d){return d===filterDate;});
@@ -2710,7 +2697,7 @@ function showReport(type){
       out.appendChild(section);
     });
 
-    
+    // Global date filter wiring
     function applyFilter(){
       var fd=dateInput.value;
       sections.forEach(function(s){
@@ -2725,6 +2712,9 @@ function showReport(type){
   }
 }
 
+// ============================================================
+// USER MANAGEMENT
+// ============================================================
 function renderUsers(){
   var tbody=document.getElementById("users-tbody");tbody.innerHTML="";
   var roleLabel={master_admin:"Master admin",backup_admin:"Backup admin",volunteer:"Volunteer"};
@@ -2794,6 +2784,9 @@ function saveUser(){
   saveData();closeModal("m-adduser");renderUsers();
 }
 
+// ============================================================
+// PUBLIC CATALOG
+// ============================================================
 function makeCard(b){
   var col=gc(b.id);var bg=col[0],tc=col[1];
   var card=document.createElement("div");card.className="card";
@@ -2809,7 +2802,7 @@ function makeCard(b){
   var ta=document.createElement("span");ta.className="tag ta";ta.textContent=b.age.split(" (")[0];tags.appendChild(ta);
   var tg=document.createElement("span");tg.className="tag tg";tg.textContent=b.genre;tags.appendChild(tg);
   ci.appendChild(tags);
-  
+  // Summary expand section
   if(b.summary&&b.summary.trim()){
     var sumWrap=document.createElement("div");
     sumWrap.style.cssText="border-top:0.5px solid var(--bd);padding-top:7px;margin-top:5px;";
@@ -2836,7 +2829,7 @@ function makeCard(b){
   qb.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="3" y="3" width="2" height="2" fill="currentColor" stroke="none"/><rect x="11" y="3" width="2" height="2" fill="currentColor" stroke="none"/><rect x="3" y="11" width="2" height="2" fill="currentColor" stroke="none"/><line x1="9" y1="9" x2="9" y2="10"/><line x1="11" y1="9" x2="13" y2="9"/><line x1="13" y1="11" x2="13" y2="13"/><line x1="11" y1="13" x2="9" y2="13"/><line x1="9" y1="11" x2="11" y2="11"/></svg>';
   (function(bid){qb.addEventListener("click",function(e){e.stopPropagation();openQR(bid);});})(b.id);
   cf.appendChild(qb);ci.appendChild(cf);card.appendChild(cover);card.appendChild(ci);
-  
+  // Always show About this book section
   var ss=document.createElement("div");
   ss.style.cssText="border-top:1px solid var(--bd);padding:8px 12px 10px;background:var(--bg);";
   var sb=document.createElement("button");
@@ -2859,7 +2852,7 @@ function makeCard(b){
       var title=b.title;
       var author=b.author&&b.author!=="Unknown"?b.author:"";
 
-      
+      // Use Claude API to generate summary — no CORS issues, works for all books
       fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -2878,7 +2871,7 @@ function makeCard(b){
         if(s&&s.length>10){
           st.textContent=s;
           b.summary=s;
-          
+          // Save to Supabase permanently
           supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s}).catch(function(){});
         } else {
           st.textContent="No summary available for this book.";
@@ -2908,13 +2901,14 @@ function upd(){
 document.getElementById("cs").addEventListener("input",upd);
 function setA(btn,v){aF=v;document.querySelectorAll("#ap .pill").forEach(function(b){b.classList.remove("aon");});btn.classList.add("aon");upd();}
 function setG(btn,v){gF=v;document.querySelectorAll("#gp .pill").forEach(function(b){b.classList.remove("gon");});btn.classList.add("gon");upd();}
-
+// hsearch defined at top of script
 function closeQR(){document.getElementById("qrm").classList.remove("open");}
 function dlQR(){
   var t=document.getElementById("qt").textContent.replace(/[^a-z0-9]/gi,"_").toLowerCase();
   var a=document.createElement("a");a.download="qr_"+t+".png";a.href=document.getElementById("qrc").toDataURL("image/png");a.click();
 }
 
+// ── PENDING BOOK CHECK & OVERRIDE ───────────────────────────────────────────
 function checkMemberPending(mid){
   var today=todayStr();
   var member=DB.members.find(function(x){return x.id===mid;});
@@ -2924,7 +2918,7 @@ function checkMemberPending(mid){
   var submitBtn=document.getElementById("iss-submit-btn");
   var overrideBtn=document.getElementById("iss-override-btn");
 
-  
+  // Check flat limit (max 2 books per flat)
   var flatLimitHit=false;
   var flatCount=0;
   if(member&&member.block&&member.flatNo){
@@ -2944,27 +2938,20 @@ function checkMemberPending(mid){
     return;
   }
 
-  
+  // Build warning list
   var lines=[];
   if(flatLimitHit){
     lines.push("<strong>&#x1F3E0; Flat limit reached:</strong> "+flatCount+" book"+(flatCount!==1?"s are":"is")+" already issued to "+(member.block||"")+" — Flat "+(member.flatNo||"")+" (max 2 per flat).");
   }
   pending.forEach(function(b){
     var agingDays=b.dueDate?Math.ceil((new Date(today)-new Date(b.dueDate))/(1000*60*60*24)):null;
-    var overdue=agingDays>0;
-    var statusStr=overdue
-      ?"<span style='color:#C0392B;font-weight:700'>⚠ "+agingDays+" day"+(agingDays!==1?"s":"")+" overdue</span>"
-      :(b.dueDate?"<span style='color:#854F0B'>Due "+fmtDate(b.dueDate)+"</span>":"<span style='color:var(--mt)'>No due date</span>");
-    var idBadge=b.id?"<span style='font-family:monospace;font-size:11px;font-weight:700;color:#185FA5;background:#E6F1FB;padding:1px 6px;border-radius:4px;margin-right:5px'>"+b.id+"</span>":"";
-    lines.push("<div style='display:flex;justify-content:space-between;align-items:center;padding:3px 0'>"
-      +"<span>"+idBadge+"<strong>"+b.title+"</strong></span>"
-      +"<span style='margin-left:12px;white-space:nowrap'>"+statusStr+"</span>"
-      +"</div>");
+    var overdueStr=agingDays>0?" — <strong>"+agingDays+" day"+(agingDays!==1?"s":"")+" overdue</strong>":(b.dueDate?" — due "+fmtDate(b.dueDate):" — no due date set");
+    lines.push("• "+b.title+overdueStr);
   });
-  list.innerHTML=lines.join("");
+  list.innerHTML=lines.join("<br>");
   warn.style.display="block";
 
-  
+  // Disable issue button, show override
   submitBtn.disabled=true;
   submitBtn.style.opacity="0.45";
   overrideBtn.style.display="inline-flex";
@@ -2992,19 +2979,19 @@ function confirmOverride(){
   (function(){var _e=document.getElementById("override-err");if(_e)_e.style.display="none"})();
   closeModal("m-override");
 
-  
+  // Store override comment on the transaction and activity
   var mid=document.getElementById("iss-member").value;
   var m=DB.members.find(function(x){return x.id===mid;});
   var mname=m?m.fname+" "+m.lname:mid;
 
-  
+  // Temporarily re-enable issue and proceed
   var submitBtn=document.getElementById("iss-submit-btn");
   submitBtn.disabled=false;
   submitBtn._override=true;
   submitBtn._overrideComment=comment;
   submitBtn._overrideMember=mname;
 
-  
+  // Log override to activity immediately
   DB.activity.unshift({
     msg:"⚠️ Override by "+currentUser.name+": issued to "+mname+" despite pending book(s). Reason: "+comment,
     user:currentUser.name,
@@ -3014,10 +3001,12 @@ function confirmOverride(){
   saveData();
   refreshDashboard();
 
-  
+  // Trigger the actual issue
   issueBook(true, comment);
 }
 
+// ── EMAIL CONFIG & SENDING ───────────────────────────────────────────────────
+// ── EMAILJS HARDCODED CONFIG (set by master admin, works for all volunteers) ──
 var EMAILJS_CONFIG={
   serviceId:        "service_d44zlzl",
   publicKey:        "oj3FrcjTYyIBy-cUs",
@@ -3025,14 +3014,14 @@ var EMAILJS_CONFIG={
   reminderTemplate: ""
 };
 function loadEmailConfig(){
-  
+  // localStorage override takes priority (set via Email Settings UI)
   try{
     var c=localStorage.getItem("chezlib_email");
     if(c){var parsed=JSON.parse(c);
       if(parsed.serviceId&&parsed.publicKey) return parsed;
     }
   }catch(e){}
-  
+  // Fall back to hardcoded values
   return EMAILJS_CONFIG;
 }
 function saveEmailConfig(){
@@ -3048,7 +3037,7 @@ function saveEmailConfig(){
     s.style.background="#FCEAEA";s.style.color="#C0392B";return;
   }
   localStorage.setItem("chezlib_email",JSON.stringify(cfg));
-  
+  // Also update the in-memory hardcoded config so it works immediately
   EMAILJS_CONFIG=cfg;
   emailjs.init(cfg.publicKey);
   var s=document.getElementById("ejs-status");
@@ -3063,7 +3052,7 @@ function openEmailSettings(){
   document.getElementById("ejs-tpl-issue").value=cfg.issueTemplate||"";
   document.getElementById("ejs-tpl-remind").value=cfg.reminderTemplate||"";
   (function(){var _e=document.getElementById("ejs-status");if(_e)_e.style.display="none"})();
-  
+  // Show configured status
   var isConfigured=cfg.serviceId&&cfg.publicKey;
   var btn=document.getElementById("nav-email-settings");
   if(btn)btn.textContent=isConfigured?"✓ Email configured":"⚠ Email not configured";
@@ -3122,18 +3111,19 @@ function checkAndSendReminders(){
     if(b.status!=="checked"||!b.dueDate)return;
     var due=new Date(b.dueDate);
     var daysUntilDue=Math.ceil((due-today)/(1000*60*60*24));
-    
+    // Send reminder on day 9 (1 day before due)
     if(daysUntilDue===1){
       var m=DB.members.find(function(x){return x.id===b.issuedTo;});
       if(m)sendReminderEmail(m,b);
     }
   });
 }
-
+// Run reminder check once on load and every hour
 initEmailJS();
 setInterval(checkAndSendReminders, 60*60*1000);
 setTimeout(checkAndSendReminders, 3000);
 
+// ── ADMIN SETUP UI ────────────────────────────────────────────────────────────
 function setupStaffUIExtra(){
   var isAdmin=currentUser.role==="master_admin"||currentUser.role==="backup_admin";
   var btn=document.getElementById("nav-email-settings");
@@ -3149,6 +3139,7 @@ function setupStaffUIExtra(){
   }
 }
 
+// ── EDIT USER ────────────────────────────────────────────────────────────────
 var editUserId=null;
 function openEditUser(id){
   id = String(id).trim();
@@ -3159,7 +3150,7 @@ function openEditUser(id){
   if(!u){alert("User not found: "+id+" (total: "+DB.users.length+")");return;}
   editUserId=id;
 
-  
+  // Populate fields
   document.getElementById("eu-title").textContent=(currentUser&&currentUser.id===id)?"Edit my details":"Edit user: "+u.name;
   document.getElementById("eu-subtitle").textContent="Update details for this user.";
   document.getElementById("eu-name").value=u.name||"";
@@ -3168,7 +3159,7 @@ function openEditUser(id){
   document.getElementById("eu-confirmpwd").value="";
   var msg=document.getElementById("eu-msg");if(msg)msg.style.display="none";
 
-  
+  // Show modal by appending directly to body
   var modal=document.getElementById("m-edit-user");
   document.body.appendChild(modal);
   modal.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
@@ -3188,11 +3179,11 @@ function saveEditUser(){
 
   if(!name||!username) return showMsg("Name and username are required.",false);
 
-  
+  // Check username not taken by someone else
   var taken=DB.users.find(function(x){return x.username===username&&x.id!==editUserId;});
   if(taken) return showMsg("That username is already taken.",false);
 
-  
+  // Password validation if provided
   if(newpwd||confirmpwd){
     if(newpwd.length<6) return showMsg("Password must be at least 6 characters.",false);
     if(newpwd!==confirmpwd) return showMsg("Passwords do not match.",false);
@@ -3229,6 +3220,7 @@ function saveEditUser(){
   }
 }
 
+// ── CHANGE PASSWORD ──────────────────────────────────────────────────────────
 function openChangePassword(){
   document.getElementById("cp-current").value="";
   document.getElementById("cp-new").value="";
@@ -3266,8 +3258,9 @@ function saveNewPassword(){
   }
 }
 
+// ── DAILY CONTENT ────────────────────────────────────────────────────────────
 var DAILY_CONTENT=[
-  
+  // Words of the day
   {type:"word",title:"Serendipity",body:"(n.) The occurrence of events by chance in a happy way. <em>'She found her favourite book by pure serendipity at the second-hand bookshop.'</em>"},
   {type:"word",title:"Ephemeral",body:"(adj.) Lasting for a very short time. <em>'The joy of finishing a great book is ephemeral — but the story stays with you forever.'</em>"},
   {type:"word",title:"Mellifluous",body:"(adj.) Sweet or musical; pleasant to hear. <em>'The narrator\'s mellifluous voice made the audiobook utterly captivating.'</em>"},
@@ -3278,7 +3271,7 @@ var DAILY_CONTENT=[
   {type:"word",title:"Tenacious",body:"(adj.) Holding firmly to something; persistent. <em>'A tenacious reader never gives up, even on the most challenging books.'</em>"},
   {type:"word",title:"Eloquent",body:"(adj.) Fluent or persuasive in speaking or writing. <em>'The author\'s eloquent prose made even mundane moments feel magical.'</em>"},
   {type:"word",title:"Wanderlust",body:"(n.) A strong desire to travel and explore the world. <em>'Reading travel memoirs satisfies the wanderlust of those who cannot travel.'</em>"},
-  
+  // Quotes of the day
   {type:"quote",title:"A reader lives a thousand lives...",body:"— George R.R. Martin. <em>'A man who never reads lives only one.'</em>"},
   {type:"quote",title:"Not all those who wander are lost.",body:"— J.R.R. Tolkien, The Fellowship of the Ring"},
   {type:"quote",title:"So many books, so little time.",body:"— Frank Zappa. A reminder to make reading a daily habit!"},
@@ -3287,7 +3280,7 @@ var DAILY_CONTENT=[
   {type:"quote",title:"It is what you read when you don\'t have to...",body:"— Oscar Wilde. <em>'...that determines what you will be when you can\'t help it.'</em>"},
   {type:"quote",title:"There is no friend as loyal as a book.",body:"— Ernest Hemingway. Visit us at Chez Library to find your next loyal companion!"},
   {type:"quote",title:"Reading is to the mind...",body:"— Joseph Addison. <em>'...what exercise is to the body.'</em>"},
-  
+  // Learning nuggets
   {type:"nugget",title:"Did you know?",body:"The average person reads about 200-300 words per minute. A typical novel has 80,000 words — that\'s just 4-7 hours of reading!"},
   {type:"nugget",title:"Reading tip",body:"Reading for just 6 minutes can reduce stress by up to 68% — more effective than listening to music or going for a walk."},
   {type:"nugget",title:"Fun book fact",body:"The world\'s oldest known book is the Diamond Sutra, a Buddhist text printed in 868 AD — over 1,150 years old!"},
@@ -3302,14 +3295,14 @@ var TYPE_LABELS={word:"Word of the day",quote:"Quote of the day",nugget:"Learnin
 var TYPE_ICONS={word:"&#x1F4D6;",quote:"&#x1F4AC;",nugget:"&#x1F4A1;"};
 
 function getDailyContent(){
-  
+  // Use full date (YYYYMMDD) as a numeric seed so content changes every day
   var now=new Date();
   var seed=now.getFullYear()*10000+(now.getMonth()+1)*100+now.getDate();
   return DAILY_CONTENT[seed % DAILY_CONTENT.length];
 }
 
 function renderPopularBooks(){
-  
+  // Count borrows per book from transactions
   var counts={};
   DB.transactions.forEach(function(t){
     if(t.type==="issue") counts[t.bookId]=(counts[t.bookId]||0)+1;
@@ -3349,7 +3342,7 @@ function renderPopularBooks(){
       var cs=document.getElementById("cs");
       if(cs){cs.value=b.title;goPublic("catalog");upd();}
     };
-    
+    // Cover
     var coverDiv=document.createElement("div");
     coverDiv.style.cssText="height:130px;background:"+bg+";position:relative;overflow:hidden;";
     var fb=document.createElement("div");
@@ -3362,20 +3355,20 @@ function renderPopularBooks(){
       loadCover(img,b.cover,b.cover2||null);
       coverDiv.appendChild(img);
     }
-    
+    // Rank badge
     var badge=document.createElement("div");
     var medals=["🥇","🥈","🥉","4","5","6"];
     badge.style.cssText="position:absolute;top:6px;left:6px;background:rgba(0,0,0,.55);color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;backdrop-filter:blur(2px)";
     badge.textContent=i<3?medals[i]:"#"+(i+1);
     coverDiv.appendChild(badge);
-    
+    // Status badge
     var statusBadge=document.createElement("div");
     var isAvail=b.status==="available";
     statusBadge.style.cssText="position:absolute;bottom:6px;right:6px;background:"+(isAvail?"#0F6E56":"#C0392B")+";color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px";
     statusBadge.textContent=isAvail?"Available":"On loan";
     coverDiv.appendChild(statusBadge);
     card.appendChild(coverDiv);
-    
+    // Info
     var info=document.createElement("div");
     info.style.cssText="padding:8px 10px";
     var title=document.createElement("div");
@@ -3387,12 +3380,12 @@ function renderPopularBooks(){
     var borrows=document.createElement("div");
     borrows.style.cssText="font-size:11px;color:var(--ac);font-weight:600";
     borrows.textContent=(counts[b.id]||0)+" borrow"+(counts[b.id]!==1?"s":"");
-    
+    // Age + Genre badges
     var badges=document.createElement("div");
     badges.style.cssText="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px";
     if(b.age){var ab=document.createElement("span");ab.style.cssText="font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;background:#EEEDFE;color:#534AB7";ab.textContent=b.age.split(" (")[0];badges.appendChild(ab);}
     if(b.genre){var gb=document.createElement("span");gb.style.cssText="font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;background:#E1F5EE;color:#0F6E56";gb.textContent=b.genre;badges.appendChild(gb);}
-     
+     // Summary — expandable like Book catalog
      info.appendChild(title);info.appendChild(author);info.appendChild(badges);info.appendChild(borrows);
      if(b.summary&&b.summary.trim()){
        var sumWrap=document.createElement("div");
@@ -3413,10 +3406,10 @@ function renderPopularBooks(){
 function renderMonthlyStats(){
   var now=new Date();
   var year=now.getFullYear();
-  var curMonth=now.getMonth(); 
+  var curMonth=now.getMonth(); // 0-indexed
   var monthNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-  
+  // Count issues per month/year
   var counts={}; // "YYYY-M" -> count
   var blockCounts={}; // "YYYY-M|blockname" -> count  (for block chart)
   if(DB&&DB.transactions){
@@ -3435,40 +3428,40 @@ function renderMonthlyStats(){
     });
   }
 
-  
+  // Helper: sum a full year
   function yearTotal(y){
     var tot=0;
     for(var m=0;m<12;m++) tot+=(counts[y+"-"+m]||0);
     return tot;
   }
-  
+  // Helper: sum a quarter
   function qTotal(y,q){
     var s=q*3;
     return (counts[y+"-"+s]||0)+(counts[y+"-"+(s+1)]||0)+(counts[y+"-"+(s+2)]||0);
   }
 
-  
+  // Build 3 bars
   var curQ=Math.floor(curMonth/3);
   var prevMonth=curMonth===0?11:curMonth-1;
   var prevMonthYear=curMonth===0?year-1:year;
   var bars=[];
 
-  
+  // Bar 1: last completed quarter OR prev year (Jan/Feb)
   if(curMonth===0||curMonth===1){
-    
+    // Jan or Feb: show previous full year
     bars.push({label:String(year-1), value:yearTotal(year-1), color:"#185FA5"});
   } else {
-    
+    // Last completed quarter
     var lastQ=curQ>0?curQ-1:3;
     var lastQYear=curQ>0?year:year-1;
     bars.push({label:"Q"+(lastQ+1)+" '"+(String(lastQYear).slice(2)), value:qTotal(lastQYear,lastQ), color:"#0F6E56"});
   }
-  
+  // Bar 2: previous month
   bars.push({label:monthNames[prevMonth]+" '"+(String(prevMonthYear).slice(2)), value:counts[prevMonthYear+"-"+prevMonth]||0, color:"#5BB89A"});
-  
+  // Bar 3: current month
   bars.push({label:monthNames[curMonth]+" '"+(String(year).slice(2)), value:counts[year+"-"+curMonth]||0, color:"#93D4BE"});
 
-  
+  // Render borrowing bars
   var chartEl=document.getElementById("pub-borrow-chart");
   var labelsEl=document.getElementById("pub-borrow-labels");
   if(!chartEl||!labelsEl)return;
@@ -3493,21 +3486,21 @@ function renderMonthlyStats(){
     labelsEl.appendChild(lblDiv);
   });
 
-  
+  // ── TOP 3 BLOCKS CHART ──────────────────────────────────────
   var blockChartEl=document.getElementById("pub-block-chart");
   var blockLabelsEl=document.getElementById("pub-block-labels");
   var blockTitleEl=document.getElementById("pub-block-title");
   if(!blockChartEl||!blockLabelsEl)return;
 
-  
+  // In January: use previous full year; otherwise: use previous month
   var isJan=(curMonth===0);
   var blockPeriodLabel=isJan?String(year-1):(monthNames[prevMonth]+" '"+String(prevMonthYear).slice(2));
   if(blockTitleEl) blockTitleEl.textContent="top blocks · "+blockPeriodLabel;
 
-  
+  // Aggregate block totals for the period
   var blockTotals={};
   if(isJan){
-    
+    // Sum all months of prev year per block
     for(var bk in blockCounts){
       var parts2=bk.split("|");
       var dateKey=parts2[0], blk=parts2[1];
@@ -3539,7 +3532,7 @@ function renderMonthlyStats(){
     var abbr=blockAbbrev(blk);
     var wrap=document.createElement("div");
     wrap.style.cssText="display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;cursor:default";
-    
+    // Tooltip
     var tooltip=document.createElement("div");
     tooltip.textContent=blk+" · "+val+" borrowed";
     tooltip.style.cssText="position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0F3D2E;color:white;font-size:11px;font-weight:600;padding:4px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10";
@@ -3571,6 +3564,7 @@ function renderDailyContent(){
   if(bodyEl)bodyEl.innerHTML=c.body;
 }
 
+// ── TOP READERS ───────────────────────────────────────────────────────────────
 var BLOCK_ABBREV={
   "Alston":"AL","Boston":"BO","Clarence":"CL","Crescent":"CR",
   "Goldcoast":"GC","Greenwich":"GR","Hamstead- A":"HA","Hamstead- B":"HB",
@@ -3653,14 +3647,14 @@ function renderTopReaders(){
   var classes=["gold","silver","bronze"];
   var allTime=getAllTimeTopReaders();
 
-  
+  // ── Public: card layout ───────────────────────────────────────────────────
   var pubStrip=document.getElementById("pub-top-readers");
   var pubRow=document.getElementById("pub-readers-row");
   if(pubStrip&&pubRow){
     if(data&&data.readers.length>0){
       pubStrip.style.display="block";
       pubRow.innerHTML="";
-      
+      // Label
       var lbl=document.createElement("div");
       lbl.style.cssText="width:100%;font-size:11px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem";
       lbl.textContent=data.isAnnual?"🏆 Top readers of "+data.label.replace("Top readers of ",""):"🏆 Top readers — "+data.label;
@@ -3683,14 +3677,14 @@ function renderTopReaders(){
     } else {pubStrip.style.display="none";}
   }
 
-  
+  // ── Dashboard: always-visible simple table ───────────────────────────────
   var dashStrip=document.getElementById("dash-top-readers");
   var dashRow=document.getElementById("dash-readers-row");
   var dashMonth=document.getElementById("dash-readers-month");
   if(dashStrip&&dashRow){
     dashStrip.style.display="block";
 
-    
+    // Get current month readers (not date-restricted for dashboard)
     var now2=new Date();
     var curMonth=now2.getMonth();
     var curYear=now2.getFullYear();
@@ -3714,10 +3708,10 @@ function renderTopReaders(){
     var tableHtml="<table style='width:100%;border-collapse:collapse;font-size:13px'>";
     tableHtml+="<thead><tr style='background:var(--bg2)'><th style='padding:8px 12px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>#</th><th style='padding:8px 12px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Member</th><th style='padding:8px 12px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Block / Flat</th><th style='padding:8px 12px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>"+months2[prevMonth]+"</th><th style='padding:8px 12px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>This month</th><th style='padding:8px 12px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>All time</th></tr></thead><tbody>";
 
-    
+    // Combine all members who appear in any list
     var seenIds={};
     prevTop.concat(curTop).concat(allTime.map(function(r){return Object.keys(prevCounts).concat(Object.keys(curCounts)).find(function(id){var m=DB.members.find(function(x){return x.id===id;});return m&&m.fname+" "+m.lname===r.name;});})).forEach(function(id){if(id)seenIds[id]=true;});
-    
+    // Sort by all-time
     var allIds=Object.keys(seenIds).sort(function(a,b){return (allTime.findIndex(function(r){var m=DB.members.find(function(x){return x.id===b;});return m&&m.fname+" "+m.lname===r.name;}))-( allTime.findIndex(function(r){var m=DB.members.find(function(x){return x.id===a;});return m&&m.fname+" "+m.lname===r.name;}));}).slice(0,5);
 
     var rank=["🥇","🥈","🥉","4.","5."];
@@ -3743,6 +3737,7 @@ function renderTopReaders(){
   }
 }
 
+// ── BOOK SUGGESTION ──────────────────────────────────────────────────────────
 var suggestTimer=null;
 var suggestData=null;
 
@@ -3750,15 +3745,15 @@ function suggestLookup(){
   clearTimeout(suggestTimer);
   var q=document.getElementById("sug-title").value.trim();
   if(q.length<3){(function(){var _e=document.getElementById("sug-lookup");if(_e)_e.style.display="none"})();return;}
-  
+  // Show quick links immediately from typed text
   showSuggestLinks(q, document.getElementById("sug-author").value.trim(), null, null, false);
-  
+  // Then fetch better data from Open Library
   suggestTimer=setTimeout(function(){doSuggestLookup(q);},800);
 }
 
 function doSuggestLookup(q){
   var author=document.getElementById("sug-author").value.trim();
-  
+  // Search by title specifically for better accuracy
   var titleParam="title="+encodeURIComponent(q);
   var authorParam=author?"&author="+encodeURIComponent(author):"";
   var url="https://openlibrary.org/search.json?"+titleParam+authorParam+"&limit=5&fields=title,author_name,key,cover_i";
@@ -3769,12 +3764,12 @@ function doSuggestLookup(q){
         showSuggestLinks(q, author, null, null, false);
         return;
       }
-      
+      // Pick the best match: prefer title that starts with or exactly matches typed query
       var lq=q.toLowerCase();
       var best=data.docs[0];
       data.docs.forEach(function(doc){
         var dt=(doc.title||"").toLowerCase();
-        
+        // Exact match wins; otherwise prefer title that starts with query
         if(dt===lq) best=doc;
         else if(dt.indexOf(lq)===0&&(best.title||"").toLowerCase()!==lq) best=doc;
       });
@@ -3822,7 +3817,7 @@ function submitSuggestion(){
   var olLink=confirmed&&suggestData?"https://openlibrary.org"+suggestData.olKey:"";
   var grLink="https://www.goodreads.com/search?q="+encodeURIComponent(finalTitle);
 
-  
+  // Check if already in catalog
   if(isInCatalog(finalTitle)){
     msg.innerHTML="📚 <strong>This book is already in our library!</strong> Check the Catalog tab to find it.";
     msg.style.background="#E1F5EE";msg.style.color="#0F6E56";
@@ -3831,7 +3826,7 @@ function submitSuggestion(){
     return;
   }
 
-  
+  // Check if already suggested (pending)
   var existing=loadSuggestions().filter(function(s){return !s.procured&&s.title.toLowerCase().trim()===finalTitle.toLowerCase().trim();});
   if(existing.length>0){
     msg.innerHTML="💛 <strong>Someone has already suggested this book!</strong> It's on our wishlist — we'll try to get it soon.";
@@ -3841,7 +3836,7 @@ function submitSuggestion(){
     return;
   }
 
-  
+  // Save suggestion to Supabase + localStorage cache
   var newSug={
     id:"SUG"+Date.now(),
     title:finalTitle,author:finalAuthor,suggestedBy:name||"Anonymous",
@@ -3854,7 +3849,7 @@ function submitSuggestion(){
   saveSuggestions(suggestions);
   saveSuggestion_DB(newSug).catch(function(e){console.error("Suggestion save failed:",e);});
 
-  
+  // Clear form
   document.getElementById("sug-title").value="";
   document.getElementById("sug-author").value="";
   document.getElementById("sug-name").value="";
@@ -3870,7 +3865,7 @@ function submitSuggestion(){
 }
 
 function saveSuggestions(suggestions){
-  
+  // Keep localStorage as cache
   try{localStorage.setItem("chezlib_suggestions",JSON.stringify(suggestions));}catch(e){}
 }
 function loadSuggestions(){
@@ -3924,9 +3919,9 @@ function renderSuggestions(){
   var list=document.getElementById("sug-list");
   if(!wrap||!list)return;
 
-  
+  // Load from Supabase, fall back to localStorage cache
   loadSuggestions_DB().then(function(suggestions){
-    
+    // Update localStorage cache
     saveSuggestions(suggestions);
     if(suggestions.length===0){wrap.style.display="none";return;}
     wrap.style.display="block";
@@ -3999,6 +3994,8 @@ function makeSugCard(s, isProcured){
   return div;
 }
 
+
+// ── PUBLIC MEMBER LOOKUP ─────────────────────────────────────────────────────
 function pubLookup(){
   var q=(document.getElementById("pub-lookup-input").value||"").toLowerCase().trim();
   var resultDiv=document.getElementById("pub-lookup-result");
@@ -4007,7 +4004,7 @@ function pubLookup(){
   var today=new Date();
   var todayStr2=today.toISOString().split("T")[0];
 
-  
+  // Find matching members by name, block, flat, or full address
   var matches=DB.members.filter(function(m){
     var name=(m.fname+" "+m.lname).toLowerCase();
     var flat=(m.flatNo||"").toLowerCase();
@@ -4080,11 +4077,13 @@ function clearLookup(){
   (function(){var _e=document.getElementById("pub-lookup-result");if(_e)_e.style.display="none"})();
 }
 
+// Enter key support
 document.addEventListener("DOMContentLoaded",function(){
   var inp=document.getElementById("pub-lookup-input");
   if(inp)inp.addEventListener("keydown",function(e){if(e.key==="Enter")pubLookup();});
 });
 
+// ── MEMBER CONFIRMATION CARD ─────────────────────────────────────────────────
 function showMemberCard(m){
   if(!m) return;
   var card = document.getElementById("iss-member-card");
@@ -4097,7 +4096,7 @@ function showMemberCard(m){
   document.getElementById("iss-mc-block").style.color = blockFlat.length>0 ? "#0F3D2E" : "#C0392B";
   document.getElementById("iss-mc-flat").textContent = m.email||"";
 
-  
+  // Check for missing fields
   var missing=[];
   if(!m.email||!m.email.trim()) missing.push("• Email address is missing");
   if(!m.phone||!m.phone.trim()) missing.push("• Mobile number is missing");
@@ -4128,16 +4127,17 @@ function showMemberCard(m){
 function openEditMemberFromIssue(){
   var mid=document.getElementById("iss-member").value;
   if(!mid) return;
-  
+  // Switch to members panel and open edit
   showPanel("p-members");
   renderMembers();
-  
+  // Small delay to let panel render, then open edit modal
   setTimeout(function(){openEditMember(mid);},150);
 }
 function hideMemberCard(){
   var el=document.getElementById("iss-member-card");if(el)el.style.display="none";
 }
 
+// ── NEW ARRIVALS ─────────────────────────────────────────────────────────────
 function getNewArrivals(){
   var today=new Date();
   return DB.books.filter(function(b){
@@ -4158,7 +4158,7 @@ function updateActiveMembers(){
 function renderNewArrivals(){
   var list=getNewArrivals();
   var today=new Date();
-  
+  // Public strip
   var pubStrip=document.getElementById("pub-new-arrivals");
   var pubScroll=document.getElementById("pub-na-scroll");
   if(pubStrip){
@@ -4181,7 +4181,7 @@ function renderNewArrivals(){
       });
     }else{pubStrip.style.display="none";}
   }
-  
+  // Staff dashboard strip
   var dashStrip=document.getElementById("dash-new-arrivals");
   var dashTbody=document.getElementById("dash-na-tbody");
   if(dashStrip){
@@ -4217,8 +4217,10 @@ function renderNewArrivals(){
   }
 }
 
+// ── BULK UPLOAD ───────────────────────────────────────────────────────────────
 var bulkPreviewData=[];
 
+// Age/genre auto-assign rules
 var AGE_KEYWORDS={
   "Picture books (0–4)":["picture","baby","toddler","board book"],
   "Early readers (5–7)":["early reader","beginning reader","level 1","level 2","phonics"],
@@ -4255,7 +4257,7 @@ function openBulkUpload(){
   document.getElementById("bulk-csv-input").value="";
   document.getElementById("bulk-manual-rows").innerHTML="";
   (function(){var _e=document.getElementById("bulk-preview-section");if(_e)_e.style.display="none"})();
-  switchBulkTab("csv"); 
+  switchBulkTab("csv"); // reset to CSV tab with correct styling
   (function(){var _e=document.getElementById("bulk-csv-pane");if(_e)_e.style.display="block"})();
   (function(){var _e=document.getElementById("bulk-manual-pane");if(_e)_e.style.display="none"})();
   (function(){var _e=document.getElementById("bulk-err");if(_e)_e.style.display="none"})();
@@ -4302,7 +4304,7 @@ function parseCSV(text){
   for(var i=start;i<lines.length;i++){
     var line=lines[i].trim();
     if(!line)continue;
-    
+    // CSV split respecting quoted fields
     var cols=[];var cur="";var inQ=false;
     for(var ci=0;ci<line.length;ci++){
       if((line[ci]==='"'||line[ci]==="'")&&!inQ){inQ=line[ci];}
@@ -4330,7 +4332,7 @@ function parseCSV(text){
     } else {
       title=cols[0]||"";
     }
-    
+    // Auto-infer age group from BookID prefix
     if(bookId){
       var pfx=bookId.charAt(0).toUpperCase();
       var pfxAgeMap={"A":"Picture books (0\u20134)","B":"Early readers (5\u20137)","C":"Middle grade (8\u201312)","D":"Young adult (13\u201317)","E":"Adults"};
@@ -4344,7 +4346,7 @@ function buildPreview(rawList){
   var today=todayStr();
   var existingTitles=DB.books.map(function(b){return b.title.toLowerCase().trim();});
   var existingIds=DB.books.map(function(b){return b.id.toLowerCase().trim();});
-  
+  // Track IDs seen within this upload batch to catch intra-batch duplicates
   var seenIdsInBatch={};
   bulkPreviewData=rawList.filter(function(r){return r.title;}).map(function(r){
     var assigned=autoAssign(r.title,r.author);
@@ -4355,7 +4357,7 @@ function buildPreview(rawList){
     var dupIdReason="";
     var formatErr="";
     if(bid){
-      
+      // Validate format: [A-E]/[1-9][0-9]{0,3}
       if(!/^[ABCDE]\/[1-9][0-9]{0,3}$/.test(bid)){
         isDuplicateId=true;
         formatErr="Invalid format — must be A–E / 1–4 digit number, no leading zero";
@@ -4372,7 +4374,7 @@ function buildPreview(rawList){
       }
       seenIdsInBatch[bid.toLowerCase()]=true;
     }
-    var isDuplicate=isDuplicateTitle||isDuplicateId; 
+    var isDuplicate=isDuplicateTitle||isDuplicateId; // isDuplicateId blocks; isDuplicateTitle just warns
     var age=r.age&&r.age.trim()?r.age.trim():assigned.age;
     var genre=r.genre&&r.genre.trim()?r.genre.trim():assigned.genre;
     return{
@@ -4388,8 +4390,8 @@ function buildPreview(rawList){
     };
   });
   renderBulkPreview();
-  checkBulkUploadReady(); 
-  setTimeout(fetchMissingISBNs, 100); 
+  checkBulkUploadReady(); // enable button immediately
+  setTimeout(fetchMissingISBNs, 100); // start ISBN lookups after a brief delay
 }
 function checkBulkUploadReady(){
   var uploadBtn=document.getElementById("bulk-upload-btn");
@@ -4413,7 +4415,7 @@ function checkBulkUploadReady(){
       else{bar.style.background="#E1F5EE";bar.style.color="#0F6E56";bar.style.borderColor="#9FE1CB";}
     }
   }
-  
+  // Also update the bulk-err banner
   var errEl2=document.getElementById("bulk-err");
   if(errEl2&&total>0){
     var idConflictsAll=bulkPreviewData.filter(function(r){return r.duplicateId;}).length;
@@ -4449,7 +4451,7 @@ function renderBulkPreview(){
   var summaryParts=[total+" books found"];
   if(dups>0) summaryParts.push(dups+" duplicate"+(dups!==1?"s":"")+" flagged");
   document.getElementById("bulk-preview-summary").textContent=summaryParts.join(" · ");
-  
+  // Show ID conflict warning banner
   var errEl=document.getElementById("bulk-err");
   if(idConflicts>0){
     errEl.innerHTML="&#x26A0; <strong>"+idConflicts+" duplicate Book ID"+(idConflicts!==1?"s":"")+"</strong> found. Uncheck or correct these rows before uploading.";
@@ -4464,13 +4466,13 @@ function renderBulkPreview(){
     var tr=document.createElement("tr");
     if(r.duplicate) tr.style.background="#FFFBEB";
 
-    
+    // Checkbox
     var chkTd=document.createElement("td");
     var chk=document.createElement("input");chk.type="checkbox";chk.checked=r.include;
     (function(ii){chk.addEventListener("change",function(){bulkPreviewData[ii].include=this.checked;checkBulkUploadReady();});})(i);
     chkTd.appendChild(chk);tr.appendChild(chkTd);
 
-    
+    // Book ID
     var idTd=document.createElement("td");idTd.style.minWidth="90px";
     var idInp=document.createElement("input");idInp.type="text";idInp.value=r.bookId||"";idInp.placeholder="blank";
     idInp.style.cssText="width:72px;padding:3px 5px;border:1px solid "+(r.duplicateId?"#F09595":"var(--bd)")+";border-radius:5px;font-size:11px;font-family:monospace;outline:none;background:var(--bg);color:"+(r.duplicateId?"#C0392B":"var(--tx)");
@@ -4492,15 +4494,15 @@ function renderBulkPreview(){
     });})(i,idInp,idTd);
     idTd.insertBefore(idInp,idTd.firstChild);tr.appendChild(idTd);
 
-    
+    // Title
     var ttlTd=document.createElement("td");ttlTd.style.cssText="font-weight:600;font-size:12px";ttlTd.textContent=r.title;
     if(r.duplicateTitle){var dS=document.createElement("span");dS.style.cssText="font-size:10px;color:#C0392B;font-weight:600;display:block";dS.textContent="[Already in catalog]";ttlTd.appendChild(dS);}
     tr.appendChild(ttlTd);
 
-    
+    // Author
     var aTd=document.createElement("td");aTd.style.cssText="font-size:12px;color:var(--mt)";aTd.textContent=r.author;tr.appendChild(aTd);
 
-    
+    // ISBN
     var isbnTd=document.createElement("td");isbnTd.style.minWidth="130px";
     var isbnInp=document.createElement("input");isbnInp.type="text";
     isbnInp.value=(r.isbn&&r.isbn!=="N/A")?r.isbn:"";
@@ -4511,7 +4513,7 @@ function renderBulkPreview(){
     var isbnSt=document.createElement("div");isbnSt.style.cssText="font-size:10px;margin-top:2px;color:var(--mt)";isbnSt.setAttribute("data-row-status",i);
     isbnTd.appendChild(isbnInp);isbnTd.appendChild(isbnSt);tr.appendChild(isbnTd);
 
-    
+    // Age group dropdown
     var ageTd=document.createElement("td");
     var ageSel=document.createElement("select");
     ageSel.style.cssText="font-size:11px;padding:3px 5px;border:1px solid var(--bd);border-radius:5px;background:var(--bg);color:var(--tx);max-width:130px";
@@ -4519,7 +4521,7 @@ function renderBulkPreview(){
     (function(ii,sel){sel.addEventListener("change",function(){bulkPreviewData[ii].age=sel.value;});})(i,ageSel);
     ageTd.appendChild(ageSel);tr.appendChild(ageTd);
 
-    
+    // Genre dropdown
     var genTd=document.createElement("td");
     var genSel=document.createElement("select");
     genSel.style.cssText="font-size:11px;padding:3px 5px;border:1px solid var(--bd);border-radius:5px;background:var(--bg);color:var(--tx);max-width:110px";
@@ -4529,7 +4531,7 @@ function renderBulkPreview(){
 
     tbody.appendChild(tr);
   });
-  
+  // Update selection bar immediately after rendering rows
   checkBulkUploadReady();
 }
 function fetchMissingISBNs(){
@@ -4568,23 +4570,23 @@ function fetchISBNForBook(title,author,rowIdx){
         if(isbnStatus){isbnStatus.textContent="Not found";isbnStatus.style.color="var(--mt)";}
         return;
       }
-      
+      // Prefer ISBN-13
       var isbn13=null;
       best.isbn.forEach(function(x){if(!isbn13&&x.length===13&&(x.indexOf("978")===0||x.indexOf("979")===0))isbn13=x;});
       var finalIsbn=isbn13||best.isbn[0];
       bulkPreviewData[rowIdx].isbn=finalIsbn;
-      
+      // Also update cover URLs so they get saved when books are uploaded
       bulkPreviewData[rowIdx].cover="https://covers.openlibrary.org/b/isbn/"+finalIsbn+"-M.jpg";
       bulkPreviewData[rowIdx].cover2="https://books.google.com/books/content?vid=ISBN"+finalIsbn+"&printsec=frontcover&img=1&zoom=1";
       if(isbnInp){isbnInp.value=finalIsbn;isbnInp.placeholder="ISBN-13";isbnInp.style.borderColor="#9FE1CB";}
 
-      
+      // Build matched book info: cover + title
       var matchedTitle=best.title||"";
       var matchedAuthor=best.author_name?best.author_name[0]:"";
       var coverId=best.cover_i||null;
       var coverUrl=coverId?"https://covers.openlibrary.org/b/id/"+coverId+"-M.jpg":
         "https://covers.openlibrary.org/b/isbn/"+finalIsbn+"-M.jpg";
-      
+      // Update cover in data with the best available URL
       if(coverId){
         bulkPreviewData[rowIdx].cover="https://covers.openlibrary.org/b/id/"+coverId+"-M.jpg";
       }
@@ -4651,20 +4653,21 @@ function confirmBulkUpload(){
     var e=document.getElementById("bulk-err");e.textContent="Please select at least one book to add.";e.style.display="block";return;
   }
   toAdd.forEach(function(r){
-    
+    // Use provided BookID as-is. If blank, store empty string — will be flagged for assignment later.
     var newId=r.bookId&&r.bookId.trim()?r.bookId.trim():"";
     DB.books.push({id:newId,title:r.title,author:r.author,isbn:r.isbn,age:r.age,genre:r.genre,
       status:"available",issuedTo:null,issuedDate:null,dueDate:null,
       cover:r.cover,cover2:r.cover2,addedDate:r.addedDate,isNewArrival:true,noId:!newId});
   });
   logActivity("Bulk added "+toAdd.length+" book"+(toAdd.length!==1?"s":""));
-  
+  // Push all books to Supabase
   var bulkPromises=DB.books.slice(DB.books.length-toAdd.length).map(function(b){ return saveBook_DB(b); });
   Promise.all(bulkPromises).then(function(){ showToast(toAdd.length+" book"+(toAdd.length!==1?"s":"")+" saved to database","success"); }).catch(function(e){ showToast("Some books may not have saved: "+e.message,"error"); });
   saveData();closeModal("m-bulk");renderBooks();renderNewArrivals();refreshDashboard();
   renderPub("pub-hbooks",DB.books);
 }
 
+// ── BARCODE SCANNER ──────────────────────────────────────────────────────────
 var scannerCodeReader = null;
 var scannedISBN = null;
 var scannerTarget = 'add'; // 'add' or 'bulk'
@@ -4686,7 +4689,7 @@ function startScanner(){
       return;
     }
     scannerCodeReader = new ZXing.BrowserMultiFormatReader();
-    
+    // Use native getUserMedia for mobile — more reliable than listVideoInputDevices
     navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
       .then(function(stream){
         var video = document.getElementById("scanner-video");
@@ -4733,11 +4736,28 @@ function startScanner(){
   }
 }
 
+
+function fetchBookSummary(isbn, cb){
+  var script=document.createElement("script");
+  var cbName="_olsumcb"+Date.now();
+  window[cbName]=function(data){
+    delete window[cbName];
+    try{document.head.removeChild(script);}catch(e){}
+    if(data&&data["ISBN:"+isbn]&&data["ISBN:"+isbn].excerpts&&data["ISBN:"+isbn].excerpts[0]){
+      cb(data["ISBN:"+isbn].excerpts[0].text||null);
+    } else if(data&&data["ISBN:"+isbn]&&data["ISBN:"+isbn].notes){
+      cb(typeof data["ISBN:"+isbn].notes==="string"?data["ISBN:"+isbn].notes:null);
+    } else {cb(null);}
+  };
+  script.src="https://openlibrary.org/api/books?bibkeys=ISBN:"+isbn+"&format=json&jscmd=data&callback="+cbName;
+  script.onerror=function(){cb(null);};
+  document.head.appendChild(script);
+}
 function onISBNInput(val){
   val = val.trim().replace(/[^0-9X]/gi,"");
   var status = document.getElementById("ab-isbn-status");
 
-  
+  // Clear fields if ISBN is cleared
   if(val.length < 10){
     if(val.length === 0){
       document.getElementById("ab-title").value="";
@@ -4745,8 +4765,6 @@ function onISBNInput(val){
       document.getElementById("ab-summary").value="";
       document.getElementById("ab-age").value="";
       document.getElementById("ab-genre").value="Fiction";
-      var covW=document.getElementById("ab-isbn-cover-wrap");if(covW)covW.style.display="none";
-      var covHid=document.getElementById("ab-cover");if(covHid)covHid.value="";
       if(status) status.style.display="none";
     }
     return;
@@ -4756,7 +4774,7 @@ function onISBNInput(val){
   status.style.display = "block";
   status.style.color = "var(--mt)";
 
-  
+  // Clear existing fields before fetching new book
   document.getElementById("ab-title").value="";
   document.getElementById("ab-author").value="";
   document.getElementById("ab-summary").value="";
@@ -4764,7 +4782,7 @@ function onISBNInput(val){
   document.getElementById("ab-genre").value="Fiction";
 
   function fillFields(info){
-    
+    // Clean up title — remove Indian edition prefixes
     var cleanTitle=(info.title||"").replace(/^(Indian\s+Edt\s+|India\s+Ed\s+|Indian\s+Edition\s+)/i,"").trim();
     if(cleanTitle&&!document.getElementById("ab-title").value.trim()) document.getElementById("ab-title").value = cleanTitle;
     if(info.author&&!document.getElementById("ab-author").value.trim()) document.getElementById("ab-author").value = info.author;
@@ -4773,22 +4791,8 @@ function onISBNInput(val){
     if(info.cover){
       var ci=document.getElementById("ab-lookup-cover");
       if(ci){ci.src=info.cover;ci.style.display="block";}
-      
-      var covHid=document.getElementById("ab-cover");
-      if(covHid&&!covHid.value) covHid.value=info.cover;
-      
-      var covWrap=document.getElementById("ab-isbn-cover-wrap");
-      var covImg=document.getElementById("ab-isbn-cover-img");
-      var covTitleEl=document.getElementById("ab-isbn-cover-title");
-      var covAuthorEl=document.getElementById("ab-isbn-cover-author");
-      if(covWrap&&covImg){
-        covImg.src=info.cover;
-        if(covTitleEl) covTitleEl.textContent=info.title||"";
-        if(covAuthorEl) covAuthorEl.textContent=info.author||"";
-        covWrap.style.display="flex";
-      }
     }
-    
+    // Age group — always set based on categories
     var cats=(info.categories||"").toLowerCase();
     var titleLower=(info.title||"").toLowerCase();
     var authorLower=(info.author||"").toLowerCase();
@@ -4811,7 +4815,7 @@ function onISBNInput(val){
     else if(cats.indexOf("adult")>=0) ageEl.value="Adults";
     else if(cats) ageEl.value="General (16+)";
 
-    
+    // Genre — always set based on categories and title/author
     var genreEl=document.getElementById("ab-genre");
     if(isChildrensBook||cats.indexOf("fantasy")>=0||cats.indexOf("adventure")>=0||cats.indexOf("mystery")>=0||cats.indexOf("science fiction")>=0||cats.indexOf("juvenile fiction")>=0) genreEl.value="Adventure & fantasy";
     else if(cats.indexOf("biography")>=0||cats.indexOf("history")>=0||cats.indexOf("culture")>=0) genreEl.value="History & culture";
@@ -4825,7 +4829,7 @@ function onISBNInput(val){
     setTimeout(function(){status.style.display="none";},3000);
   }
 
-  
+  // Try multiple CORS proxies in order
   var proxies=[
     "https://corsproxy.io/?",
     "https://cors.eu.org/",
@@ -4834,8 +4838,8 @@ function onISBNInput(val){
   ];
   var gbUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:"+val+"&langRestrict=en&maxResults=3&fields=items(volumeInfo(title,authors,description,categories,imageLinks,language))";
 
-  
-  
+  // Try Claude API first — most reliable, works for all books including Indian editions
+  // STEP 1: Open Library — no proxy needed, works directly
   fetch("https://openlibrary.org/api/books?bibkeys=ISBN:"+val+"&format=json&jscmd=data")
     .then(function(r){return r.json();})
     .then(function(olData){
@@ -4850,27 +4854,27 @@ function onISBNInput(val){
           categories:cats,
           cover:info.cover&&info.cover.medium?info.cover.medium:null
         });
-        
+        // STEP 2: Also try Google Books via proxy for summary
         tryISBNProxy(0);
       } else {
-        
+        // Not in Open Library — try Google Books via proxies
         tryISBNProxy(0);
       }
     })
     .catch(function(){
-      
+      // Open Library failed — go straight to Google Books proxies
       tryISBNProxy(0);
     });
 
-  
+  // STEP 2: Google Books via proxies (for summary mainly)
   function tryISBNProxy(idx){
     if(idx>=proxies.length){
-      
+      // All proxies failed — show what we have from Open Library or nothing
       if(!document.getElementById("ab-title").value.trim()){
         status.innerHTML="Could not fetch details. Try: <a href='https://openlibrary.org/isbn/"+val+"' target='_blank' style='color:#185FA5'>Open Library</a>";
         status.style.color="#C0392B";
       } else {
-        
+        // We got data from Open Library — just no summary
         status.textContent="✅ Book details fetched! (No summary available)";
         status.style.color="#0F6E56";
         setTimeout(function(){status.style.display="none";},3000);
@@ -4881,13 +4885,13 @@ function onISBNInput(val){
       .then(function(r){if(!r.ok)throw new Error("proxy failed");return r.json();})
       .then(function(data){
         if(data.items&&data.items.length){
-          
+          // Pick first English result
           var v=null;
           for(var i=0;i<data.items.length;i++){
             var vi=data.items[i].volumeInfo;
             if(!vi.language||vi.language==="en"){v=vi;break;}
           }
-          if(!v) v=data.items[0].volumeInfo; 
+          if(!v) v=data.items[0].volumeInfo; // fallback to first
           fillFields({
             title:v.title,
             author:v.authors&&v.authors.length?v.authors[0]:"",
@@ -4896,11 +4900,11 @@ function onISBNInput(val){
             cover:v.imageLinks&&v.imageLinks.thumbnail?v.imageLinks.thumbnail:null
           });
         } else {
-          
+          // No items for this ISBN — try searching by title if we have it
           var existingTitle = document.getElementById("ab-title").value.trim();
           var existingAuthor = document.getElementById("ab-author").value.trim();
           if(existingTitle && idx===0){
-            
+            // Search by title+author instead
             var titleQuery="https://www.googleapis.com/books/v1/volumes?q=intitle:"+encodeURIComponent(existingTitle)+(existingAuthor?"&inauthor:"+encodeURIComponent(existingAuthor):"")+"&maxResults=1&fields=items(volumeInfo(title,authors,description,categories,imageLinks))";
             fetch(proxies[0]+encodeURIComponent(titleQuery))
               .then(function(r){return r.json();})
@@ -4931,7 +4935,7 @@ function onISBNInput(val){
 
 function fetchBookByISBN(isbn, cb){
   var img = new Image();
-  
+  // Use Open Library JSON API
   var script = document.createElement("script");
   var cbName = "_olcb" + Date.now();
   window[cbName] = function(data){
@@ -4955,58 +4959,34 @@ function useScannedISBN(){
   closeScanner();
 
   if(scannerTarget==="issue-book"){
-    var scanVal=scannedISBN.trim().toUpperCase();
-    
-    var convertedId=barcodeToBookId(scannedISBN);
-    var foundBook=DB.books.find(function(b){
-      return b.status==="available"&&(
-        (b.barcode&&b.barcode.toUpperCase()===scanVal)||
-        (b.id&&b.id.toUpperCase()===convertedId.toUpperCase())||
-        (b.isbn&&b.isbn.trim()===scannedISBN.trim())
-      );
-    });
+    // Find book by barcode first, then by ISBN
+    var foundBook=DB.books.find(function(b){return b.barcode===scannedISBN&&b.status==="available";});
+    if(!foundBook) foundBook=DB.books.find(function(b){return b.isbn===scannedISBN&&b.status==="available";});
     if(foundBook){
       document.getElementById("iss-book").value=foundBook.id;
       document.getElementById("iss-book-search").value=foundBook.title;
-      document.getElementById("iss-book-search").style.color="";
-      var ibi=document.getElementById("iss-book-id");if(ibi){ibi.value=foundBook.id;ibi.style.borderColor="var(--ac)";}
+      var ibi=document.getElementById("iss-book-id");if(ibi)ibi.value=foundBook.id;
       document.getElementById("book-dropdown").style.display="none";
       showBookInfo(foundBook.id);
     } else {
-      var anyBook=DB.books.find(function(b){
-        return (b.barcode&&b.barcode.toUpperCase()===scanVal)||
-               (b.id&&b.id.toUpperCase()===convertedId.toUpperCase())||
-               (b.isbn&&b.isbn.trim()===scannedISBN.trim());
-      });
-      var searchEl=document.getElementById("iss-book-search");
+      var anyBook=DB.books.find(function(b){return b.barcode===scannedISBN||b.isbn===scannedISBN;});
       if(anyBook){
-        searchEl.value=anyBook.title;
-        searchEl.style.color="#854F0B";
-        var ibi=document.getElementById("iss-book-id");if(ibi){ibi.value=anyBook.id;ibi.style.borderColor="#F59E0B";}
+        document.getElementById("iss-book-search").value=anyBook.title+" (not available)";
       } else {
-        searchEl.value="";
-        searchEl.placeholder="Scanned code not found in catalog";
-        searchEl.style.color="#C0392B";
+        document.getElementById("iss-book-search").value=scannedISBN+" — not found in catalog";
       }
     }
     return;
   }
 
   if(scannerTarget==="return-book"){
-    var scanVal2=scannedISBN.trim().toUpperCase();
-    var convertedId2=barcodeToBookId(scannedISBN);
-    var retBook=DB.books.find(function(b){
-      return b.status==="checked"&&(
-        (b.barcode&&b.barcode.toUpperCase()===scanVal2)||
-        (b.id&&b.id.toUpperCase()===convertedId2.toUpperCase())||
-        (b.isbn&&b.isbn.trim()===scannedISBN.trim())
-      );
-    });
+    // Find book by barcode first, then by ISBN
+    var retBook=DB.books.find(function(b){return b.barcode===scannedISBN&&b.status==="checked";});
+    if(!retBook) retBook=DB.books.find(function(b){return b.isbn===scannedISBN&&b.status==="checked";});
     if(retBook){
       document.getElementById("ret-book").value=retBook.id;
       document.getElementById("ret-book-search").value=retBook.title;
-      document.getElementById("ret-book-search").style.color="";
-      var rbi=document.getElementById("ret-book-id");if(rbi){rbi.value=retBook.id;rbi.style.borderColor="var(--ac)";}
+      var rbi=document.getElementById("ret-book-id");if(rbi)rbi.value=retBook.id;
       document.getElementById("return-dropdown").style.display="none";
       if(retBook.issuedTo){
         var m=DB.members.find(function(x){return x.id===retBook.issuedTo;});
@@ -5017,28 +4997,14 @@ function useScannedISBN(){
         }
       }
     } else {
-      var anyRet=DB.books.find(function(b){
-        return (b.barcode&&b.barcode.toUpperCase()===scanVal2)||
-               (b.id&&b.id.toUpperCase()===convertedId2.toUpperCase())||
-               (b.isbn&&b.isbn.trim()===scannedISBN.trim());
-      });
-      var retSearchEl=document.getElementById("ret-book-search");
-      if(anyRet){
-        retSearchEl.value=anyRet.title;
-        retSearchEl.style.color="#854F0B";
-        var rbi=document.getElementById("ret-book-id");if(rbi){rbi.value=anyRet.id;rbi.style.borderColor="#F59E0B";}
-      } else {
-        retSearchEl.value="";
-        retSearchEl.placeholder="Scanned code not found in catalog";
-        retSearchEl.style.color="#C0392B";
-      }
+      document.getElementById("ret-book-search").value=scannedISBN+" — not found or not on loan";
     }
     return;
   }
 
   if(scannerTarget === 'add'){
     document.getElementById("ab-isbn").value = scannedISBN;
-    
+    // Try to auto-fill title/author if Open Library has the data
     var status = document.getElementById("ab-isbn-status");
     status.style.display = "block";
     status.style.color = "#0F6E56";
@@ -5048,7 +5014,7 @@ function useScannedISBN(){
         if(!document.getElementById("ab-title").value) document.getElementById("ab-title").value = info.title;
         if(!document.getElementById("ab-author").value && info.author) document.getElementById("ab-author").value = info.author;
         status.textContent = "✓ Book details fetched from Open Library";
-        
+        // Auto-assign age/genre
         var assigned = autoAssign(info.title, info.author||"");
         document.getElementById("ab-age").value = assigned.age;
         document.getElementById("ab-genre").value = assigned.genre;
@@ -5061,8 +5027,8 @@ function useScannedISBN(){
 }
 
 function downloadCSVTemplate(){
-  
-  
+  // Headers only — volunteers fill in their own data
+  // ISBN column formatted as text to prevent Excel scientific notation
   var csvContent="BookID,Book Name,Author / Publisher,ISBN-13 (optional)\r\n";
   var blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
   var url=URL.createObjectURL(blob);
@@ -5093,7 +5059,7 @@ function handleBarcodeExcelUpload(input){
     var text = e.target.result;
     var lines = text.split("\n").map(function(l){return l.trim();}).filter(Boolean);
     if(lines.length < 2){showToast("File appears empty","error");return;}
-    var rows = lines.slice(1); 
+    var rows = lines.slice(1); // skip header
     var preview = [];
     var errors = [];
 
@@ -5105,7 +5071,7 @@ function handleBarcodeExcelUpload(input){
 
       if(!bookId){errors.push("Row "+(idx+2)+": Missing Book ID");return;}
 
-      
+      // Generate barcode from Book ID e.g. C/1977 → C001977
       var m = bookId.match(/^([A-Ea-e])\/(\d+)$/);
       if(!m){errors.push("Row "+(idx+2)+": Invalid Book ID format '"+bookId+"'");return;}
       var barcode = m[1].toUpperCase()+String(parseInt(m[2])).padStart(6,"0");
@@ -5115,7 +5081,7 @@ function handleBarcodeExcelUpload(input){
 
     if(preview.length===0){showToast("No valid books found in file","error");return;}
 
-    
+    // Show confirmation modal
     var msg = "Found "+preview.length+" books.\n\nSample barcodes:\n";
     preview.slice(0,5).forEach(function(r){
       msg += r.bookId+" → "+r.barcode+(r.title?" ("+r.title.slice(0,30)+")":"")+"\n";
@@ -5129,10 +5095,10 @@ function handleBarcodeExcelUpload(input){
       function(){
         var saved=0, failed=0;
         preview.forEach(function(r){
-          
+          // Update book in DB
           var bk = DB.books.find(function(b){return b.id===r.bookId;});
           if(bk) bk.barcode = r.barcode;
-          
+          // Save to Supabase
           supaFetch("books?id=eq."+encodeURIComponent(r.bookId),"PATCH",{barcode:r.barcode})
             .then(function(){saved++;if(saved+failed===preview.length){showToast("✅ "+saved+" barcodes saved to database","success");saveData();}})
             .catch(function(){failed++;if(saved+failed===preview.length){showToast(saved+" saved, "+failed+" failed","error");}});
@@ -5154,7 +5120,7 @@ function printAllQRCodes(){
   });
   if(books.length===0){alert("No books match the current filter.");return;}
 
-  
+  // Build print window with QR grid
   var win=window.open("","_blank");
   var html2="<!DOCTYPE html><html><head><title>Chez Library — QR Labels</title>";
   html2+="<style>body{font-family:sans-serif;margin:0;padding:10px;background:#fff;}";
@@ -5192,7 +5158,7 @@ function printAllQRCodes(){
     win.document.write(html2);
   win.document.close();
 }
-
+// ── BOOK ID SUGGESTION ──────────────────────────────────────────────────────
 function getAgePrefix(age){
   if(!age) return "E";
   var a=age.toLowerCase();
@@ -5203,7 +5169,7 @@ function getAgePrefix(age){
   return "E";
 }
 function suggestNextId(age, reservedNums){
-  
+  // reservedNums: set of numbers already claimed in this suggestion pass
   var prefix=getAgePrefix(age);
   var usedNums={};
   DB.books.forEach(function(b){
@@ -5211,7 +5177,7 @@ function suggestNextId(age, reservedNums){
       usedNums[parseInt(b.id.split("/")[1],10)]=true;
     }
   });
-  
+  // Also block numbers reserved in this same pass (for batch suggestions)
   if(reservedNums){Object.keys(reservedNums).forEach(function(n){usedNums[n]=true;});}
   var n=100;
   while(usedNums[n]) n++;
@@ -5223,7 +5189,7 @@ function getBooksWithNoId(){
 }
 function assignBookId(bookIndex, newId){
   if(!newId||!newId.trim()) return;
-  
+  // Check not a duplicate
   if(DB.books.find(function(b,i){return i!==bookIndex&&b.id===newId.trim();})){
     alert("Book ID "+newId+" is already in use. Please choose another.");
     return false;
@@ -5242,7 +5208,7 @@ function showNoIdWarning(){
   var banner=document.getElementById("no-id-banner");
   if(!banner)return;
   if(missing.length===0){banner.style.display="none";return;}
-  
+  // Generate suggestions for all missing books in one pass (reserve as we go)
   var reserved={};
   var rows=missing.map(function(b,i){
     var idx=DB.books.indexOf(b);
@@ -5283,7 +5249,7 @@ function assignAllSuggestedIds(){
   });
   saveData();renderBooks();refreshDashboard();showNoIdWarning();
 }
-
+// ── ADD BOOK LIVE LOOKUP ─────────────────────────────────────────────────────
 var _addBookTimer=null;
 var _addBookMatch=null;
 function scheduleAddBookLookup(){
@@ -5293,17 +5259,7 @@ function scheduleAddBookLookup(){
   var author=document.getElementById("ab-author").value.trim();
   var panel=document.getElementById("ab-lookup-result");
   if(title.length<3){panel.style.display="none";return;}
-  
-  if(/^\d{10,}$/.test(title)){
-    document.getElementById("ab-isbn").value=title;
-    document.getElementById("ab-title").value="";
-    panel.style.display="none";
-    
-    clearTimeout(window._isbnTimer);
-    window._isbnTimer=setTimeout(function(){onISBNInput(title);},400);
-    return;
-  }
-  
+  // Show searching indicator immediately
   document.getElementById("ab-lookup-title").textContent="Searching...";
   document.getElementById("ab-lookup-author").textContent="";
   document.getElementById("ab-lookup-isbn").textContent="";
@@ -5343,7 +5299,7 @@ function doAddBookLookup(title,author){
     authorEl.textContent=_addBookMatch.author;
     isbnEl.textContent=isbn13?"ISBN: "+isbn13:"No ISBN found";
   }
-  
+  // Try fetch first (works on Netlify - Open Library has CORS headers)
   if(typeof fetch!=="undefined"){
     fetch("https://openlibrary.org/search.json?q="+query+"&limit=5&fields=title,author_name,isbn,cover_i")
       .then(function(r){return r.json();})
@@ -5359,16 +5315,15 @@ function doAddBookLookup(title,author){
 }
 function useAddBookMatch(){
   if(!_addBookMatch)return;
-  
+  // Fill in ISBN if empty
   var isbnInput=document.getElementById("ab-isbn");
   if((!isbnInput.value||isbnInput.value.trim()==="")&&_addBookMatch.isbn){
     isbnInput.value=_addBookMatch.isbn;
   }
-  
+  // Set cover URLs on the data if this is a new book
   if(_addBookMatch.coverUrl){
+    // Store for use in saveBook
     isbnInput.setAttribute("data-cover",_addBookMatch.coverUrl);
-    var covHid=document.getElementById("ab-cover");
-    if(covHid) covHid.value=_addBookMatch.coverUrl;
   }
   document.getElementById("ab-lookup-result").style.display="none";
 }
@@ -5410,20 +5365,142 @@ function clearBkFilters(){
   var q=document.getElementById("bk-qr-filter");if(q)q.value="";
   renderBooks();
 }
+// ── EXPORT TO SUPABASE ───────────────────────────────────────────────────────
+function exportToSupabase(){
+  var btn=document.getElementById("export-supa-btn");
+  if(btn){btn.disabled=true;btn.textContent="Migrating...";}
 
+  // Use BOOK_DATA and hardcoded defaults directly — DB may be empty if Supabase already loaded
+  var defaultDef = (function(){
+    var issued=[
+      {id:"B/112",to:"MEM001",issuedDate:"2026-03-01",dueDate:"2026-03-22",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {id:"B/113",to:"MEM002",issuedDate:"2026-03-05",dueDate:"2026-03-26",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {id:"D/143",to:"MEM003",issuedDate:"2026-02-10",dueDate:"2026-03-03",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {id:"D/132",to:"MEM004",issuedDate:"2026-02-15",dueDate:"2026-03-08",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {id:"E/152",to:"MEM005",issuedDate:"2026-03-10",dueDate:"2026-03-31",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {id:"C/138",to:"MEM006",issuedDate:"2026-03-12",dueDate:"2026-04-02",issuedBy:"Arjun Menon",issuedById:"u4"},
+      {id:"D/139",to:"MEM001",issuedDate:"2026-02-20",dueDate:"2026-03-13",issuedBy:"Sunita Rao",issuedById:"u3"},
+      {id:"B/120",to:"MEM007",issuedDate:"2026-03-15",dueDate:"2026-04-05",issuedBy:"Arjun Menon",issuedById:"u4"}
+    ];
+    return {
+      books: BOOK_DATA.map(function(b){
+        var match=issued.find(function(x){return x.id===b.id;});
+        if(match){return Object.assign({},b,{status:"checked",issuedTo:match.to,issuedDate:match.issuedDate,dueDate:match.dueDate,issuedBy:match.issuedBy,issuedById:match.issuedById});}
+        return Object.assign({},b,{status:b.status||"available",issuedTo:null,issuedDate:null,dueDate:null});
+      }),
+      members:[
+        {id:"MEM001",fname:"Aanya",lname:"Sharma",email:"aanya@email.com",phone:"9876543210",block:"Kensington",flatNo:"12A",flatFull:"Kensington - Flat 12A",joined:"2024-03-01"},
+        {id:"MEM002",fname:"Rohan",lname:"Verma",email:"rohan@email.com",phone:"9876543211",block:"Mayfair",flatNo:"4B",flatFull:"Mayfair - Flat 4B",joined:"2024-03-15"},
+        {id:"MEM003",fname:"Priya",lname:"Nair",email:"priya@email.com",phone:"9876543212",block:"Primrose",flatNo:"7C",flatFull:"Primrose - Flat 7C",joined:"2024-04-01"},
+        {id:"MEM004",fname:"Kabir",lname:"Singh",email:"kabir@email.com",phone:"9876543213",joined:"2024-05-10"},
+        {id:"MEM005",fname:"Meera",lname:"Iyer",email:"meera@email.com",phone:"9876543214",joined:"2024-06-20"},
+        {id:"MEM006",fname:"Tanvi",lname:"Bose",email:"tanvi@email.com",phone:"9876543215",joined:"2024-07-01"},
+        {id:"MEM007",fname:"Dev",lname:"Pillai",email:"dev@email.com",phone:"9876543216",joined:"2024-08-05"}
+      ],
+      transactions:[
+        {type:"issue",bookId:"B/112",memberId:"MEM001",date:"2026-03-01",due:"2026-03-22",issuedBy:"Sunita Rao",issuedById:"u3"},
+        {type:"issue",bookId:"B/113",memberId:"MEM002",date:"2026-03-05",due:"2026-03-26",issuedBy:"Sunita Rao",issuedById:"u3"},
+        {type:"issue",bookId:"D/143",memberId:"MEM003",date:"2026-02-10",due:"2026-03-03",issuedBy:"Arjun Menon",issuedById:"u4"},
+        {type:"issue",bookId:"D/132",memberId:"MEM004",date:"2026-02-15",due:"2026-03-08",issuedBy:"Arjun Menon",issuedById:"u4"},
+        {type:"issue",bookId:"E/152",memberId:"MEM005",date:"2026-03-10",due:"2026-03-31",issuedBy:"Sunita Rao",issuedById:"u3"},
+        {type:"issue",bookId:"C/138",memberId:"MEM006",date:"2026-03-12",due:"2026-04-02",issuedBy:"Arjun Menon",issuedById:"u4"},
+        {type:"issue",bookId:"D/139",memberId:"MEM001",date:"2026-02-20",due:"2026-03-13",issuedBy:"Sunita Rao",issuedById:"u3"},
+        {type:"issue",bookId:"B/120",memberId:"MEM007",date:"2026-03-15",due:"2026-04-05",issuedBy:"Arjun Menon",issuedById:"u4"}
+      ]
+    };
+  })();
+
+  var books = defaultDef.books;
+  var members = defaultDef.members;
+  var transactions = defaultDef.transactions;
+  
+  var total=books.length+members.length+transactions.length;
+  var done=0;
+  
+  function updateProgress(){
+    done++;
+    var pct=Math.round((done/total)*100);
+    var bar=document.getElementById("export-supa-progress");
+    var lbl=document.getElementById("export-supa-label");
+    if(bar)bar.style.width=pct+"%";
+    if(lbl)lbl.textContent=done+" / "+total+" records migrated ("+pct+"%)";
+  }
+  
+  // Migrate books in batches of 50
+  function migrateBatch(arr,mapFn,endpoint,batchSize){
+    var batches=[];
+    for(var i=0;i<arr.length;i+=batchSize){
+      batches.push(arr.slice(i,i+batchSize));
+    }
+    return batches.reduce(function(p,batch){
+      return p.then(function(){
+        var rows=batch.map(mapFn);
+        return supaFetch(endpoint+"?on_conflict=id","POST",rows)
+          .then(function(){ batch.forEach(function(){updateProgress();}); })
+          .catch(function(e){ console.error("Batch error:",e); batch.forEach(function(){updateProgress();}); });
+      });
+    },Promise.resolve());
+  }
+  
+  var bookRows=books.map(function(b){return{
+    id:b.id||("NOID_"+Date.now()+"_"+Math.random().toString(36).slice(2,6)),
+    title:b.title,author:b.author,isbn:b.isbn||null,
+    age:b.age,genre:b.genre,status:b.status||"available",
+    issued_to:b.issuedTo||null,issued_date:b.issuedDate||null,due_date:b.dueDate||null,
+    cover:b.cover||null,cover2:b.cover2||null,summary:b.summary||null,
+    added_date:b.addedDate||todayStr(),is_new_arrival:b.isNewArrival||false,
+    no_id:b.noId||false,qr_printed:b.qrPrinted||false
+  };});
+  
+  var memberRows=members.map(function(m){return{
+    id:m.id,fname:m.fname,lname:m.lname,email:m.email||null,
+    phone:m.phone||null,block:m.block||null,flat_no:m.flatNo||null,
+    flat_full:m.flatFull||null,joined:m.joined||todayStr()
+  };});
+  
+  var txnRows=transactions.filter(function(t){return t.bookId&&t.memberId;}).map(function(t){return{
+    id:t.id||("TXN"+Date.now()+Math.random().toString(36).slice(2,6)),
+    type:t.type,book_id:t.bookId,member_id:t.memberId,
+    book_title:t.bookTitle||"",member_name:t.memberName||"",
+    issued_by:t.issuedBy||"",issued_by_id:t.issuedById||"",
+    date:t.date||todayStr(),due_date:t.due||null,return_date:t.returnDate||null
+  };});
+  
+  // Show progress UI
+  var panel=document.getElementById("export-supa-panel");
+  if(panel)panel.style.display="block";
+  
+  migrateBatch(bookRows,function(r){return r;},"books",50)
+    .then(function(){ return migrateBatch(memberRows,function(r){return r;},"members",50); })
+    .then(function(){ return migrateBatch(txnRows,function(r){return r;},"transactions",50); })
+    .then(function(){
+      showToast("✅ Migration complete! "+books.length+" books, "+members.length+" members migrated.","success");
+      if(btn){btn.disabled=false;btn.textContent="✅ Migration complete!";}
+      var lbl=document.getElementById("export-supa-label");
+      if(lbl)lbl.textContent="All "+total+" records migrated successfully!";
+    })
+    .catch(function(e){
+      showToast("Migration error: "+e.message,"error");
+      if(btn){btn.disabled=false;btn.textContent="Export to Supabase";}
+    });
+}
+
+// INIT
+// Clear stale localStorage so Supabase is always the source of truth
 try{localStorage.removeItem("chezlib_cache");localStorage.removeItem("chezlib_data");}catch(e){}
-
+// Load from Supabase on startup
 loadFromSupabase();
 renderNewArrivals();
 renderDailyContent();
 
+// Auto-refresh daily content at midnight
 (function scheduleMidnightRefresh(){
   var now=new Date();
-  var midnight=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0,5); 
+  var midnight=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0,5); // 5s after midnight
   var msUntilMidnight=midnight-now;
   setTimeout(function(){
     renderDailyContent();
-    scheduleMidnightRefresh(); 
+    scheduleMidnightRefresh(); // reschedule for next midnight
   },msUntilMidnight);
 })();
 renderMonthlyStats();
@@ -5431,6 +5508,7 @@ renderPopularBooks();
 renderTopReaders();
 upd();
 
+// ── SEARCHABLE DROPDOWNS ─────────────────────────────────────────────────────
 function ddItem(label, sub, onClick){
   var div=document.createElement("div");
   div.style.cssText="padding:9px 14px;cursor:pointer;border-bottom:0.5px solid var(--bd);font-size:13px;";
@@ -5446,38 +5524,32 @@ function filterMemberDropdown(){
   var q=(document.getElementById("iss-member-search").value||"").toLowerCase();
   var dd=document.getElementById("member-dropdown");
   dd.innerHTML="";
-  try{
-    var hits=DB.members.filter(function(m){
+  var hits=DB.members.filter(function(m){
+    try{
       if(!q) return true;
-      var fullName=((m.fname||"")+" "+(m.lname||"")).toLowerCase();
-      return fullName.indexOf(q)>=0;
-    }).slice(0,10);
-    if(hits.length===0){
-      dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No members found</div>";
-    } else {
-      var booksOut;
-      hits.forEach(function(m){
-        booksOut=DB.books.filter(function(b){return b.issuedTo===m.id;}).length;
-        dd.appendChild(ddItem(
-          memberName(m),
-          m.id + (booksOut>0 ? " · "+booksOut+" book"+(booksOut>1?"s":"")+" out" : ""),
-          function(mid,mname,mobj){return function(){
-            document.getElementById("iss-member").value=mid;
-            document.getElementById("iss-member-search").value=mname;
-            dd.style.display="none";
-            showMemberCard(mobj);
-            checkMemberPending(mid);
-          };}(m.id, memberName(m), m)
-        ));
-      });
-    }
-    dd.style.display="block";
-  } catch(err){
-    
-    dd.innerHTML="<div style='padding:10px 14px;font-size:12px;color:#C0392B'>⚠ Member search error: "+err.message+"</div>";
-    dd.style.display="block";
-    console.error("filterMemberDropdown error:", err, "Members:", DB.members);
+      return ((m.fname||"")+" "+(m.lname||"")).toLowerCase().indexOf(q)>=0;
+    }catch(e){return false;}
+  }).slice(0,10);
+  if(hits.length===0){
+    dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No members found</div>";
+  } else {
+    var booksOut;
+    hits.forEach(function(m){
+      booksOut=DB.books.filter(function(b){return b.issuedTo===m.id;}).length;
+      dd.appendChild(ddItem(
+        memberName(m),
+        m.id + (booksOut>0 ? " · "+booksOut+" book"+(booksOut>1?"s":"")+" out" : ""),
+        function(mid,mname,mobj){return function(){
+          document.getElementById("iss-member").value=mid;
+          document.getElementById("iss-member-search").value=mname;
+          dd.style.display="none";
+          showMemberCard(mobj);
+          checkMemberPending(mid);
+        };}(m.id, memberName(m), m)
+      ));
+    });
   }
+  dd.style.display="block";
 }
 
 function clearBookInfo(){
@@ -5494,7 +5566,7 @@ function showBookInfo(bid){
   var ageWarn=document.getElementById("iss-book-age-warn");
   var ageText=document.getElementById("iss-book-age-text");
 
-  
+  // Age badge colour
   var ageColors={
     "Picture books (0–4)":["#FAEEDA","#854F0B"],
     "Early readers (5–7)":["#E1F5EE","#0F6E56"],
@@ -5510,7 +5582,7 @@ function showBookInfo(bid){
   isbnSpan.textContent=b.isbn&&b.isbn!=="N/A"?"ISBN: "+b.isbn:"No ISBN";
   panel.style.display="block";
 
-  
+  // Show warning for adults-only books
   if(b.age==="Adults"||b.age==="Adults (mature/explicit)"){
     ageText.textContent=b.age;
     ageWarn.style.display="block";
@@ -5519,10 +5591,6 @@ function showBookInfo(bid){
   }
 }
 function filterBookDropdown(){
-  // Suppress title dropdown only if a Book ID is typed but hasn't resolved to a valid book yet
-  var bookIdVal=document.getElementById("iss-book-id")?document.getElementById("iss-book-id").value.trim():"";
-  var resolvedId=document.getElementById("iss-book")?document.getElementById("iss-book").value.trim():"";
-  if(bookIdVal && !resolvedId){ document.getElementById("book-dropdown").style.display="none"; return; }
   var q=(document.getElementById("iss-book-search").value||"").toLowerCase();
   var dd=document.getElementById("book-dropdown");
   dd.innerHTML="";
@@ -5540,8 +5608,6 @@ function filterBookDropdown(){
         function(bid,btitle){return function(){
           document.getElementById("iss-book").value=bid;
           document.getElementById("iss-book-search").value=btitle;
-          var idField=document.getElementById("iss-book-id");
-          if(idField&&bid){idField.value=bid;idField.style.borderColor="var(--ac)";}
           dd.style.display="none";
           showBookInfo(bid);
         };}(b.id, b.title)
@@ -5555,7 +5621,7 @@ function filterReturnMemberDropdown(){
   var q=(document.getElementById("ret-member-search").value||"").toLowerCase();
   var dd=document.getElementById("return-member-dropdown");
   dd.innerHTML="";
-  
+  // Only show members who have books checked out
   var hits=DB.members.filter(function(m){
     var hasBooks=DB.books.some(function(b){return b.issuedTo===m.id&&b.status==="checked";});
     return hasBooks && (!q || (m.fname+" "+m.lname).toLowerCase().indexOf(q)>=0 || m.id.toLowerCase().indexOf(q)>=0);
@@ -5583,6 +5649,7 @@ function filterReturnMemberDropdown(){
   dd.style.display="block";
 }
 
+// ── ISBN MANAGEMENT ──────────────────────────────────────────────────────────
 var _isbnBookId = null;
 
 function openAddISBN(bid){
@@ -5628,7 +5695,7 @@ function saveISBN(){
 }
 
 function openISBNScanner(){
-  
+  // Reuse existing scanner, route result back to ISBN field
   window._scannerTarget = "isbn";
   var modal = document.getElementById("m-scanner");
   if(modal) modal.classList.add("open");
@@ -5636,13 +5703,14 @@ function openISBNScanner(){
     document.getElementById("addisbn-input").value = scannedVal;
     previewISBNCover();
     closeScanner();
-    
+    // Reopen ISBN modal
     var _m=document.getElementById("m-addisbn");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
   });
 }
 
+// Auto-fetch cover by title+author from Open Library (for books without ISBN/cover)
 function fetchCoverByTitle(book){
-  if(book.cover||book.isbn) return; 
+  if(book.cover||book.isbn) return; // already has cover or ISBN
   var q = encodeURIComponent(book.title+" "+book.author);
   var url = "https://openlibrary.org/search.json?q="+q+"&limit=1&fields=isbn,cover_i";
   fetch(url).then(function(r){return r.json();}).then(function(data){
@@ -5663,47 +5731,9 @@ function fetchCoverByTitle(book){
   }).catch(function(){});
 }
 
-var _syncLog=JSON.parse(localStorage.getItem("summarySyncLog")||"[]");
-function addSyncLogEntry(count){
-  var now=new Date();
-  var label=now.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+" at "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-  _syncLog.unshift({count:count,time:label});
-  if(_syncLog.length>20) _syncLog.pop();
-  try{localStorage.setItem("summarySyncLog",JSON.stringify(_syncLog));}catch(e){}
-  renderSyncLog();
-}
-function renderSyncLog(){
-  var list=document.getElementById("bk-sync-log-list");
-  var btn=document.getElementById("bk-sync-log-btn");
-  if(btn) btn.style.display=_syncLog.length?"inline-block":"none";
-  if(!list) return;
-  if(!_syncLog.length){
-    list.innerHTML='<div style="font-size:12px;color:var(--mt);padding:6px 14px">No sync events yet.</div>';
-    return;
-  }
-  list.innerHTML=_syncLog.map(function(e){
-    return '<div style="padding:6px 14px;font-size:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px">'+
-      '<span style="color:var(--tx);font-weight:600">📖 '+e.count+' summar'+(e.count>1?"ies":"y")+' fetched</span>'+
-      '<span style="color:var(--mt);white-space:nowrap">'+e.time+'</span>'+
-      '</div>';
-  }).join("");
-}
-function toggleSyncLog(){
-  var d=document.getElementById("bk-sync-log-dropdown");
-  if(!d) return;
-  var open=d.style.display==="block";
-  d.style.display=open?"none":"block";
-  if(!open) renderSyncLog();
-}
-
-document.addEventListener("click",function(e){
-  var btn=document.getElementById("bk-sync-log-btn");
-  var dd=document.getElementById("bk-sync-log-dropdown");
-  if(dd&&dd.style.display==="block"&&!dd.contains(e.target)&&e.target!==btn)
-    dd.style.display="none";
-});
+// Run cover fetch for all books without covers — called once after load
 function syncMissingSummaries(){
-  
+  // Find books without summaries that have an ISBN
   var booksNeedingSummary = DB.books.filter(function(b){
     return (!b.summary||!b.summary.trim()) && b.isbn && b.isbn!=="N/A";
   });
@@ -5716,83 +5746,58 @@ function syncMissingSummaries(){
     "https://api.allorigins.win/raw?url="
   ];
 
-  
+  // Test if Google Books is available first
   var testUrl="https://www.googleapis.com/books/v1/volumes?q=isbn:9780061351341&maxResults=1&fields=items(volumeInfo(description))";
-  function tryProxy(proxyIdx){
-    if(proxyIdx>=proxies.length){
-      console.log("Summary sync: all proxies down, retrying in 30 min");
-      setTimeout(syncMissingSummaries, 30*60*1000);
-      return;
-    }
-    fetch(proxies[proxyIdx]+encodeURIComponent(testUrl))
-      .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
-      .then(function(data){
-        if(!data.items||!data.items.length) throw new Error("no data");
-        var workingProxy=proxies[proxyIdx];
-        console.log("Summary sync: using proxy "+proxyIdx+" for "+booksNeedingSummary.length+" books");
-        var idx=0;
-        var synced=0;
-        function processNext(){
-          if(idx>=booksNeedingSummary.length){
-            if(synced>0){
-              saveData();
-              renderBooks();
-              var notice=document.getElementById("bk-summary-notice");
-              if(notice){
-                notice.textContent="📖 "+synced+" summar"+(synced>1?"ies":"y")+" auto-fetched";
-                notice.style.display="block";
-                notice.title="Auto-fetched from Google Books for "+synced+" book"+(synced>1?"s":"")+" that had no summary.";
-                setTimeout(function(){
-                  notice.style.transition="opacity 1s";
-                  notice.style.opacity="0";
-                  setTimeout(function(){notice.style.display="none";notice.style.opacity="1";notice.style.transition="";},1000);
-                }, 120000);
-              }
-              addSyncLogEntry(synced);
-              showToast("Summaries updated for "+synced+" book"+(synced>1?"s":""),"success");
-            }
-            console.log("Summary sync complete! Updated: "+synced);
-            return;
-          }
-          var b=booksNeedingSummary[idx++];
-          var url="https://www.googleapis.com/books/v1/volumes?q=isbn:"+b.isbn+"&maxResults=1&fields=items(volumeInfo(description))";
-          fetch(workingProxy+encodeURIComponent(url))
-            .then(function(r){return r.json();})
-            .then(function(d){
-              if(d.items&&d.items.length&&d.items[0].volumeInfo&&d.items[0].volumeInfo.description){
-                var s=d.items[0].volumeInfo.description;
-                if(s.length>600) s=s.slice(0,600)+"...";
-                b.summary=s;
-                synced++;
-                supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s})
-                  .catch(function(){});
-              }
-            })
-            .catch(function(){})
-            .finally(function(){
-              setTimeout(processNext, 600);
-            });
+  fetch(proxies[0]+encodeURIComponent(testUrl))
+    .then(function(r){if(!r.ok)throw new Error("proxy down");return r.json();})
+    .then(function(data){
+      if(!data.items||!data.items.length) throw new Error("no data");
+      // Google Books is up! Process books in batches of 5 with 2s delay
+      console.log("Google Books available — syncing summaries for "+booksNeedingSummary.length+" books");
+      var idx=0;
+      function processNext(){
+        if(idx>=booksNeedingSummary.length) {
+          console.log("Summary sync complete!");
+          return;
         }
-        processNext();
-      })
-      .catch(function(){
-        tryProxy(proxyIdx+1);
-      });
-  }
-  tryProxy(0);
+        var b=booksNeedingSummary[idx++];
+        var url="https://www.googleapis.com/books/v1/volumes?q=isbn:"+b.isbn+"&maxResults=1&fields=items(volumeInfo(description))";
+        fetch(proxies[0]+encodeURIComponent(url))
+          .then(function(r){return r.json();})
+          .then(function(d){
+            if(d.items&&d.items.length&&d.items[0].volumeInfo.description){
+              var s=d.items[0].volumeInfo.description;
+              b.summary=s;
+              supaFetch("books?id=eq."+encodeURIComponent(b.id),"PATCH",{summary:s})
+                .catch(function(){});
+            }
+          })
+          .catch(function(){})
+          .finally(function(){
+            // Process next book after 500ms delay to avoid rate limiting
+            setTimeout(processNext, 500);
+          });
+      }
+      processNext();
+    })
+    .catch(function(){
+      // Google Books still down — try again in 30 minutes
+      setTimeout(syncMissingSummaries, 30*60*1000);
+    });
 }
 
 function fetchMissingCovers(){
   var noCover = DB.books.filter(function(b){return !b.cover&&(!b.isbn||b.isbn==="N/A");});
   if(!noCover.length) return;
-  
+  // Stagger requests to avoid rate limiting
   noCover.forEach(function(b, i){
     setTimeout(function(){ fetchCoverByTitle(b); }, i * 300);
   });
 }
 
+// ── MEMBER BULK UPLOAD ───────────────────────────────────────────────────────
 function downloadMemberTemplate(){
-  
+  // Generate a CSV template for download
   var csv = "Member ID,First Name,Last Name,Block,Flat No,Email,Phone,Joined Date\n";
   csv += "MEM001,Aanya,Sharma,Kensington,12A,aanya@email.com,9876543210,2024-01-15\n";
   csv += "MEM002,Rohan,Verma,Mayfair,4B,rohan@email.com,9876543211,2024-01-15\n";
@@ -5836,13 +5841,13 @@ function handleMemberBulkUpload(input){
       if(!fname){errors.push(rowLabel+": Missing first name");return;}
       if(!lname&&!fname){errors.push(rowLabel+": Missing last name");return;}
 
-      
+      // Auto-assign ID if blank
       if(!mid){
         maxNum++;
         mid = "MEM"+String(maxNum).padStart(3,"0");
       }
 
-      
+      // If ID already exists — UPDATE
       var existing = DB.members.find(function(m){return m.id===mid;});
       if(existing){
         if(fname) existing.fname=fname;
@@ -5866,10 +5871,10 @@ function handleMemberBulkUpload(input){
 
     saveData();renderMembers();refreshDashboard();
 
-    
+    // Show detailed results
     var summary = "✅ "+added+" added  |  🔄 "+skipped+" updated  |  ❌ "+errors.length+" errors";
     if(errors.length>0){
-      
+      // Show error details in a modal
       var errHtml = "<div style='font-size:13px;font-weight:700;margin-bottom:10px'>"+summary+"</div>";
       errHtml += "<div style='font-size:12px;color:#C0392B;background:#FCEAEA;border-radius:8px;padding:10px;max-height:300px;overflow-y:auto'>";
       errors.forEach(function(e){ errHtml += "• "+e+"<br>"; });
@@ -5904,7 +5909,7 @@ function deleteUser_DB(uid){
 }
 
 function barcodeToBookId(val){
-  
+  // Convert barcode A000006 → A/6, C001977 → C/1977, B000007 → B/7
   var m = val.trim().match(/^([A-Ea-e])(\d+)$/);
   if(m) return m[1].toUpperCase()+"/"+parseInt(m[2],10);
   return val.toUpperCase();
@@ -5912,51 +5917,33 @@ function barcodeToBookId(val){
 
 function filterIssueByBookId(){
   var raw=document.getElementById("iss-book-id").value.trim();
-  var searchEl=document.getElementById("iss-book-search");
-  if(!raw){searchEl.value="";searchEl.placeholder="Type title to search available books...";searchEl.style.color="";return;}
-  
+  if(!raw)return;
   var id=barcodeToBookId(raw);
+  // Update field to show converted ID
   if(id!==raw) document.getElementById("iss-book-id").value=id;
-  
-  if(!/^[A-E]\/[1-9]\d{0,3}$/i.test(id)) return;
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="available";});
+  // Also try barcode lookup
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="available";});
   if(b){
     document.getElementById("iss-book").value=b.id;
-    searchEl.value=b.title;
-    searchEl.style.color="";
+    document.getElementById("iss-book-search").value=b.title;
     document.getElementById("book-dropdown").style.display="none";
-    
-    var bidDd=document.getElementById("bid-dd-iss-book-id");if(bidDd)bidDd.style.display="none";
     showBookInfo(b.id);
-  } else {
-    
-    var anyBook=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase();});
-    document.getElementById("iss-book").value="";
-    searchEl.value="";
-    searchEl.placeholder=anyBook?"This book is currently checked out":"Incorrect book ID";
-    searchEl.style.color="#C0392B";
-    clearBookInfo();
   }
 }
 
 function filterReturnByBookId(){
   var raw=document.getElementById("ret-book-id").value.trim();
-  var searchEl=document.getElementById("ret-book-search");
-  if(!raw){searchEl.value="";searchEl.placeholder="Type title to search...";searchEl.style.color="";return;}
-  
+  if(!raw)return;
   var id=barcodeToBookId(raw);
+  // Update field to show converted ID
   if(id!==raw) document.getElementById("ret-book-id").value=id;
-  
-  if(!/^[A-E]\/[1-9]\d{0,3}$/i.test(id)) return;
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="checked";});
+  // Also try barcode lookup
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="checked";});
   if(b){
     document.getElementById("ret-book").value=b.id;
-    searchEl.value=b.title;
-    searchEl.style.color="";
-    
-    var bidDd2=document.getElementById("bid-dd-ret-book-id");if(bidDd2)bidDd2.style.display="none";
+    document.getElementById("ret-book-search").value=b.title;
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
     if(m){
       document.getElementById("ret-member").value=m.id;
@@ -5964,20 +5951,10 @@ function filterReturnByBookId(){
     }
     showReturnMemberCard(b.issuedTo);
     document.getElementById("return-dropdown").style.display="none";
-  } else {
-    var anyBook=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase();});
-    document.getElementById("ret-book").value="";
-    searchEl.value="";
-    searchEl.placeholder=anyBook?"This book is not currently checked out":"Incorrect book ID";
-    searchEl.style.color="#C0392B";
   }
 }
 
 function filterReturnDropdown(){
-  // Suppress dropdown when Book ID is typed but hasn't resolved to a valid checked-out book
-  var retIdVal=document.getElementById("ret-book-id")?document.getElementById("ret-book-id").value.trim():"";
-  var resolvedRetId=document.getElementById("ret-book")?document.getElementById("ret-book").value.trim():"";
-  if(retIdVal&&!resolvedRetId){document.getElementById("return-dropdown").style.display="none";return;}
   var q=(document.getElementById("ret-book-search").value||"").toLowerCase();
   var selectedMember=document.getElementById("ret-member").value;
   var dd=document.getElementById("return-dropdown");
@@ -5998,15 +5975,13 @@ function filterReturnDropdown(){
         function(bid,btitle,memberId,memberName){return function(){
           document.getElementById("ret-book").value=bid;
           document.getElementById("ret-book-search").value=btitle;
-          var retIdField=document.getElementById("ret-book-id");
-          if(retIdField&&bid){retIdField.value=bid;retIdField.style.borderColor="var(--ac)";}
           dd.style.display="none";
-          
+          // Auto-fill member
           if(memberId&&memberName){
             document.getElementById("ret-member").value=memberId;
             document.getElementById("ret-member-search").value=memberName;
           }
-          
+          // Show member info card
           showReturnMemberCard(memberId);
         };}(b.id, b.title, b.issuedTo, m?m.fname+" "+m.lname:"")
       ));
@@ -6040,6 +6015,7 @@ function showReturnMemberCard(mid){
     "</div>";
 }
 
+// Close dropdowns when clicking outside
 document.addEventListener("click", function(e){
   ["member-dropdown","book-dropdown","return-dropdown","return-member-dropdown"].forEach(function(id){
     var dd=document.getElementById(id);
@@ -6279,105 +6255,44 @@ document.addEventListener("click", function(e){
 </div>
 
 <script>
-
-function bookIdDropdownId(inputId){ return 'bid-dd-'+inputId; }
-
-function ensureBookIdDropdown(inputEl){
-  var ddId=bookIdDropdownId(inputEl.id);
-  var dd=document.getElementById(ddId);
-  if(!dd){
-    dd=document.createElement('div');
-    dd.id=ddId;
-    dd.style.cssText='display:none;position:absolute;left:0;right:0;top:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;z-index:300;max-height:190px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.13);margin-top:2px;font-family:monospace;font-size:13px';
-    var wrap=inputEl.parentElement;
-    if(getComputedStyle(wrap).position==='static') wrap.style.position='relative';
-    wrap.appendChild(dd);
-  }
-  return dd;
+var _syncLog=JSON.parse(localStorage.getItem("summarySyncLog")||"[]");
+function addSyncLogEntry(count){
+  var now=new Date();
+  var label=now.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+" at "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  _syncLog.unshift({count:count,time:label});
+  if(_syncLog.length>20) _syncLog.pop();
+  try{localStorage.setItem("summarySyncLog",JSON.stringify(_syncLog));}catch(e){}
+  renderSyncLog();
 }
-
-function onBookIdInput(inputEl, mode){
-  
-  if(inputEl.value.length>=1) inputEl.value=inputEl.value.charAt(0).toUpperCase()+inputEl.value.slice(1);
-  
-  var barcodeMatch=inputEl.value.match(/^([A-E])\/?(\d{4,6})$/i);
-  if(barcodeMatch){
-    inputEl.value=barcodeToBookId(barcodeMatch[1]+barcodeMatch[2]);
-    clearTimeout(window._issIdTimer);
-    if(mode==='issue') filterIssueByBookId();
-    else if(mode==='return') filterReturnByBookId();
+function renderSyncLog(){
+  var list=document.getElementById("bk-sync-log-list");
+  if(!list) return;
+  if(!_syncLog.length){
+    var pending=DB&&DB.books?DB.books.filter(function(b){return (!b.summary||!b.summary.trim())&&b.isbn&&b.isbn!=="N/A";}).length:0;
+    list.innerHTML='<div style="font-size:12px;color:var(--mt);padding:8px 14px;line-height:1.6">No summaries fetched yet.'+(pending>0?'<br><span style="color:#854F0B">⏳ '+pending+' book'+(pending>1?'s':'')+' pending — auto-fetches when Google Books API recovers.</span>':'<br><span style="color:#0F6E56">✅ All books have summaries.</span>')+'</div>';
     return;
   }
-  
-  var resolvedId=mode==='issue'?document.getElementById("iss-book"):document.getElementById("ret-book");
-  if(resolvedId&&resolvedId.value){
-    var dd=document.getElementById(bookIdDropdownId(inputEl.id));
-    if(dd) dd.style.display='none';
-    return;
-  }
-  var raw=inputEl.value;
-  var dd=ensureBookIdDropdown(inputEl);
-  
-  var partialOk=/^[A-E]?(\/\d{0,4})?$/.test(raw)||raw==='';
-  inputEl.style.borderColor=partialOk?'':'#C0392B';
-  
-  var m=raw.match(/^([A-E])\/(\d+)$/i);
-  if(!m){ dd.style.display='none'; return; }
-  var prefix=m[1].toUpperCase(), numStr=m[2];
-  
-  if(numStr.length>1&&numStr.charAt(0)==='0'){ inputEl.style.borderColor='#C0392B'; dd.style.display='none'; return; }
-  
-  var hits=DB.books.filter(function(b){
-    if(!b.id) return false;
-    var bm=b.id.match(/^([A-E])\/(\d+)$/i);
-    if(!bm||bm[1].toUpperCase()!==prefix||!bm[2].startsWith(numStr)) return false;
-    if(mode==='return') return b.status==='checked';
-    if(mode==='issue') return b.status==='available';
-    return true;
-  });
-  if(!hits.length){
-    dd.innerHTML="<div style='padding:9px 14px;font-size:12px;color:#C0392B;font-weight:600'>&#x26A0; No books found with this ID</div>";
-    dd.style.display='block';
-    return;
-  }
-  hits.sort(function(a,b){ return parseInt(a.id.split('/')[1])-parseInt(b.id.split('/')[1]); });
-  var shown=hits.slice(0,12);
-  dd.innerHTML=shown.map(function(b){
-    var avail=b.status==='available', out=b.status==='checked';
-    var dot=avail?"<span style='color:#0F6E56'>●</span>":"<span style='color:#C0392B'>●</span>";
-    return "<div data-id='"+b.id+"' data-avail='"+avail+"' data-out='"+out+"' "+
-      "style='padding:7px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"+
-      "border-bottom:1px solid var(--bd);color:var(--tx)'>"+
-      "<span>"+dot+" <strong>"+b.id+"</strong>&nbsp; "+(b.title.length>30?b.title.slice(0,30)+'…':b.title)+"</span>"+
-      "<span style='font-size:11px;font-weight:600;color:"+(avail?'#0F6E56':'#C0392B')+"'>"+(avail?'Available':'Out')+"</span>"+
-      "</div>";
-  }).join('')+(hits.length>12?"<div style='padding:5px 12px;font-size:11px;color:var(--mt)'>+"+(hits.length-12)+" more…</div>":"");
-  
-  dd.querySelectorAll('[data-id]').forEach(function(row){
-    row.addEventListener('mousedown',function(e){
-      e.preventDefault();
-      var bid=row.getAttribute('data-id');
-      var avail=row.getAttribute('data-avail')==='true';
-      var out=row.getAttribute('data-out')==='true';
-      if(mode==='issue'&&!avail) return;
-      if(mode==='return'&&!out) return;
-      inputEl.value=bid; dd.style.display='none'; inputEl.style.borderColor='var(--ac)';
-      if(mode==='issue'){clearTimeout(window._issIdTimer);filterIssueByBookId();}
-      else if(mode==='return'){clearTimeout(window._retIdTimer);filterReturnByBookId();}
-    });
-    row.addEventListener('mouseover',function(){row.style.background='var(--bg2)';});
-    row.addEventListener('mouseout',function(){row.style.background='';});
-  });
-  dd.style.display='block';
+  var total=_syncLog.reduce(function(sum,e){return sum+e.count;},0);
+  list.innerHTML='<div style="padding:6px 14px 8px;font-size:12px;color:#0F6E56;font-weight:600;border-bottom:1px solid var(--bd)">✔ '+total+' summar'+(total>1?'ies':'y')+' fetched across '+_syncLog.length+' sync'+(_syncLog.length>1?'s':'')+' </div>'+
+  _syncLog.map(function(e){
+    return '<div style="padding:6px 14px;font-size:12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px">'+
+      '<span style="color:var(--tx);font-weight:600">✔ '+e.count+' summar'+(e.count>1?'ies':'y')+' fetched</span>'+
+      '<span style="color:var(--mt);white-space:nowrap">'+e.time+'</span></div>';
+  }).join("");
 }
-
-function closeBookIdDropdown(inputEl){
-  var dd=document.getElementById(bookIdDropdownId(inputEl.id));
-  if(dd) dd.style.display='none';
-  var raw=inputEl.value.trim();
-  if(!raw){inputEl.style.borderColor='';return;}
-  inputEl.style.borderColor=/^[A-E]\/[1-9]\d{0,3}$/.test(raw)?'var(--ac)':'#C0392B';
+function toggleSyncLog(){
+  var d=document.getElementById("bk-sync-log-dropdown");
+  if(!d) return;
+  var open=d.style.display==="block";
+  d.style.display=open?"none":"block";
+  if(!open) renderSyncLog();
 }
+document.addEventListener("click",function(e){
+  var btn=document.getElementById("bk-sync-log-btn");
+  var dd=document.getElementById("bk-sync-log-dropdown");
+  if(dd&&dd.style.display==="block"&&!dd.contains(e.target)&&e.target!==btn)
+    dd.style.display="none";
+});
 </script>
 </body>
 </html>
