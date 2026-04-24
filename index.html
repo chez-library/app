@@ -1003,6 +1003,7 @@ tr:hover td{background:#fafaf8;}
 <div class="modal-ov" id="m-addbook">
   <div class="modal-box" style="max-height:90vh;overflow-y:auto;max-width:500px">
     <h3 id="addbook-title">Add book</h3>
+    <div class="field"><label>Book ID <span style="font-size:11px;font-weight:400;color:var(--mt)">(e.g. A/123)</span></label><input type="text" id="ab-bookid" placeholder="e.g. A/123, B/45" oninput="this.value=this.value.toUpperCase()"/><div id="ab-bookid-status" style="font-size:11px;margin-top:3px;display:none;color:#A32D2D"></div></div>
     <div class="field"><label>Title</label><input type="text" id="ab-title" oninput="scheduleAddBookLookup()"/></div>
     <div class="field"><label>Author</label><input type="text" id="ab-author" oninput="scheduleAddBookLookup()"/></div>
     <!-- Cover preview from title+author lookup -->
@@ -1207,7 +1208,7 @@ function loadFromSupabase() {
         issuedTo: b.issued_to, issuedDate: b.issued_date, dueDate: b.due_date,
         issuedBy: b.issued_by || null, issuedById: b.issued_by_id || null,
         cover: b.cover, cover2: b.cover2, summary: b.summary,
-        addedDate: b.added_date, isNewArrival: b.is_new_arrival,
+        addedDate: b.added_date, isNewArrival: b.is_new_arrival, addedBy: b.added_by || null,
         noId: b.no_id, qrPrinted: b.qr_printed,
         barcode: b.barcode || null
       };
@@ -1269,7 +1270,7 @@ function saveBook_DB(book) {
     due_date: book.dueDate || null,
     issued_by: book.issuedBy || null, issued_by_id: book.issuedById || null, cover: book.cover || null,
     cover2: book.cover2 || null, summary: book.summary || null,
-    added_date: book.addedDate, is_new_arrival: book.isNewArrival || false,
+    added_date: book.addedDate, is_new_arrival: book.isNewArrival || false, added_by: book.addedBy || null,
     no_id: book.noId || false, qr_printed: book.qrPrinted || false,
     barcode: book.barcode || null
   };
@@ -1541,6 +1542,31 @@ function fmtDate(d){if(!d)return"-";var dt=new Date(d);return dt.toLocaleDateStr
 function todayStr(){return new Date().toISOString().split("T")[0];}
 function uid(){return "id"+Date.now()+Math.random().toString(36).slice(2,6);}
 function logActivity(msg){DB.activity.unshift({msg:msg,user:currentUser?currentUser.name:"System",time:new Date().toLocaleTimeString()});if(DB.activity.length>50)DB.activity.pop();saveData();}
+var _sessionDeletes=0;
+var _DELETE_LIMIT=5;
+function isAdmin(){return currentUser&&(currentUser.role==="master_admin"||currentUser.role==="backup_admin");}
+function checkDeleteAllowed(){
+  if(isAdmin()) return true;
+  if(_sessionDeletes>=_DELETE_LIMIT){
+    showToast("Delete limit reached — volunteers can only delete "+_DELETE_LIMIT+" records per session. Contact an admin.","error");
+    return false;
+  }
+  return true;
+}
+function logDeleteToSupabase(type, id, title, by){
+  var txn={
+    id:"TXN"+Date.now(),
+    type:"delete_"+type,
+    bookId: type==="book"?id:null,
+    memberId: type==="member"?id:null,
+    bookTitle: type==="book"?title:"",
+    memberName: type==="member"?title:"",
+    issuedBy: by,
+    issuedById: currentUser?currentUser.id:"",
+    date: todayStr()
+  };
+  logTransaction_DB(txn).catch(function(){});
+}
 function closeModal(id){var m=document.getElementById(id);if(m){m.classList.remove("open");m.style.cssText="display:none";}}
 function confirmDel(title,msg,cb){
   document.getElementById("confirm-title").textContent=title;
@@ -1712,12 +1738,16 @@ function renderBooksPage(){
     (function(bidx){editBtn.addEventListener("click",function(){openEditBook(bidx);});})(DB.books.indexOf(b));
     var delBtn=document.createElement("button");delBtn.className="btn btn-danger";delBtn.style.cssText="font-size:12px;padding:4px 10px";delBtn.textContent="Delete";
     (function(bidx,btitle){delBtn.addEventListener("click",function(){
+      if(!checkDeleteAllowed()) return;
       confirmDel("Delete book","Delete '"+btitle+"'? This cannot be undone.",function(){
         var bk=DB.books[bidx];var bid=bk?bk.id:null;
         DB.books.splice(bidx,1);
         if(bid&&bid.trim()) deleteBook_DB(bid).catch(function(e){showToast("DB delete failed: "+e.message,"error");});
         else if(bk) supaFetch("books?title=eq."+encodeURIComponent(bk.title)+"&author=eq."+encodeURIComponent(bk.author),"DELETE").catch(function(){});
-        logActivity("Deleted book: "+btitle);saveData();renderBooks();refreshDashboard();
+        _sessionDeletes++;
+        logDeleteToSupabase("book", bid||btitle, btitle, currentUser?currentUser.name:"");
+        logActivity("Deleted book: "+btitle+(isAdmin()?"":" ["+_sessionDeletes+"/"+_DELETE_LIMIT+" vol. deletes]"));
+        saveData();renderBooks();refreshDashboard();
       });
     });})(DB.books.indexOf(b),b.title);
     var actWrap=document.createElement("div");actWrap.style.cssText="display:flex;flex-direction:column;gap:4px;align-items:flex-start";
@@ -1750,7 +1780,8 @@ function openAddBook(){
   editBookId=null;
   document.getElementById("addbook-title").textContent="Add book";
   document.getElementById("addbook-btn").textContent="Add book";
-  ["ab-title","ab-author","ab-isbn","ab-summary"].forEach(function(id){document.getElementById(id).value="";});
+  ["ab-bookid","ab-title","ab-author","ab-isbn","ab-summary"].forEach(function(id){document.getElementById(id).value="";});
+  var bids=document.getElementById("ab-bookid-status");if(bids){bids.style.display="none";}
   var lp=document.getElementById("ab-lookup-result");if(lp)lp.style.display="none";
   _addBookMatch=null;clearTimeout(_addBookTimer);
   var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
@@ -1762,6 +1793,7 @@ function openEditBook(idx){
   window._editBookIdx=typeof idx==="number"?idx:DB.books.indexOf(b);
   document.getElementById("addbook-title").textContent="Edit book";
   document.getElementById("addbook-btn").textContent="Save changes";
+  document.getElementById("ab-bookid").value=b.id||"";
   document.getElementById("ab-title").value=b.title;
   document.getElementById("ab-author").value=b.author;
   document.getElementById("ab-isbn").value=b.isbn&&b.isbn!="N/A"?b.isbn:"";
@@ -1771,22 +1803,41 @@ function openEditBook(idx){
   var _m=document.getElementById("m-addbook");document.body.appendChild(_m);_m.style.cssText="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;";
 }
 function saveBook(){
+  var manualBookId=(document.getElementById("ab-bookid")?document.getElementById("ab-bookid").value:"").trim().toUpperCase();
   var title=document.getElementById("ab-title").value.trim();
   var author=document.getElementById("ab-author").value.trim();
   var isbn=document.getElementById("ab-isbn").value.trim()||"N/A";
   var age=document.getElementById("ab-age").value;
   var genre=document.getElementById("ab-genre").value;
   if(!title||!author)return;
+  if(!manualBookId){
+    var bids=document.getElementById("ab-bookid-status");
+    if(bids){bids.textContent="Book ID is required (e.g. A/123)";bids.style.display="block";}
+    if(document.getElementById("ab-bookid"))document.getElementById("ab-bookid").focus();
+    return;
+  }
+  var isDupe=DB.books.some(function(b){return b.id===manualBookId&&(editBookId===null||editBookId===undefined||manualBookId!==editBookId);});
+  if(isDupe){
+    var bids=document.getElementById("ab-bookid-status");
+    if(bids){bids.textContent="Book ID "+manualBookId+" already exists";bids.style.display="block";}
+    if(document.getElementById("ab-bookid"))document.getElementById("ab-bookid").focus();
+    return;
+  }
   if(editBookId!==null&&editBookId!==undefined){
     var b=window._editBookIdx!==undefined?DB.books[window._editBookIdx]:DB.books.find(function(x){return x.id===editBookId;});
     if(b){b.title=title;b.author=author;b.isbn=isbn;b.age=age;b.genre=genre;
+      if(manualBookId&&manualBookId!==b.id){
+        var oldId=b.id;b.id=manualBookId;b.noId=false;
+        if(oldId){DB.transactions.forEach(function(t){if(t.bookId===oldId)t.bookId=manualBookId;});supaFetch("transactions?book_id=eq."+encodeURIComponent(oldId),"PATCH",{book_id:manualBookId}).catch(function(){});}
+      }
       b.summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
       if(isbn!="N/A"){b.cover="https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";b.cover2="https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";}
       logActivity("Edited book: "+title);}
   }else{
-    var newId="";var noIdFlag=true;
+    var newId=manualBookId;
+    var noIdFlag=false;
     var summary=document.getElementById("ab-summary")?document.getElementById("ab-summary").value.trim():"";
-    var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:null,cover2:null,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag};
+    var newB={id:newId,title:title,author:author,isbn:isbn,age:age,genre:genre,status:"available",issuedTo:null,issuedDate:null,dueDate:null,cover:null,cover2:null,addedDate:todayStr(),isNewArrival:true,summary:summary,noId:noIdFlag,addedBy:currentUser?currentUser.name:null};
     if(isbn!="N/A"){newB.cover="https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg";newB.cover2="https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1";}
     DB.books.push(newB);
     logActivity("Added book: "+title+" [New arrival]");
@@ -1824,9 +1875,12 @@ function renderMembers(){
     (function(mid){editBtn.addEventListener("click",function(){openEditMember(mid);});})(m.id);
     var delBtn=document.createElement("button");delBtn.className="btn btn-danger";delBtn.style.cssText="font-size:12px;padding:4px 10px";delBtn.textContent="Delete";
     (function(mid,mname){delBtn.addEventListener("click",function(){
+      if(!checkDeleteAllowed()) return;
       confirmDel("Delete member","Delete member "+mname+"? Their borrowing history will be lost.",function(){
         DB.members=DB.members.filter(function(x){return x.id!==mid;});
-        logActivity("Deleted member: "+mname);
+        _sessionDeletes++;
+        logDeleteToSupabase("member", mid, mname, currentUser?currentUser.name:"");
+        logActivity("Deleted member: "+mname+(isAdmin()?"":" ["+_sessionDeletes+"/"+_DELETE_LIMIT+" vol. deletes]"));
         deleteMember_DB(mid).catch(function(e){showToast("Delete failed: "+e.message,"error");});
         saveData();renderMembers();refreshDashboard();
       });
@@ -2558,7 +2612,37 @@ function showReport(type){
     var volunteers=Object.keys(volData).sort();
     if(volunteers.length===0){out.innerHTML="<div class='empty'>No volunteer activity recorded yet.</div>";return;}
 
-    out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:1rem'>🙋 Volunteer activity</h3>";
+    // Build unified tab header
+    out.innerHTML="";
+    var hdrRow=document.createElement("div");
+    hdrRow.style.cssText="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem;border-bottom:2px solid var(--bd);padding-bottom:0";
+    var hdrLeft=document.createElement("h3");
+    hdrLeft.style.cssText="font-size:16px;font-weight:700;margin:0 0 -2px 0;padding-bottom:8px;border-bottom:2px solid var(--ac);color:var(--tx)";
+    hdrLeft.textContent="🙋 Volunteer activity";
+    var hdrTabs=document.createElement("div");
+    hdrTabs.style.cssText="display:flex;gap:0";
+    function makeHdrTab(label,id){
+      var btn=document.createElement("button");
+      btn.id=id;
+      btn.innerHTML=label;
+      btn.style.cssText="padding:7px 16px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:var(--mt);border-bottom:2px solid transparent;margin-bottom:-2px";
+      btn.addEventListener("click",function(){
+        hdrTabs.querySelectorAll("button").forEach(function(b){b.style.color="var(--mt)";b.style.borderBottomColor="transparent";});
+        btn.style.color="var(--ac)";btn.style.borderBottomColor="var(--ac)";
+        allPanels.forEach(function(p){p.style.display="none";});
+        document.getElementById(id+"-panel").style.display="block";
+      });
+      return btn;
+    }
+    var tabAdded=makeHdrTab("📗 Books added","vol-added");
+    var tabDeleted=makeHdrTab("🗑 Books deleted","vol-deleted");
+    hdrTabs.appendChild(tabAdded);hdrTabs.appendChild(tabDeleted);
+    hdrRow.appendChild(hdrLeft);hdrRow.appendChild(hdrTabs);
+    out.appendChild(hdrRow);
+    // Wrap existing volunteer content in a panel div
+    var volPanel=document.createElement("div");
+    volPanel.id="vol-activity-panel";
+    out.appendChild(volPanel);
 
     var topBar=document.createElement("div");
     topBar.style.cssText="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap";
@@ -2581,11 +2665,11 @@ function showReport(type){
     calToggle.style.cssText="font-size:12px;padding:5px 12px;border:1px solid var(--bd);border-radius:7px;background:var(--bg2);color:var(--tx);cursor:pointer;margin-left:auto";
 
     topBar.appendChild(filterWrap);topBar.appendChild(calToggle);
-    out.appendChild(topBar);
+    volPanel.appendChild(topBar);
 
     var calPanel=document.createElement("div");
     calPanel.style.cssText="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:1.25rem;max-width:340px";
-    out.appendChild(calPanel);
+    volPanel.appendChild(calPanel);
 
     var calState={year:new Date().getFullYear(),month:new Date().getMonth()};
     var monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2637,7 +2721,7 @@ function showReport(type){
       var dates=Object.keys(volData[vol]).sort(function(a,b){return b.localeCompare(a);});
       if(filterDate) dates=dates.filter(function(d){return d===filterDate;});
       if(dates.length===0) return "<div style='padding:8px 0;font-size:12px;color:var(--mt)'>No activity on this date.</div>";
-      var tbl="<table><thead><tr><th>Date</th><th>Action</th><th>Book</th><th>Member</th><th>Block / Flat</th></tr></thead><tbody>";
+      var tbl="<table><thead><tr><th>Date</th><th>Action</th><th>Book ID</th><th>Book</th><th>Member</th><th>Block / Flat</th></tr></thead><tbody>";
       dates.forEach(function(date){
         var txns=volData[vol][date];
         txns.forEach(function(t,idx){
@@ -2645,9 +2729,11 @@ function showReport(type){
           var b=DB.books.find(function(x){return x.id===t.bookId;});
           var blockFlat=m?([(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" — ")||"-"):"-";
           var isIssue=t.type==="issue";
+          var bookId=t.bookId||"";
           tbl+="<tr>"+
             "<td style='font-size:12px;color:var(--mt);white-space:nowrap'>"+(idx===0?fmtDate(date):"")+"</td>"+
             "<td><span class='badge "+(isIssue?"b-amber":"b-green")+"'>"+(isIssue?"Issued":"Returned")+"</span></td>"+
+            "<td>"+( bookId?"<span style='font-family:monospace;font-size:12px;font-weight:700;color:#185FA5;background:#E6F1FB;padding:2px 7px;border-radius:5px'>"+bookId+"</span>":"-")+"</td>"+
             "<td style='font-size:13px;font-weight:500'>"+(t.bookTitle||b&&b.title||t.bookId||"")+"</td>"+
             "<td style='font-size:12px;color:var(--mt)'>"+(m?m.fname+" "+m.lname:t.memberId||"")+"</td>"+
             "<td style='font-size:12px;color:var(--mt)'>"+blockFlat+"</td>"+
@@ -2692,7 +2778,7 @@ function showReport(type){
       });
 
       sections.push({vol:vol,tblWrap:tblWrap});
-      out.appendChild(section);
+      volPanel.appendChild(section);
     });
 
     function applyFilter(){
@@ -2704,6 +2790,70 @@ function showReport(type){
     }
     dateInput.addEventListener("change",applyFilter);
     clearBtn.addEventListener("click",function(){dateInput.value="";applyFilter();});
+
+    // ── Books Added / Books Deleted sub-tabs ────────────────────────
+
+    // ── Books Added panel ────────────────────────────────────────────
+    var addedPanel=document.createElement("div");
+    addedPanel.id="vol-added-panel";
+    addedPanel.style.display="none";
+    var addedRows=DB.books.filter(function(b){return b.addedDate;});
+    addedRows.sort(function(a,b){return (b.addedDate||"").localeCompare(a.addedDate||"");});
+    if(!addedRows.length){
+      addedPanel.innerHTML="<div class='empty'>No books with an added date recorded.</div>";
+    } else {
+      var addedHtml="<div class='tbl-wrap'><table><thead><tr>"+
+        "<th>Book ID</th><th>Book</th><th>Author</th><th>Age</th><th>Added by</th><th>Added date</th>"+
+        "</tr></thead><tbody>";
+      addedRows.forEach(function(b){
+        addedHtml+="<tr>"+
+          "<td><span style='font-family:monospace;font-size:12px;font-weight:700;color:#185FA5;background:#E6F1FB;padding:2px 7px;border-radius:5px'>"+(b.id||"-")+"</span></td>"+
+          "<td style='font-weight:600'>"+b.title+"</td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+b.author+"</td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+b.age+"</td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+(b.addedBy||"-")+"</td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+fmtDate(b.addedDate)+"</td>"+
+        "</tr>";
+      });
+      addedHtml+="</tbody></table></div>";
+      addedPanel.innerHTML="<p style='font-size:12px;color:var(--mt);margin-bottom:.75rem'>"+addedRows.length+" books with recorded add dates.</p>"+addedHtml;
+    }
+    out.appendChild(addedPanel);
+
+    // ── Books Deleted panel ──────────────────────────────────────────
+    var deletedPanel=document.createElement("div");
+    deletedPanel.id="vol-deleted-panel";
+    deletedPanel.style.display="none";
+    var deleteTxns=DB.transactions.filter(function(t){return t.type==="delete_book"||t.type==="delete_member";});
+    deleteTxns.sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
+    if(!deleteTxns.length){
+      deletedPanel.innerHTML="<div class='empty'>No deletions recorded yet. Deletions from this version onwards will appear here.</div>";
+    } else {
+      var delHtml="<div class='tbl-wrap'><table><thead><tr>"+
+        "<th>Type</th><th>Title / Name</th><th>ID</th><th>Deleted by</th><th>Date</th>"+
+        "</tr></thead><tbody>";
+      deleteTxns.forEach(function(t){
+        var isBook=t.type==="delete_book";
+        delHtml+="<tr>"+
+          "<td><span class='badge "+(isBook?"b-amber":"b-purple")+"' style='font-size:11px'>"+(isBook?"Book":"Member")+"</span></td>"+
+          "<td style='font-weight:600'>"+(t.bookTitle||t.memberName||"-")+"</td>"+
+          "<td style='font-family:monospace;font-size:12px;color:var(--mt)'>"+(t.bookId||t.memberId||"-")+"</td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+(t.issuedBy||"-")+"</td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+fmtDate(t.date)+"</td>"+
+        "</tr>";
+      });
+      delHtml+="</tbody></table></div>";
+      deletedPanel.innerHTML="<p style='font-size:12px;color:var(--mt);margin-bottom:.75rem'>"+deleteTxns.length+" deletion"+(deleteTxns.length!==1?"s":"")+" recorded.</p>"+delHtml;
+    }
+    out.appendChild(deletedPanel);
+
+    var allPanels=[volPanel,addedPanel,deletedPanel];
+    out.appendChild(addedPanel);
+    out.appendChild(deletedPanel);
+    // Activate volunteer activity tab by default
+    addedPanel.style.display="none";
+    deletedPanel.style.display="none";
+    volPanel.style.display="block";
 
     return;
   }
@@ -4279,7 +4429,7 @@ function buildPreview(rawList){
       age:age,genre:genre,
       cover:isbn!=="N/A"?"https://covers.openlibrary.org/b/isbn/"+isbn+"-M.jpg":null,
       cover2:isbn!=="N/A"?"https://books.google.com/books/content?vid=ISBN"+isbn+"&printsec=frontcover&img=1&zoom=1":null,
-      addedDate:today,isNewArrival:true,status:"available",
+      addedDate:today,isNewArrival:true,status:"available",addedBy:currentUser?currentUser.name:null,
       issuedTo:null,issuedDate:null,dueDate:null,
       duplicate:isDuplicate,duplicateTitle:isDuplicateTitle,
       duplicateId:isDuplicateId,dupIdReason:dupIdReason,formatErr:formatErr,
