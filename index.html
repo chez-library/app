@@ -733,10 +733,7 @@ tr:hover td{background:#fafaf8;}
           <tbody id="dash-na-tbody"></tbody></table>
         </div>
       </div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>Recent activity</th><th>User</th><th>Time</th></tr></thead>
-        <tbody id="d-activity"></tbody></table>
-      </div>
+
     </div>
 
     <!-- BOOKS -->
@@ -1657,14 +1654,6 @@ function refreshDashboard(){
   renderTopReaders();
   var pt2=document.getElementById("pub-total2");if(pt2)pt2.textContent=DB.books.length;
   updateActiveMembers();
-  var tbody=document.getElementById("d-activity");
-  tbody.innerHTML="";
-  if(DB.activity.length===0){tbody.innerHTML="<tr><td colspan='3' style='text-align:center;color:var(--mt);padding:2rem'>No activity yet</td></tr>";return;}
-  DB.activity.slice(0,15).forEach(function(a){
-    var tr=document.createElement("tr");
-    tr.innerHTML="<td>"+a.msg+"</td><td>"+a.user+"</td><td>"+a.time+"</td>";
-    tbody.appendChild(tr);
-  });
 }
 
 function renderBooks(){
@@ -5730,37 +5719,134 @@ function barcodeToBookId(val){
 
 function filterIssueByBookId(){
   var raw=document.getElementById("iss-book-id").value.trim();
-  if(!raw)return;
+  var dd=document.getElementById("book-dropdown");
+  var titleEl=document.getElementById("iss-book-search");
+  // Clear fields when input is empty
+  if(!raw){
+    document.getElementById("iss-book").value="";
+    titleEl.value="";
+    titleEl.style.color="";
+    clearBookInfo();
+    if(dd)dd.style.display="none";
+    return;
+  }
   var id=barcodeToBookId(raw);
   if(id!==raw) document.getElementById("iss-book-id").value=id;
+  // Check if book exists but is already issued
+  var anyBook=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase();});
+  if(anyBook&&anyBook.status==="checked"){
+    titleEl.value=anyBook.title+" — Already issued";
+    titleEl.style.color="#A32D2D";
+    document.getElementById("iss-book").value="";
+    clearBookInfo();
+    if(dd)dd.style.display="none";
+    return;
+  }
+  // Exact match — fill immediately
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="available";});
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="available";});
   if(b){
     document.getElementById("iss-book").value=b.id;
-    document.getElementById("iss-book-search").value=b.title;
-    document.getElementById("book-dropdown").style.display="none";
+    titleEl.value=b.title;
+    titleEl.style.color="";
+    if(dd)dd.style.display="none";
     showBookInfo(b.id);
+    return;
   }
+  // Partial match — show dropdown under the title field
+  var q=id.toUpperCase();
+  var hits=DB.books.filter(function(x){
+    return x.status==="available"&&x.id&&x.id.toUpperCase().indexOf(q)===0;
+  }).slice(0,8);
+  if(!dd)return;
+  if(!hits.length){
+    titleEl.style.color="";
+    if(!anyBook){titleEl.value="";clearBookInfo();}
+    dd.style.display="none";
+    return;
+  }
+  dd.innerHTML="";
+  hits.forEach(function(bk){
+    var item=document.createElement("div");
+    item.style.cssText="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--bd)";
+    item.onmouseover=function(){item.style.background="var(--al)";};
+    item.onmouseout=function(){item.style.background="";};
+    item.innerHTML="<div style='font-size:13px;font-weight:600'>"+bk.title+"</div>"+
+      "<div style='font-size:11px;color:var(--mt);margin-top:2px'>"+bk.id+" &middot; "+bk.age+"</div>";
+    item.onclick=function(){
+      document.getElementById("iss-book-id").value=bk.id;
+      document.getElementById("iss-book").value=bk.id;
+      titleEl.value=bk.title;
+      titleEl.style.color="";
+      dd.style.display="none";
+      showBookInfo(bk.id);
+    };
+    dd.appendChild(item);
+  });
+  dd.style.display="block";
 }
 
 function filterReturnByBookId(){
   var raw=document.getElementById("ret-book-id").value.trim();
-  if(!raw)return;
+  var dd=document.getElementById("return-dropdown");
+  var titleEl=document.getElementById("ret-book-search");
+  function clearReturnFields(){
+    document.getElementById("ret-book").value="";
+    titleEl.value="";
+    document.getElementById("ret-member").value="";
+    document.getElementById("ret-member-search").value="";
+    var rc=document.getElementById("ret-member-card");if(rc)rc.style.display="none";
+    if(dd)dd.style.display="none";
+  }
+  if(!raw){clearReturnFields();return;}
   var id=barcodeToBookId(raw);
   if(id!==raw) document.getElementById("ret-book-id").value=id;
+  // Exact match
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="checked";});
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="checked";});
   if(b){
     document.getElementById("ret-book").value=b.id;
-    document.getElementById("ret-book-search").value=b.title;
+    titleEl.value=b.title;
     var m=DB.members.find(function(x){return x.id===b.issuedTo;});
     if(m){
       document.getElementById("ret-member").value=m.id;
-      document.getElementById("ret-member-search").value=m.fname+" "+m.lname;
+      document.getElementById("ret-member-search").value=memberName(m);
     }
     showReturnMemberCard(b.issuedTo);
-    document.getElementById("return-dropdown").style.display="none";
+    if(dd)dd.style.display="none";
+    return;
   }
+  // Partial match — show dropdown of checked-out books
+  var q=id.toUpperCase();
+  var hits=DB.books.filter(function(x){
+    return x.status==="checked"&&x.id&&x.id.toUpperCase().indexOf(q)===0;
+  }).slice(0,8);
+  if(!hits.length){clearReturnFields();return;}
+  if(!dd)return;
+  dd.innerHTML="";
+  hits.forEach(function(bk){
+    var m=DB.members.find(function(x){return x.id===bk.issuedTo;});
+    var mname=m?memberName(m):"Unknown member";
+    var item=document.createElement("div");
+    item.style.cssText="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--bd)";
+    item.onmouseover=function(){item.style.background="var(--al)";};
+    item.onmouseout=function(){item.style.background="";};
+    item.innerHTML="<div style='font-size:13px;font-weight:600'>"+bk.title+"</div>"+
+      "<div style='font-size:11px;color:var(--mt);margin-top:2px'>"+bk.id+" &middot; "+mname+"</div>";
+    item.onclick=function(){
+      document.getElementById("ret-book-id").value=bk.id;
+      document.getElementById("ret-book").value=bk.id;
+      titleEl.value=bk.title;
+      if(m){
+        document.getElementById("ret-member").value=m.id;
+        document.getElementById("ret-member-search").value=memberName(m);
+      }
+      showReturnMemberCard(bk.issuedTo);
+      dd.style.display="none";
+    };
+    dd.appendChild(item);
+  });
+  dd.style.display="block";
 }
 
 function filterReturnDropdown(){
