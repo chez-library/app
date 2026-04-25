@@ -215,6 +215,16 @@ tr:hover td{background:#fafaf8;}
   .book-id-row{flex-wrap:wrap!important;}
   .book-id-row .book-id-col{width:100%!important;}
   .book-id-row .book-title-col{width:100%!important;}
+  .issue-grid{grid-template-columns:1fr!important;}
+  /* Top readers — hide Block/Flat and prev month on mobile */
+  .readers-tbl th:nth-child(3),.readers-tbl td:nth-child(3){display:none;}
+  .readers-tbl th:nth-child(4),.readers-tbl td:nth-child(4){display:none;}
+  .readers-tbl td,.readers-tbl th{padding:8px 6px!important;font-size:12px!important;}
+  /* Currently issued table - hide less critical cols on mobile */
+  .issued-wrap td:nth-child(6),.issued-wrap th:nth-child(6){display:none;}
+  .issued-wrap td:nth-child(7),.issued-wrap th:nth-child(7){display:none;}
+  .issued-wrap td:nth-child(8),.issued-wrap th:nth-child(8){display:none;}
+  .issued-wrap td:nth-child(3),.issued-wrap th:nth-child(3){max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--bd);padding:.5rem 0;display:none;}
   .sidebar.mob-open{display:block;}
   .mob-menu-btn{display:flex!important;}
@@ -823,7 +833,7 @@ tr:hover td{background:#fafaf8;}
     <!-- ISSUE / RETURN -->
     <div class="panel" id="p-issue">
       <div class="panel-hdr"><h2>Issue / Return</h2></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+      <div class="issue-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
         <div style="background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.5rem">
           <h3 style="font-size:15px;font-weight:700;margin-bottom:1rem;color:var(--ac)">&#x2B;  Issue book</h3>
 
@@ -3837,7 +3847,7 @@ function renderTopReaders(){
     });
     if(allIds.length===0) tableHtml+="<tr><td colspan='6' style='padding:12px;text-align:center;color:var(--mt);font-size:13px'>No borrowing data yet</td></tr>";
     tableHtml+="</tbody></table>";
-    dashRow.innerHTML="<div class='tbl-wrap'>"+tableHtml+"</div>";
+    dashRow.innerHTML="<div class='tbl-wrap readers-tbl'>"+tableHtml+"</div>";
   }
 }
 
@@ -4282,7 +4292,7 @@ function renderNewArrivals(){
           "<td><span class='badge' style='background:#FEF3C7;color:#854F0B'>"+daysLeft+" day"+(daysLeft!==1?"s":"")+" left</span></td>"+
           "<td></td>";
         var removeBtn=document.createElement("button");removeBtn.className="btn btn-ghost";
-        removeBtn.style.cssText="font-size:12px;padding:4px 10px";removeBtn.textContent="Remove from new arrivals";
+        removeBtn.style.cssText="font-size:11px;padding:4px 8px;white-space:nowrap";removeBtn.textContent="Remove";
         (function(bid){removeBtn.addEventListener("click",function(){
           var bk=DB.books.find(function(x){return x.id===bid;});
           if(bk){bk.isNewArrival=false;saveData();renderNewArrivals();refreshDashboard();
