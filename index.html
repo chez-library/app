@@ -216,10 +216,7 @@ tr:hover td{background:#fafaf8;}
   .book-id-row .book-id-col{width:100%!important;}
   .book-id-row .book-title-col{width:100%!important;}
   .issue-grid{grid-template-columns:1fr!important;}
-  /* Top readers — hide Block/Flat and prev month on mobile */
-  .readers-tbl th:nth-child(3),.readers-tbl td:nth-child(3){display:none;}
-  .readers-tbl th:nth-child(4),.readers-tbl td:nth-child(4){display:none;}
-  .readers-tbl td,.readers-tbl th{padding:8px 6px!important;font-size:12px!important;}
+  .readers-tbl td,.readers-tbl th{padding:6px 8px!important;font-size:12px!important;}
   /* Currently issued table - hide less critical cols on mobile */
   .issued-wrap td:nth-child(6),.issued-wrap th:nth-child(6){display:none;}
   .issued-wrap td:nth-child(7),.issued-wrap th:nth-child(7){display:none;}
@@ -3822,7 +3819,7 @@ function renderTopReaders(){
     var curTop=Object.keys(curCounts).sort(function(a,b){return curCounts[b]-curCounts[a];}).slice(0,3);
 
     var tableHtml="<table style='width:100%;border-collapse:collapse;font-size:13px'>";
-    tableHtml+="<thead><tr style='background:var(--bg2)'><th style='padding:8px 12px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>#</th><th style='padding:8px 12px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Member</th><th style='padding:8px 12px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Block / Flat</th><th style='padding:8px 12px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>"+months2[prevMonth]+"</th><th style='padding:8px 12px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>This month</th><th style='padding:8px 12px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>All time</th></tr></thead><tbody>";
+    tableHtml+="<thead><tr style='background:var(--bg2)'><th style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>#</th><th style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Member</th><th style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>"+months2[prevMonth]+"</th><th style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>This month</th><th style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>All time</th></tr></thead><tbody>";
 
     var seenIds={};
     prevTop.concat(curTop).concat(allTime.map(function(r){return Object.keys(prevCounts).concat(Object.keys(curCounts)).find(function(id){var m=DB.members.find(function(x){return x.id===id;});return m&&m.fname+" "+m.lname===r.name;});})).forEach(function(id){if(id)seenIds[id]=true;});
@@ -3845,7 +3842,7 @@ function renderTopReaders(){
         "<td style='padding:8px 12px;text-align:center;font-weight:600;color:#185FA5'>"+(tot?tot.count:"-")+"</td>"+
       "</tr>";
     });
-    if(allIds.length===0) tableHtml+="<tr><td colspan='6' style='padding:12px;text-align:center;color:var(--mt);font-size:13px'>No borrowing data yet</td></tr>";
+    if(allIds.length===0) tableHtml+="<tr><td colspan='5' style='padding:12px;text-align:center;color:var(--mt);font-size:13px'>No borrowing data yet</td></tr>";
     tableHtml+="</tbody></table>";
     dashRow.innerHTML="<div class='tbl-wrap readers-tbl'>"+tableHtml+"</div>";
   }
