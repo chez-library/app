@@ -226,8 +226,9 @@ tr:hover td{background:#fafaf8;}
   .issue-grid{grid-template-columns:1fr!important;}
   .readers-tbl{width:100%;}
   .readers-tbl td,.readers-tbl th{padding:5px 6px!important;font-size:11px!important;white-space:nowrap;}
-  .readers-tbl th:nth-child(3),.readers-tbl td:nth-child(3){display:none!important;}
   .readers-tbl th:nth-child(4),.readers-tbl td:nth-child(4){display:none!important;}
+  .readers-tbl th:nth-child(5),.readers-tbl td:nth-child(5){display:none!important;}
+  .readers-tbl th:nth-child(6),.readers-tbl td:nth-child(6){display:none!important;}
   /* Member col can wrap */  .readers-tbl td:nth-child(2),.readers-tbl th:nth-child(2){white-space:normal!important;max-width:120px;}
   /* Currently issued table - hide less critical cols on mobile */
   .issued-wrap td:nth-child(6),.issued-wrap th:nth-child(6){display:none;}
@@ -266,23 +267,17 @@ tr:hover td{background:#fafaf8;}
   /* Summary log dropdown */
   #bk-sync-log-dropdown{right:auto!important;left:0!important;max-width:95vw!important;}
 }
-@media(max-width:900px){
-  .readers-tbl th:nth-child(3),.readers-tbl td:nth-child(3){display:none!important;}
-  .readers-tbl th:nth-child(4),.readers-tbl td:nth-child(4){display:none!important;}
-}
+
 @media(max-width:480px){
   /* Stack dashboard stats to 2 col */
   .hcards{grid-template-columns:1fr 1fr!important;}
-  /* Hide non-essential table columns in reports */
-  .tbl-wrap table th:nth-child(n+5),
-  .tbl-wrap table td:nth-child(n+5){display:none;}
   /* Volunteer/issued table — show key cols only */
   .content{padding:.5rem;}
 }
 
 .mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:1px solid var(--bd);border-radius:7px;cursor:pointer;flex-shrink:0;}
 .mob-menu-btn svg{width:18px;height:18px;}
-.hide-mobile{display:inline;}
+.hide-mobile{display:inline;}.readers-tbl .hide-mobile{display:table-cell;}
 .hcard{background:var(--bg2);border-radius:12px;padding:1.5rem;}
 .hcard h3{font-size:14px;font-weight:700;margin-bottom:1rem;}
 .hr{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid var(--bd);}
@@ -3804,11 +3799,12 @@ function getAllTimeTopReaders(){
   DB.transactions.forEach(function(t){
     if(t.type==="issue") counts[t.memberId]=(counts[t.memberId]||0)+1;
   });
-  var sorted=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).slice(0,3);
+  var sorted=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).slice(0,20);
   return sorted.map(function(mid){
     var m=DB.members.find(function(x){return x.id===mid;});
     return{
-      name:m?m.fname+" "+m.lname:mid,
+      id:mid,
+      name:m?memberName(m):mid,
       count:counts[mid],
       block:m?m.block:"",
       flatNo:m?m.flatNo:""
@@ -3866,42 +3862,76 @@ function renderTopReaders(){
     var curMonthStr=curYear+"-"+String(curMonth+1).padStart(2,"0");
     if(dashMonth)dashMonth.textContent="";
 
-    var prevCounts={},curCounts={};
+    // Period counts
+    var curCounts={},q3Counts={},h1Counts={},yearCounts={};
+    // Year column: current year if Jan-Dec ongoing, else previous year
+    var yearLabel=curYear;
+    var yearPfx=String(yearLabel)+"-";
+    // Last 3 months: current + 2 previous months
+    var q3Months=[];
+    for(var qi=0;qi<3;qi++){var qm=curMonth-qi;var qy=curYear;if(qm<0){qm+=12;qy--;}q3Months.push(qy+"-"+String(qm+1).padStart(2,"0"));}
+    // Last 6 months
+    var h1Months=[];
+    for(var hi=0;hi<6;hi++){var hm=curMonth-hi;var hy=curYear;if(hm<0){hm+=12;hy--;}h1Months.push(hy+"-"+String(hm+1).padStart(2,"0"));}
     DB.transactions.forEach(function(t){
-      if(t.type!=="issue")return;
-      if(t.date&&t.date.indexOf(prevMonthStr)===0) prevCounts[t.memberId]=(prevCounts[t.memberId]||0)+1;
-      if(t.date&&t.date.indexOf(curMonthStr)===0) curCounts[t.memberId]=(curCounts[t.memberId]||0)+1;
+      if(t.type!=="issue"||!t.date)return;
+      var d=t.date.slice(0,7);
+      if(d===curMonthStr) curCounts[t.memberId]=(curCounts[t.memberId]||0)+1;
+      if(q3Months.indexOf(d)>=0) q3Counts[t.memberId]=(q3Counts[t.memberId]||0)+1;
+      if(h1Months.indexOf(d)>=0) h1Counts[t.memberId]=(h1Counts[t.memberId]||0)+1;
+      if(d.indexOf(yearPfx)===0) yearCounts[t.memberId]=(yearCounts[t.memberId]||0)+1;
     });
 
-    var prevTop=Object.keys(prevCounts).sort(function(a,b){return prevCounts[b]-prevCounts[a];}).slice(0,3);
-    var curTop=Object.keys(curCounts).sort(function(a,b){return curCounts[b]-curCounts[a];}).slice(0,3);
-
-    var tableHtml="<table style='width:100%;border-collapse:collapse;font-size:13px'>";
-    tableHtml+="<thead><tr style='background:var(--bg2)'><th style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>#</th><th style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Member</th><th class='hide-mobile' style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Block / Flat</th><th class='hide-mobile' style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>"+months2[prevMonth]+"</th><th style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>This month</th><th style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>All time</th></tr></thead><tbody>";
-
+    // Build unified top list sorted by all-time
     var seenIds={};
-    prevTop.concat(curTop).concat(allTime.map(function(r){return Object.keys(prevCounts).concat(Object.keys(curCounts)).find(function(id){var m=DB.members.find(function(x){return x.id===id;});return m&&m.fname+" "+m.lname===r.name;});})).forEach(function(id){if(id)seenIds[id]=true;});
-    var allIds=Object.keys(seenIds).sort(function(a,b){return (allTime.findIndex(function(r){var m=DB.members.find(function(x){return x.id===b;});return m&&m.fname+" "+m.lname===r.name;}))-( allTime.findIndex(function(r){var m=DB.members.find(function(x){return x.id===a;});return m&&m.fname+" "+m.lname===r.name;}));}).slice(0,5);
+    [curCounts,q3Counts,h1Counts,yearCounts].forEach(function(c){Object.keys(c).forEach(function(id){seenIds[id]=true;});});
+    allTime.forEach(function(r){var m=DB.members.find(function(x){return memberName(x)===r.name;});if(m)seenIds[m.id]=true;});
+    var allIds=Object.keys(seenIds).sort(function(a,b){
+      var ta=allTime.find(function(r){var m=DB.members.find(function(x){return x.id===a;});return m&&memberName(m)===r.name;});
+      var tb=allTime.find(function(r){var m=DB.members.find(function(x){return x.id===b;});return m&&memberName(m)===r.name;});
+      return (tb?tb.count:0)-(ta?ta.count:0);
+    }).slice(0,5);
 
-    var rank=["🥇","🥈","🥉","4.","5."];
+    var th="<th style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--bd)'>";
+    var thm="<th class='hide-mobile' style='padding:8px 10px;text-align:center;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--bd)'>";
+    var tableHtml="<table style='width:100%;border-collapse:collapse;font-size:13px'>";
+    tableHtml+="<thead><tr style='background:var(--bg2)'>"+
+      "<th style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>#</th>"+
+      "<th style='padding:8px 10px;text-align:left;font-size:11px;color:var(--mt);font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd)'>Member</th>"+
+      th+"This month</th>"+
+      thm+"Last 3 months</th>"+
+      thm+"Last 6 months</th>"+
+      thm+yearLabel+"</th>"+
+      th+"All time</th>"+
+    "</tr></thead><tbody>";
+
+    var rank=["\u{1F947}","\u{1F948}","\u{1F949}","4.","5."];
     allIds.forEach(function(id,i){
       var m=DB.members.find(function(x){return x.id===id;});
       var name=m?memberName(m):(id||"Unknown member");
       var blockFlat=m?([(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" · ")||"-"):"-";
-      var prev=prevCounts[id]||0;
       var cur=curCounts[id]||0;
-      var tot=allTime.find(function(r){return r.name===name;})||allTime.find(function(r){return m&&(r.name===m.fname||r.name.indexOf(m.fname)===0);});
+      var q3=q3Counts[id]||0;
+      var h1=h1Counts[id]||0;
+      var yr=yearCounts[id]||0;
+      var tot=allTime.find(function(r){return r.id===id;});
+      function cell(v,green,hide){
+        var cls=hide?" class='hide-mobile'":"";
+        var col=v>0&&green?"#0F6E56":"var(--mt)";
+        var fw=v>0&&green?"600":"400";
+        return "<td"+cls+" style='padding:8px 10px;text-align:center;color:"+col+";font-weight:"+fw+"'>"+(v||"-")+"</td>";
+      }
       tableHtml+="<tr style='border-bottom:1px solid var(--bd)'>"+
-        "<td style='padding:8px 10px;font-size:14px;white-space:nowrap'>"+rank[i]+"</td>"+
-        "<td style='padding:8px 10px;font-weight:600'>"+name+
-          "<div class='hide-mobile' style='font-size:11px;font-weight:400;color:var(--mt)'>"+blockFlat+"</div></td>"+
-        "<td class='hide-mobile' style='padding:8px 10px;font-size:12px;color:var(--mt)'>"+blockFlat+"</td>"+
-        "<td class='hide-mobile' style='padding:8px 10px;text-align:center;color:var(--mt)'>"+(prev||"-")+"</td>"+
-        "<td style='padding:8px 10px;text-align:center;color:"+(cur>0?"#0F6E56":"var(--mt)")+";font-weight:"+(cur>0?"600":"400")+"'>"+(cur||"-")+"</td>"+
+        "<td style='padding:8px 10px;font-size:14px'>"+rank[i]+"</td>"+
+        "<td style='padding:8px 10px;font-weight:600'>"+name+"<div style='font-size:11px;font-weight:400;color:var(--mt);margin-top:2px'>"+blockFlat+"</div></td>"+
+        cell(cur,true,false)+
+        cell(q3,true,true)+
+        cell(h1,true,true)+
+        cell(yr,true,true)+
         "<td style='padding:8px 10px;text-align:center;font-weight:600;color:#185FA5'>"+(tot?tot.count:"-")+"</td>"+
       "</tr>";
     });
-    if(allIds.length===0) tableHtml+="<tr><td colspan='6' style='padding:12px;text-align:center;color:var(--mt);font-size:13px'>No borrowing data yet</td></tr>";
+    if(allIds.length===0) tableHtml+="<tr><td colspan='7' style='padding:12px;text-align:center;color:var(--mt);font-size:13px'>No borrowing data yet</td></tr>";
     tableHtml+="</tbody></table>";
     dashRow.innerHTML="<div class='tbl-wrap readers-tbl'>"+tableHtml+"</div>";
   }
