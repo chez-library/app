@@ -436,14 +436,7 @@ tr:hover td{background:#fafaf8;}
           <span class="fg-lbl">Genre</span>
           <div class="pills" id="gp">
             <button class="pill gon" onclick="setG(this,'All')">All genres</button>
-            <button class="pill" onclick="setG(this,'Adventure &amp; fantasy')">Adventure &amp; fantasy</button>
-            <button class="pill" onclick="setG(this,'Science &amp; nature')">Science &amp; nature</button>
-            <button class="pill" onclick="setG(this,'History &amp; culture')">History &amp; culture</button>
-            <button class="pill" onclick="setG(this,'Arts &amp; creativity')">Arts &amp; creativity</button>
-            <button class="pill" onclick="setG(this,'Reference &amp; learning')">Reference &amp; learning</button>
-            <button class="pill" onclick="setG(this,'Fiction')">Fiction</button>
-            <button class="pill" onclick="setG(this,'Non-fiction')">Non-fiction</button>
-          </div>
+            <button class="pill" onclick="setG(this,'Adventure &amp; fantasy')">Adventure &amp; fantasy</button><button class="pill" onclick="setG(this,'Science &amp; nature')">Science &amp; nature</button><button class="pill" onclick="setG(this,'History &amp; culture')">History &amp; culture</button><button class="pill" onclick="setG(this,'Arts &amp; creativity')">Arts &amp; creativity</button><button class="pill" onclick="setG(this,'Reference &amp; learning')">Reference &amp; learning</button><button class="pill" onclick="setG(this,'Fiction')">Fiction</button><button class="pill" onclick="setG(this,'Non-fiction')">Non-fiction</button><button class="pill" onclick="setG(this,'Mystery &amp; thriller')">Mystery &amp; thriller</button><button class="pill" onclick="setG(this,'Romance &amp; drama')">Romance &amp; drama</button><button class="pill" onclick="setG(this,'Biography &amp; memoir')">Biography &amp; memoir</button><button class="pill" onclick="setG(this,'Humour')">Humour</button><button class="pill" onclick="setG(this,'Sports &amp; games')">Sports &amp; games</button><button class="pill" onclick="setG(this,'Health &amp; wellness')">Health &amp; wellness</button><button class="pill" onclick="setG(this,'Religion &amp; spirituality')">Religion &amp; spirituality</button><button class="pill" onclick="setG(this,'Comics &amp; graphic novels')">Comics &amp; graphic novels</button><button class="pill" onclick="setG(this,'Classics')">Classics</button></div>
         </div>
       </div>
       <div class="rcount" id="rc"></div>
@@ -471,15 +464,8 @@ tr:hover td{background:#fafaf8;}
           <option>Adults</option>
         </select>
         <select id="pop-genre-filter" onchange="renderPopularBooks()" style="padding:7px 12px;font-size:13px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);outline:none;color:var(--tx)">
-          <option value="">All genres</option>
-          <option>Adventure &amp; fantasy</option>
-          <option>Science &amp; nature</option>
-          <option>History &amp; culture</option>
-          <option>Arts &amp; creativity</option>
-          <option>Reference &amp; learning</option>
-          <option>Fiction</option>
-          <option>Non-fiction</option>
-        </select>
+<option value="">All genres</option><option>Adventure &amp; fantasy</option><option>Science &amp; nature</option><option>History &amp; culture</option><option>Arts &amp; creativity</option><option>Reference &amp; learning</option><option>Fiction</option><option>Non-fiction</option><option>Mystery &amp; thriller</option><option>Romance &amp; drama</option><option>Biography &amp; memoir</option><option>Humour</option><option>Sports &amp; games</option><option>Health &amp; wellness</option><option>Religion &amp; spirituality</option><option>Comics &amp; graphic novels</option><option>Classics</option>
+</select>
         <button onclick="document.getElementById('pop-age-filter').value='';document.getElementById('pop-genre-filter').value='';renderPopularBooks();" style="padding:7px 12px;font-size:13px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;cursor:pointer;color:var(--mt)">✕ Clear</button>
         <span id="pop-count" style="font-size:12px;color:var(--mt);margin-left:4px"></span>
       </div>
@@ -797,11 +783,8 @@ tr:hover td{background:#fafaf8;}
           <option>Adults</option>
         </select>
         <select id="bk-filter" onchange="renderBooks()">
-          <option value="">All genres</option>
-          <option>Adventure &amp; fantasy</option><option>Science &amp; nature</option>
-          <option>History &amp; culture</option><option>Arts &amp; creativity</option>
-          <option>Reference &amp; learning</option><option>Fiction</option><option>Non-fiction</option>
-        </select>
+<option value="">All genres</option><option>Adventure &amp; fantasy</option><option>Science &amp; nature</option><option>History &amp; culture</option><option>Arts &amp; creativity</option><option>Reference &amp; learning</option><option>Fiction</option><option>Non-fiction</option><option>Mystery &amp; thriller</option><option>Romance &amp; drama</option><option>Biography &amp; memoir</option><option>Humour</option><option>Sports &amp; games</option><option>Health &amp; wellness</option><option>Religion &amp; spirituality</option><option>Comics &amp; graphic novels</option><option>Classics</option>
+</select>
         <select id="bk-qr-filter" onchange="renderBooks()" style="font-size:13px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);outline:none">
           <option value="">All barcode status</option>
           <option value="pending">Barcode pending</option>
@@ -1115,10 +1098,8 @@ tr:hover td{background:#fafaf8;}
       </div>
       <div class="field"><label>Genre</label>
         <select id="ab-genre">
-          <option>Adventure &amp; fantasy</option><option>Science &amp; nature</option>
-          <option>History &amp; culture</option><option>Arts &amp; creativity</option>
-          <option>Reference &amp; learning</option><option>Fiction</option><option>Non-fiction</option>
-        </select>
+<option>Adventure &amp; fantasy</option><option>Science &amp; nature</option><option>History &amp; culture</option><option>Arts &amp; creativity</option><option>Reference &amp; learning</option><option>Fiction</option><option>Non-fiction</option><option>Mystery &amp; thriller</option><option>Romance &amp; drama</option><option>Biography &amp; memoir</option><option>Humour</option><option>Sports &amp; games</option><option>Health &amp; wellness</option><option>Religion &amp; spirituality</option><option>Comics &amp; graphic novels</option><option>Classics</option>
+</select>
       </div>
     </div>
     <div class="modal-footer">
