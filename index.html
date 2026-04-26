@@ -345,7 +345,6 @@ tr:hover td{background:#fafaf8;}
   </div>
   <div class="hero-stats">
     <div class="hstat"><div class="hstat-n" id="pub-total2">…</div><div class="hstat-l">books in catalog</div></div>
-    <div class="hstat"><div class="hstat-n">95%</div><div class="hstat-l">children's collection</div></div>
     <div class="hstat"><div class="hstat-n" id="pub-active-members">…</div><div class="hstat-l">registered members</div></div>
     <div class="hstat">
       <div id="pub-borrow-chart" style="display:flex;align-items:flex-end;justify-content:center;gap:8px;height:54px"></div>
@@ -356,6 +355,17 @@ tr:hover td{background:#fafaf8;}
       <div id="pub-block-chart" style="display:flex;align-items:flex-end;justify-content:center;gap:8px;height:54px"></div>
       <div id="pub-block-labels" style="display:flex;justify-content:center;gap:8px"></div>
       <div class="hstat-l" style="margin-top:4px" id="pub-block-title">top blocks</div>
+    </div>
+    <div class="hstat" id="pub-month-readers" style="display:none">
+      <div class="hstat-l" style="margin-bottom:6px" id="pub-month-readers-title">top readers — this month</div>
+      <div id="pub-month-readers-list" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+    <div class="hstat" id="pub-year-readers" style="display:none">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+        <div class="hstat-l" id="pub-year-readers-title">top readers — 2026</div>
+        <span id="pub-year-badge" style="font-size:9px;background:#E6F1FB;color:#185FA5;padding:1px 6px;border-radius:20px;font-weight:600">Year so far</span>
+      </div>
+      <div id="pub-year-readers-list" style="display:flex;flex-direction:column;gap:5px"></div>
     </div>
   </div>
 
@@ -1308,6 +1318,7 @@ function loadFromSupabase() {
     renderNewArrivals();
     renderPopularBooks();
     renderTopReaders();
+    renderPubTopReaders();
     renderMonthlyStats();
     upd();
     var tot=document.getElementById("pub-total");if(tot)tot.textContent=DB.books.length;
@@ -3812,6 +3823,69 @@ function getAllTimeTopReaders(){
   });
 }
 
+function renderPubTopReaders(){
+  var now=new Date();
+  var cy=now.getFullYear();
+  var cm=now.getMonth();
+  var curMonthStr=cy+"-"+String(cm+1).padStart(2,"0");
+  var yearPfx=String(cy)+"-";
+  var medals=["🥇","🥈","🥉"];
+  var curCounts={},yearCounts={};
+  DB.transactions.forEach(function(t){
+    if(t.type!=="issue"||!t.date)return;
+    var d=t.date.slice(0,7);
+    if(d===curMonthStr) curCounts[t.memberId]=(curCounts[t.memberId]||0)+1;
+    if(d.indexOf(yearPfx)===0) yearCounts[t.memberId]=(yearCounts[t.memberId]||0)+1;
+  });
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  // In January, show previous year final tally for rewarding
+  var isJan=cm===0;
+  var yearLabel=isJan?cy-1:cy;
+  var yearPfxFinal=String(yearLabel)+"-";
+  if(isJan){
+    yearCounts={};
+    DB.transactions.forEach(function(t){
+      if(t.type!=="issue"||!t.date)return;
+      if(t.date.indexOf(yearPfxFinal)===0) yearCounts[t.memberId]=(yearCounts[t.memberId]||0)+1;
+    });
+  }
+  function renderList(elId, counts, color){
+    var el=document.getElementById(elId);
+    if(!el)return;
+    var sorted=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).slice(0,3);
+    if(!sorted.length){el.innerHTML="<div style='font-size:11px;color:var(--mt)'>No data yet</div>";return;}
+    el.innerHTML=sorted.map(function(id,i){
+      var m=DB.members.find(function(x){return x.id===id;});
+      var name=m?memberName(m):id;
+      var mem=DB.members.find(function(x){return x.id===id;});
+      var flat=mem?([(mem.block||""),(mem.flatNo?"Flat "+mem.flatNo:"")].filter(Boolean).join(" · ")||""):"";
+      return "<div style='display:flex;align-items:center;gap:6px'>"+
+        "<span style='font-size:13px'>"+medals[i]+"</span>"+
+        "<div style='flex:1'>"+
+          "<div style='font-size:12px;font-weight:600;color:var(--tx)'>"+name+"</div>"+
+          (flat?"<div style='font-size:10px;color:var(--mt);margin-top:1px'>"+flat+"</div>":"")+
+        "</div>"+
+        "<span style='font-size:12px;font-weight:600;color:"+color+"'>"+counts[id]+"</span>"+
+      "</div>";
+    }).join("");
+  }
+  var mEl=document.getElementById("pub-month-readers");
+  var yEl=document.getElementById("pub-year-readers");
+  var mTitle=document.getElementById("pub-month-readers-title");
+  var yTitle=document.getElementById("pub-year-readers-title");
+  var yBadge=document.getElementById("pub-year-badge");
+  if(mTitle) mTitle.textContent="Top readers — "+months[cm]+" "+cy;
+  if(yTitle) yTitle.textContent="Top readers — "+yearLabel;
+  if(yBadge){
+    yBadge.textContent=isJan?"🏆 Final":"Year so far";
+    yBadge.style.background=isJan?"#FFF3CD":"#E6F1FB";
+    yBadge.style.color=isJan?"#854F0B":"#185FA5";
+  }
+  renderList("pub-month-readers-list", curCounts, "#0F6E56");
+  renderList("pub-year-readers-list", yearCounts, isJan?"#854F0B":"#185FA5");
+  if(mEl) mEl.style.display=Object.keys(curCounts).length?"":"none";
+  if(yEl) yEl.style.display=Object.keys(yearCounts).length?"":"none";
+}
 function renderTopReaders(){
   var data=getTopReaders();
   var medals=["&#x1F947;","&#x1F948;","&#x1F949;"];
@@ -5881,6 +5955,20 @@ function filterReturnByBookId(){
   if(id!==raw) document.getElementById("ret-book-id").value=id;
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="checked";});
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="checked";});
+  // Check if book exists but is not currently issued
+  if(!b){
+    var anyBook=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase();});
+    if(anyBook&&anyBook.status!=="checked"){
+      titleEl.value=anyBook.title+" — Not currently issued";
+      titleEl.style.color="#A32D2D";
+      document.getElementById("ret-book").value="";
+      document.getElementById("ret-member").value="";
+      document.getElementById("ret-member-search").value="";
+      var rc=document.getElementById("ret-member-card");if(rc)rc.style.display="none";
+      if(dd)dd.style.display="none";
+      return;
+    }
+  }
   if(b){
     document.getElementById("ret-book").value=b.id;
     titleEl.value=b.title;
