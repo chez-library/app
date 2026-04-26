@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X1R8TTCG7C"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-X1R8TTCG7C');
+</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Chez Library - SJR BW</title>
@@ -216,7 +224,11 @@ tr:hover td{background:#fafaf8;}
   .book-id-row .book-id-col{width:100%!important;}
   .book-id-row .book-title-col{width:100%!important;}
   .issue-grid{grid-template-columns:1fr!important;}
-  .readers-tbl td,.readers-tbl th{padding:6px 8px!important;font-size:12px!important;}
+  .readers-tbl{width:100%;}
+  .readers-tbl td,.readers-tbl th{padding:5px 6px!important;font-size:11px!important;white-space:nowrap;}
+  .readers-tbl th:nth-child(3),.readers-tbl td:nth-child(3){display:none!important;}
+  .readers-tbl th:nth-child(4),.readers-tbl td:nth-child(4){display:none!important;}
+  /* Member col can wrap */  .readers-tbl td:nth-child(2),.readers-tbl th:nth-child(2){white-space:normal!important;max-width:120px;}
   /* Currently issued table - hide less critical cols on mobile */
   .issued-wrap td:nth-child(6),.issued-wrap th:nth-child(6){display:none;}
   .issued-wrap td:nth-child(7),.issued-wrap th:nth-child(7){display:none;}
@@ -254,6 +266,10 @@ tr:hover td{background:#fafaf8;}
   /* Summary log dropdown */
   #bk-sync-log-dropdown{right:auto!important;left:0!important;max-width:95vw!important;}
 }
+@media(max-width:900px){
+  .readers-tbl th:nth-child(3),.readers-tbl td:nth-child(3){display:none!important;}
+  .readers-tbl th:nth-child(4),.readers-tbl td:nth-child(4){display:none!important;}
+}
 @media(max-width:480px){
   /* Stack dashboard stats to 2 col */
   .hcards{grid-template-columns:1fr 1fr!important;}
@@ -280,6 +296,10 @@ tr:hover td{background:#fafaf8;}
 .modal2 p{font-size:12px;color:var(--mt);margin-bottom:1.5rem;}
 #qrc{display:block;margin:0 auto 1.5rem;border-radius:8px;}
 .empty{text-align:center;padding:3rem 1rem;color:var(--mt);font-size:14px;}
+.rpt-sec-hdr{font-size:13px;font-weight:700;color:var(--ac);margin-bottom:.75rem}
+.rpt-meta{font-size:12px;color:var(--mt);line-height:2;padding-left:1rem}
+.modal-card{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:1.25rem}
+.th-label{padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--mt)}
 </style>
 </head>
 <body>
@@ -424,6 +444,11 @@ tr:hover td{background:#fafaf8;}
       <div class="rcount" id="rc"></div>
       <div class="grid" id="cb"></div>
       <div id="nr" class="nores" style="display:none">No books match your filters.</div>
+      <div id="cat-pagination" style="display:none;margin-top:1.25rem;align-items:center;justify-content:center;flex-wrap:wrap;gap:.5rem">
+        <button id="cat-prev-btn" onclick="catChangePage(-1)" style="padding:6px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:13px;font-weight:600">←</button>
+        <div id="cat-page-nums" style="display:flex;gap:4px"></div>
+        <button id="cat-next-btn" onclick="catChangePage(1)" style="padding:6px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:13px;font-weight:600">→</button>
+      </div>
     </div>
   </div>
   <!-- Most popular panel -->
@@ -2645,7 +2670,6 @@ function showReport(type){
     var volunteers=Object.keys(volData).sort();
     if(volunteers.length===0){out.innerHTML="<div class='empty'>No volunteer activity recorded yet.</div>";return;}
 
-    // Build unified tab header
     out.innerHTML="";
     var hdrRow=document.createElement("div");
     hdrRow.style.cssText="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem;border-bottom:2px solid var(--bd);padding-bottom:0";
@@ -2672,7 +2696,6 @@ function showReport(type){
     hdrTabs.appendChild(tabAdded);hdrTabs.appendChild(tabDeleted);
     hdrRow.appendChild(hdrLeft);hdrRow.appendChild(hdrTabs);
     out.appendChild(hdrRow);
-    // Wrap existing volunteer content in a panel div
     var volPanel=document.createElement("div");
     volPanel.id="vol-activity-panel";
     out.appendChild(volPanel);
@@ -2824,9 +2847,6 @@ function showReport(type){
     dateInput.addEventListener("change",applyFilter);
     clearBtn.addEventListener("click",function(){dateInput.value="";applyFilter();});
 
-    // ── Books Added / Books Deleted sub-tabs ────────────────────────
-
-    // ── Books Added panel ────────────────────────────────────────────
     var addedPanel=document.createElement("div");
     addedPanel.id="vol-added-panel";
     addedPanel.style.display="none";
@@ -2853,7 +2873,6 @@ function showReport(type){
     }
     out.appendChild(addedPanel);
 
-    // ── Books Deleted panel ──────────────────────────────────────────
     var deletedPanel=document.createElement("div");
     deletedPanel.id="vol-deleted-panel";
     deletedPanel.style.display="none";
@@ -2883,7 +2902,6 @@ function showReport(type){
     var allPanels=[volPanel,addedPanel,deletedPanel];
     out.appendChild(addedPanel);
     out.appendChild(deletedPanel);
-    // Activate volunteer activity tab by default
     addedPanel.style.display="none";
     deletedPanel.style.display="none";
     volPanel.style.display="block";
@@ -3059,14 +3077,54 @@ function filt(){return DB.books.filter(function(b){
   var ms=!sq||b.title.toLowerCase().indexOf(sq)>=0||b.author.toLowerCase().indexOf(sq)>=0||(b.isbn&&b.isbn.indexOf(sq)>=0);
   return ma&&mg&&ms;
 });}
+var _catPage=0;
+var _catPageSize=48;
+var _catList=[];
+function catChangePage(delta){
+  _catPage=Math.max(0,Math.min(_catPage+delta,Math.ceil(_catList.length/_catPageSize)-1));
+  renderCatPage();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderCatPage(){
+  var g=document.getElementById("cb");
+  var start=_catPage*_catPageSize;
+  var page=_catList.slice(start,start+_catPageSize);
+  g.innerHTML="";
+  page.forEach(function(b){g.appendChild(makeCard(b));});
+  var total=_catList.length;
+  var totalPages=Math.max(1,Math.ceil(total/_catPageSize));
+  var pg=document.getElementById("cat-pagination");
+  var prev=document.getElementById("cat-prev-btn");
+  var next=document.getElementById("cat-next-btn");
+  var nums=document.getElementById("cat-page-nums");
+  if(pg) pg.style.display=total>_catPageSize?"flex":"none";
+  if(prev) prev.disabled=_catPage===0;
+  if(next) next.disabled=_catPage>=totalPages-1;
+  if(nums){
+    nums.innerHTML="";
+    var sp=Math.max(0,_catPage-2),ep=Math.min(totalPages-1,_catPage+2);
+    for(var pi=sp;pi<=ep;pi++){
+      (function(p){
+        var btn=document.createElement("button");
+        btn.textContent=p+1;
+        btn.style.cssText="padding:5px 10px;border:1px solid var(--bd);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;background:"+(p===_catPage?"var(--ac)":"var(--bg2)")+";color:"+(p===_catPage?"#fff":"var(--tx)");
+        btn.onclick=function(){_catPage=p;renderCatPage();window.scrollTo({top:0,behavior:"smooth"});};
+        nums.appendChild(btn);
+      })(pi);
+    }
+  }
+}
 function upd(){
   sq=(document.getElementById("cs").value||"").toLowerCase().trim();
-  var list=filt();var g=document.getElementById("cb"),n=document.getElementById("nr"),r=document.getElementById("rc");
-  g.innerHTML="";list.forEach(function(b){g.appendChild(makeCard(b));});
-  if(list.length===0){g.style.display="none";n.style.display="block";r.textContent="No results";}
-  else{g.style.display="grid";n.style.display="none";
-    var p=[];if(aF!=="All")p.push(aF);if(gF!=="All")p.push(gF);if(sq)p.push('"'+sq+'"');
-    r.textContent="Showing "+list.length+" of "+DB.books.length+" books"+(p.length?" · "+p.join(", "):"");}
+  var list=filt();
+  var g=document.getElementById("cb"),n=document.getElementById("nr"),r=document.getElementById("rc");
+  if(list.length===0){g.style.display="none";n.style.display="block";r.textContent="No results";document.getElementById("cat-pagination").style.display="none";return;}
+  g.style.display="grid";n.style.display="none";
+  var p=[];if(aF!=="All")p.push(aF);if(gF!=="All")p.push(gF);if(sq)p.push('"'+sq+'"');
+  r.textContent="Showing "+Math.min(_catPageSize,list.length)+" of "+list.length+" books"+(p.length?" · "+p.join(", "):"");
+  _catPage=0;
+  _catList=list;
+  renderCatPage();
 }
 document.getElementById("cs").addEventListener("input",upd);
 function setA(btn,v){aF=v;document.querySelectorAll("#ap .pill").forEach(function(b){b.classList.remove("aon");});btn.classList.add("aon");upd();}
@@ -4799,22 +4857,6 @@ function startScanner(){
   }
 }
 
-function fetchBookSummary(isbn, cb){
-  var script=document.createElement("script");
-  var cbName="_olsumcb"+Date.now();
-  window[cbName]=function(data){
-    delete window[cbName];
-    try{document.head.removeChild(script);}catch(e){}
-    if(data&&data["ISBN:"+isbn]&&data["ISBN:"+isbn].excerpts&&data["ISBN:"+isbn].excerpts[0]){
-      cb(data["ISBN:"+isbn].excerpts[0].text||null);
-    } else if(data&&data["ISBN:"+isbn]&&data["ISBN:"+isbn].notes){
-      cb(typeof data["ISBN:"+isbn].notes==="string"?data["ISBN:"+isbn].notes:null);
-    } else {cb(null);}
-  };
-  script.src="https://openlibrary.org/api/books?bibkeys=ISBN:"+isbn+"&format=json&jscmd=data&callback="+cbName;
-  script.onerror=function(){cb(null);};
-  document.head.appendChild(script);
-}
 function onISBNInput(val){
   val = val.trim().replace(/[^0-9X]/gi,"");
   var status = document.getElementById("ab-isbn-status");
@@ -5074,7 +5116,6 @@ function downloadCSVTemplate(){
   a.click();
   URL.revokeObjectURL(url);
 }
-
 
 function printAllQRCodes(){
   var filter=document.getElementById("bk-qr-filter")?document.getElementById("bk-qr-filter").value:"";
@@ -5732,7 +5773,6 @@ function filterIssueByBookId(){
   var raw=document.getElementById("iss-book-id").value.trim();
   var dd=document.getElementById("book-dropdown");
   var titleEl=document.getElementById("iss-book-search");
-  // Clear fields when input is empty
   if(!raw){
     document.getElementById("iss-book").value="";
     titleEl.value="";
@@ -5743,7 +5783,6 @@ function filterIssueByBookId(){
   }
   var id=barcodeToBookId(raw);
   if(id!==raw) document.getElementById("iss-book-id").value=id;
-  // Check if book exists but is already issued
   var anyBook=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase();});
   if(anyBook&&anyBook.status==="checked"){
     titleEl.value=anyBook.title+" — Already issued";
@@ -5753,7 +5792,6 @@ function filterIssueByBookId(){
     if(dd)dd.style.display="none";
     return;
   }
-  // Exact match — fill immediately
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="available";});
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="available";});
   if(b){
@@ -5764,7 +5802,6 @@ function filterIssueByBookId(){
     showBookInfo(b.id);
     return;
   }
-  // Partial match — show dropdown under the title field
   var q=id.toUpperCase();
   var hits=DB.books.filter(function(x){
     return x.status==="available"&&x.id&&x.id.toUpperCase().indexOf(q)===0;
@@ -5812,7 +5849,6 @@ function filterReturnByBookId(){
   if(!raw){clearReturnFields();return;}
   var id=barcodeToBookId(raw);
   if(id!==raw) document.getElementById("ret-book-id").value=id;
-  // Exact match
   var b=DB.books.find(function(x){return x.id.toUpperCase()===id.toUpperCase()&&x.status==="checked";});
   if(!b) b=DB.books.find(function(x){return (x.barcode||"").toUpperCase()===raw.toUpperCase()&&x.status==="checked";});
   if(b){
@@ -5827,7 +5863,6 @@ function filterReturnByBookId(){
     if(dd)dd.style.display="none";
     return;
   }
-  // Partial match — show dropdown of checked-out books
   var q=id.toUpperCase();
   var hits=DB.books.filter(function(x){
     return x.status==="checked"&&x.id&&x.id.toUpperCase().indexOf(q)===0;
