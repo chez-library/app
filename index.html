@@ -1034,6 +1034,11 @@ tr:hover td{background:#fafaf8;}
           <div style="font-weight:700;font-size:13px;color:#185FA5">Borrowing history</div>
           <div style="font-size:11px;color:#185FA5;margin-top:2px">Last 10 returns per book</div>
         </button>
+        <button id="rpt-btn-duplicates" onclick="showReport('duplicates')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #E8D5F5;background:linear-gradient(135deg,#fdf5ff,#f5eaff);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(120,60,180,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:22px;margin-bottom:6px">📋</div>
+          <div style="font-weight:700;font-size:13px;color:#7B3CB8">Duplicate books</div>
+          <div style="font-size:11px;color:#7B3CB8;margin-top:2px">Titles with multiple copies</div>
+        </button>
       </div>
       <div id="report-out"></div>
     </div>
@@ -2240,7 +2245,7 @@ function showReport(type){
         "</tr>";
       }).join("");
       html+=
-        "<div style='border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden'>"+
+        "<div class='dup-item' style='border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden'>"+
           "<div class='hist-hdr' data-target='"+rowId+"' style='display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--bg2)'>"+
             "<span class='hist-btn' style='display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--ac);background:white;color:var(--ac);font-weight:700;font-size:15px;flex-shrink:0'>+</span>"+
             "<span style='font-family:monospace;font-size:12px;font-weight:700;color:#185FA5;background:#E6F1FB;padding:2px 8px;border-radius:5px;flex-shrink:0'>"+bid+"</span>"+
@@ -2260,6 +2265,31 @@ function showReport(type){
           "</div>"+
         "</div>";
     });
+    var histPageSize=30,histPage=0;
+    function renderHistPage(){
+      var allHdrs=out.querySelectorAll(".hist-hdr");
+      var total=bookIds.length;
+      var totalPages=Math.ceil(total/histPageSize);
+      var start=histPage*histPageSize;
+      allHdrs.forEach(function(h,i){h.parentElement.style.display=(i>=start&&i<start+histPageSize)?"block":"none";});
+      var pgEl=document.getElementById("hist-pg");
+      if(pgEl){
+        pgEl.innerHTML="";
+        if(totalPages>1){
+          var prev=document.createElement("button");prev.textContent="← Prev";prev.disabled=histPage===0;
+          prev.style.cssText="padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;margin-right:4px";
+          prev.onclick=function(){histPage--;renderHistPage();};
+          pgEl.appendChild(prev);
+          var info=document.createElement("span");info.textContent=(start+1)+"-"+Math.min(start+histPageSize,total)+" of "+total;
+          info.style.cssText="font-size:12px;color:var(--mt);padding:0 8px";
+          pgEl.appendChild(info);
+          var next=document.createElement("button");next.textContent="Next →";next.disabled=histPage>=totalPages-1;
+          next.style.cssText="padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;margin-left:4px";
+          next.onclick=function(){histPage++;renderHistPage();};
+          pgEl.appendChild(next);
+        }
+      }
+    }
     out.innerHTML=
       "<div style='display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:.5rem'>"+
         "<h3 style='font-size:16px;font-weight:700;margin:0'>"+title+"</h3>"+
@@ -2271,7 +2301,8 @@ function showReport(type){
           "style='padding:6px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;color:var(--mt)'>&#x2715; Clear</button>"+
         "</div>"+
       "</div>"+
-      "<p id='hist-count' style='font-size:12px;color:var(--mt);margin-bottom:1rem'>"+bookIds.length+" book"+(bookIds.length!==1?"s":"")+" with return history. Click a row to expand.</p>"+
+      "<p id='hist-count' style='font-size:12px;color:var(--mt);margin-bottom:.5rem'>"+bookIds.length+" book"+(bookIds.length!==1?"s":"")+" with return history. Click a row to expand.</p>"+
+      "<div id='hist-pg' style='margin-bottom:.75rem;display:flex;align-items:center'></div>"+
       "<div id='hist-list'>"+html+"</div>";
     window._histData=bookIds.map(function(bid,i){
       var bk=DB.books.find(function(x){return x.id===bid;});
@@ -2314,65 +2345,242 @@ function showReport(type){
         hdr.style.background=open?"var(--bg2)":"var(--al)";
       });
     });
+    renderHistPage();
 
-  } else if(type==="members"){
+  } else if(type==="duplicates"){
+    title="Duplicate books";
+    function normTitle(s){
+      return s.toLowerCase().replace(/^(the|a|an)\s+/i,"").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+    }
+    function extractNums(s){
+      return (s.match(/\b(vol|volume|book|part|no|#)?\s*\d+\b/gi)||[]).map(function(m){return m.replace(/\s+/g,"").toLowerCase();});
+    }
+    function titlesMatch(a,b){
+      var na=normTitle(a),nb=normTitle(b);
+      if(na===nb) return true;
+      var numsA=extractNums(a),numsB=extractNums(b);
+      if(numsA.length||numsB.length){if(numsA.join(",")!==numsB.join(",")) return false;}
+      var wa=na.split(" ").filter(function(w){return w.length>3;});
+      var wb=nb.split(" ").filter(function(w){return w.length>3;});
+      if(!wa.length||!wb.length) return na===nb;
+      var mA=wa.filter(function(w){return wb.indexOf(w)>=0;}).length;
+      var mB=wb.filter(function(w){return wa.indexOf(w)>=0;}).length;
+      return mA/wa.length>=0.8&&mB/wb.length>=0.8;
+    }
+    // Show loading indicator immediately
+    out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:.25rem'>"+title+"</h3>"+
+      "<p style='font-size:12px;color:var(--mt)'>Analysing "+DB.books.length+" books…</p>";
+
+    setTimeout(function(){
+    var exactMap={};
+    DB.books.forEach(function(b){
+      var key=normTitle(b.title);
+      if(!exactMap[key]) exactMap[key]=[];
+      exactMap[key].push(b);
+    });
+    // Only fuzzy-compare keys that share at least the first 3 chars (big speedup)
+    var keys=Object.keys(exactMap);
+    var merged=[],used={};
+    keys.forEach(function(k){
+      if(used[k]) return;
+      var group=exactMap[k].slice();
+      var kp=k.slice(0,4);
+      keys.forEach(function(k2){
+        if(k2===k||used[k2]) return;
+        if(k2.slice(0,4)!==kp) return;
+        if(titlesMatch(exactMap[k][0].title,exactMap[k2][0].title)){group=group.concat(exactMap[k2]);used[k2]=true;}
+      });
+      used[k]=true;
+      merged.push(group);
+    });
+    var dupGroups=merged.filter(function(g){return g.length>1;});
+    dupGroups.sort(function(a,b){return b.length-a.length;});
+
+    var dupPageSize=30,dupPage=0;
+    var uid2="dup"+Date.now();
+
+    function buildDupHtml(page){
+      var start=page*dupPageSize;
+      var slice=dupGroups.slice(start,start+dupPageSize);
+      var h="";
+      slice.forEach(function(books,i){
+        var rowId=uid2+"-"+(start+i);
+        var rows=books.map(function(b){
+          return "<tr>"+
+            "<td><span style='font-family:monospace;font-size:12px;font-weight:700;color:#7B3CB8;background:#F5EAFF;padding:2px 8px;border-radius:5px'>"+(b.id||"-")+"</span></td>"+
+            "<td style='font-weight:600;font-size:13px'>"+b.title+"</td>"+
+            "<td style='font-size:12px;color:var(--mt)'>"+b.author+"</td>"+
+            "<td style='font-size:12px;color:var(--mt)'>"+b.age+"</td>"+
+            "<td><span class='badge "+(b.status==="checked"?"b-amber":"b-green")+"'>"+(b.status==="checked"?"On loan":"Available")+"</span></td>"+
+          "</tr>";
+        }).join("");
+        h+="<div style='border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden'>"+
+          "<div class='dup-hdr' data-target='"+rowId+"' style='display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--bg2)'>"+
+            "<span class='dup-btn' style='display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1.5px solid #7B3CB8;background:white;color:#7B3CB8;font-weight:700;font-size:15px;flex-shrink:0'>+</span>"+
+            "<span style='font-weight:600;font-size:13px;flex:1'>"+books[0].title+"</span>"+
+            "<span style='font-size:12px;color:#7B3CB8;background:#F5EAFF;padding:2px 10px;border-radius:20px;font-weight:600'>"+books.length+" copies</span>"+
+          "</div>"+
+          "<div id='"+rowId+"' style='display:none;border-top:1px solid var(--bd)'>"+
+            "<table style='width:100%;border-collapse:collapse;font-size:13px'><thead style='background:var(--bg2)'><tr>"+
+              "<th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--mt)'>Book ID</th>"+
+              "<th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--mt)'>Title</th>"+
+              "<th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--mt)'>Author</th>"+
+              "<th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--mt)'>Age</th>"+
+              "<th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--mt)'>Status</th>"+
+            "</tr></thead><tbody>"+rows+"</tbody></table>"+
+          "</div>"+
+        "</div>";
+      });
+      return h;
+    }
+
+    function renderDupReport(){
+      var total=dupGroups.length;
+      var totalPages=Math.ceil(total/dupPageSize);
+      var start=dupPage*dupPageSize;
+      var listEl=document.getElementById("dup-list");
+      var pgEl=document.getElementById("dup-pg");
+      if(listEl) listEl.innerHTML=buildDupHtml(dupPage);
+      if(pgEl){
+        pgEl.innerHTML="";
+        if(totalPages>1){
+          var prev=document.createElement("button");
+          prev.textContent="← Prev";prev.disabled=dupPage===0;
+          prev.style.cssText="padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;margin-right:6px";
+          prev.onclick=function(){dupPage--;renderDupReport();};
+          pgEl.appendChild(prev);
+          var info=document.createElement("span");
+          info.textContent=(start+1)+"–"+Math.min(start+dupPageSize,total)+" of "+total+" groups";
+          info.style.cssText="font-size:12px;color:var(--mt);padding:0 6px";
+          pgEl.appendChild(info);
+          var nxt=document.createElement("button");
+          nxt.textContent="Next →";nxt.disabled=dupPage>=totalPages-1;
+          nxt.style.cssText="padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;margin-left:6px";
+          nxt.onclick=function(){dupPage++;renderDupReport();};
+          pgEl.appendChild(nxt);
+        }
+      }
+      // Wire toggle clicks
+      if(listEl) listEl.querySelectorAll(".dup-hdr").forEach(function(hdr){
+        hdr.addEventListener("click",function(){
+          var panel=document.getElementById(hdr.getAttribute("data-target"));
+          var btn=hdr.querySelector(".dup-btn");
+          if(!panel) return;
+          var open=panel.style.display!=="none";
+          panel.style.display=open?"none":"block";
+          if(btn) btn.textContent=open?"+":"−";
+          hdr.style.background=open?"var(--bg2)":"var(--al)";
+        });
+      });
+    }
+
+    out.innerHTML=
+      "<h3 style='font-size:16px;font-weight:700;margin-bottom:.25rem'>"+title+"</h3>"+
+      "<p style='font-size:12px;color:var(--mt);margin-bottom:.5rem'>"+dupGroups.length+" title"+(dupGroups.length!==1?"s":"")+" with multiple copies. Click + to see details.</p>"+
+      "<div id='dup-pg' style='margin-bottom:.75rem;display:flex;align-items:center'></div>"+
+      "<div id='dup-list'></div>";
+    renderDupReport();
+    }, 50);
+    return;
+
+    } else if(type==="members"){
     title="Member activity";
     out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:1rem'>"+title+"</h3><div class='tbl-wrap'><table id='rpt-members-table'><thead><tr><th>Member</th><th>Card no.</th><th>Joined</th><th>Books out</th><th>Total borrowed</th><th>History</th></tr></thead><tbody id='rpt-members-tbody'></tbody></table></div>";
-    var rtbody=document.getElementById("rpt-members-tbody");
-    DB.members.forEach(function(m){
-      var booksOut=DB.books.filter(function(b){return b.issuedTo===m.id;}).length;
-      var totalBorrowed=DB.transactions.filter(function(t){return t.memberId===m.id&&t.type==="issue";}).length;
-      var tr=document.createElement("tr");
-      tr.innerHTML=
-        "<td style='font-weight:600'>"+m.fname+" "+m.lname+"</td>"+
-        "<td><span class='badge b-gray'>"+m.id+"</span></td>"+
-        "<td style='font-size:12px;color:var(--mt)'>"+fmtDate(m.joined)+"</td>"+
-        "<td><span class='badge "+(booksOut>0?"b-amber":"b-green")+"'>"+booksOut+"</span></td>"+
-        "<td style='text-align:center;color:var(--mt)'>"+totalBorrowed+"</td>"+
-        "<td></td>";
-      var histTd=tr.lastElementChild;
-      var histBtn=document.createElement("button");
-      histBtn.className="btn btn-ghost";
-      histBtn.style.cssText="font-size:12px;padding:3px 8px;font-weight:700;color:var(--ac);border-color:var(--ac)";
-      histBtn.textContent="+";
-      (function(mid, mjoined, btn, parentTr){
-        btn.addEventListener("click",function(){
-          var existing=document.getElementById("rpt-hist-"+mid);
-          if(existing){existing.remove();btn.textContent="+";btn.style.background="";return;}
-          btn.textContent="−";btn.style.background="var(--bg2)";
-          var txns=DB.transactions.filter(function(t){return t.memberId===mid;});
-          txns.sort(function(a,b2){return (b2.date||"").localeCompare(a.date||"");});
-          var events=[{date:mjoined,label:"Joined the library",icon:"🎉"}];
-          txns.forEach(function(t){
-            events.push({date:t.date,label:(t.type==="issue"?"Borrowed":"Returned")+" · "+(t.bookTitle||t.bookId||""),icon:t.type==="issue"?"📖":"✅",by:t.issuedBy||""});
-          });
-          events.sort(function(a,b2){return (b2.date||"").localeCompare(a.date||"");});
-          var histTr=document.createElement("tr");
-          histTr.id="rpt-hist-"+mid;
-          histTr.style.background="var(--bg2)";
-          var td=document.createElement("td");td.colSpan=6;td.style.cssText="padding:0;border-top:none";
-          var inner="<div style='padding:10px 16px 14px'><div style='font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px'>Full borrowing history</div>";
-          if(events.length===0){inner+="<div style='font-size:12px;color:var(--mt)'>No activity yet.</div>";}
-          else{
-            inner+="<div style='display:flex;flex-direction:column;gap:5px'>";
-            events.forEach(function(ev){
-              var byStr=ev.by?"<span style='color:var(--mt);font-size:11px'> · by "+ev.by+"</span>":"";
-              inner+="<div style='display:flex;align-items:center;gap:10px;font-size:12px'>"+
-                "<span style='flex-shrink:0;width:80px;color:var(--mt)'>"+(ev.date?fmtDate(ev.date):"—")+"</span>"+
-                "<span style='flex-shrink:0'>"+ev.icon+"</span>"+
-                "<span>"+ev.label+"</span>"+byStr+"</div>";
+    var memPageSize=30,memPage=0;
+    var sortedMembers=DB.members.slice().sort(function(a,b){return memberName(a).localeCompare(memberName(b));});
+    function renderMemPage(){
+      var start=memPage*memPageSize;
+      var page=sortedMembers.slice(start,start+memPageSize);
+      var total=sortedMembers.length,totalPages=Math.ceil(total/memPageSize);
+      var rtbody=document.getElementById("rpt-members-tbody");
+      var pgEl=document.getElementById("mem-pg");
+      if(rtbody) rtbody.innerHTML="";
+      page.forEach(function(m){
+        var booksOut=DB.books.filter(function(b){return b.issuedTo===m.id;}).length;
+        var totalBorrowed=getGenuineIssues().filter(function(t){return t.memberId===m.id;}).length;
+        var tr=document.createElement("tr");
+        tr.innerHTML=
+          "<td style='font-weight:600'>"+m.fname+" "+m.lname+"</td>"+
+          "<td><span class='badge b-gray'>"+m.id+"</span></td>"+
+          "<td style='font-size:12px;color:var(--mt)'>"+fmtDate(m.joined)+"</td>"+
+          "<td><span class='badge "+(booksOut>0?"b-amber":"b-green")+"'>"+(booksOut)+"</span></td>"+
+          "<td style='text-align:center;color:var(--mt)'>"+totalBorrowed+"</td>"+
+          "<td></td>";
+        var histTd=tr.lastElementChild;
+        var histBtn=document.createElement("button");
+        histBtn.className="btn btn-ghost";
+        histBtn.style.cssText="font-size:12px;padding:3px 8px;font-weight:700;color:var(--ac);border-color:var(--ac)";
+        histBtn.textContent="+";
+        (function(mid,mjoined,btn,parentTr){
+          btn.addEventListener("click",function(){
+            var existing=document.getElementById("rpt-hist-"+mid);
+            if(existing){existing.remove();btn.textContent="+";btn.style.background="";return;}
+            btn.textContent="−";btn.style.background="var(--bg2)";
+            var txns=DB.transactions.filter(function(t){return t.memberId===mid;});
+            txns.sort(function(a,b2){return (b2.date||"").localeCompare(a.date||"");});
+            var txnLimited=txns.length>20;
+            var txnsShown=txns.slice(0,20);
+            var events=[{date:mjoined,label:"Joined the library",icon:"🎉"}];
+            txnsShown.forEach(function(t){
+              events.push({date:t.date,label:(t.type==="issue"?"Borrowed":"Returned")+" · "+(t.bookTitle||t.bookId||""),icon:t.type==="issue"?"📖":"✅",by:t.issuedBy||""});
             });
-            inner+="</div>";
-            if(txns.length>0)inner+="<div style='font-size:11px;color:var(--mt);margin-top:8px'>"+txns.length+" transaction"+(txns.length!==1?"s":"")+" total</div>";
-          }
-          inner+="</div>";
-          td.innerHTML=inner;histTr.appendChild(td);
-          parentTr.insertAdjacentElement("afterend",histTr);
-        });
-      })(m.id, m.joined, histBtn, tr);
-      histTd.appendChild(histBtn);
-      rtbody.appendChild(tr);
-    });
+            events.sort(function(a,b2){return (b2.date||"").localeCompare(a.date||"");});
+            var histTr=document.createElement("tr");histTr.id="rpt-hist-"+mid;histTr.style.background="var(--bg2)";
+            var td=document.createElement("td");td.colSpan=6;td.style.cssText="padding:0;border-top:none";
+            var inner="<div style='padding:10px 16px 14px'><div style='font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px'>Full borrowing history</div>";
+            if(!events.length){inner+="<div style='font-size:12px;color:var(--mt)'>No activity yet.</div>";}
+            else{
+              inner+="<div style='display:flex;flex-direction:column;gap:5px'>";
+              events.forEach(function(ev){
+                var byStr=ev.by?"<span style='color:var(--mt);font-size:11px'> · by "+ev.by+"</span>":"";
+                inner+="<div style='display:flex;align-items:center;gap:10px;font-size:12px'><span style='flex-shrink:0;width:80px;color:var(--mt)'>"+(ev.date?fmtDate(ev.date):"—")+"</span><span style='flex-shrink:0'>"+ev.icon+"</span><span>"+ev.label+"</span>"+byStr+"</div>";
+              });
+              inner+="</div>";
+              if(txns.length) inner+="<div style='font-size:11px;color:var(--mt);margin-top:8px'>"+txns.length+" transaction"+(txns.length!==1?"s":"")+" total"+(txnLimited?" — showing last 20":"")+"</div>";
+            }
+            inner+="</div>";td.innerHTML=inner;histTr.appendChild(td);
+            parentTr.insertAdjacentElement("afterend",histTr);
+          });
+        })(m.id,m.joined,histBtn,tr);
+        histTd.appendChild(histBtn);
+        if(rtbody) rtbody.appendChild(tr);
+      });
+      if(pgEl){
+        pgEl.innerHTML="";
+        if(totalPages>1){
+          var prev=document.createElement("button");prev.textContent="← Prev";prev.disabled=memPage===0;
+          prev.style.cssText="padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;margin-right:6px";
+          prev.onclick=function(){memPage--;renderMemPage();};
+          pgEl.appendChild(prev);
+          var info=document.createElement("span");info.textContent=(start+1)+"–"+Math.min(start+memPageSize,total)+" of "+total+" members";
+          info.style.cssText="font-size:12px;color:var(--mt);padding:0 6px";pgEl.appendChild(info);
+          var nxt=document.createElement("button");nxt.textContent="Next →";nxt.disabled=memPage>=totalPages-1;
+          nxt.style.cssText="padding:5px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;margin-left:6px";
+          nxt.onclick=function(){memPage++;renderMemPage();};
+          pgEl.appendChild(nxt);
+        }
+      }
+    }
+    out.innerHTML="<h3 style='font-size:16px;font-weight:700;margin-bottom:.75rem'>"+title+"</h3>"+
+      "<div style='display:flex;align-items:center;gap:8px;margin-bottom:.75rem'>"+
+        "<input id='mem-search' type='text' placeholder='Search member name or ID...' "+
+        "style='padding:7px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;outline:none;width:240px' "+
+        "oninput='window.memSearchFilter(this.value)' />"+
+        "<button onclick='document.getElementById(\"mem-search\").value=\"\";window.memSearchFilter(\"\");' "+
+        "style='padding:6px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg2);cursor:pointer;font-size:12px;color:var(--mt)'>&#x2715; Clear</button>"+
+      "</div>"+
+      "<div id='mem-pg' style='margin-bottom:.75rem;display:flex;align-items:center'></div>"+
+      "<div class='tbl-wrap'><table id='rpt-members-table'><thead><tr><th>Member</th><th>Card no.</th><th>Joined</th><th>Books out</th><th>Total borrowed</th><th>History</th></tr></thead><tbody id='rpt-members-tbody'></tbody></table></div>";
+    window.memSearchFilter=function(q){
+      q=(q||"").toLowerCase().trim();
+      sortedMembers=DB.members.filter(function(m){
+        return !q||memberName(m).toLowerCase().indexOf(q)>=0||(m.id||"").toLowerCase().indexOf(q)>=0;
+      }).sort(function(a,b){return memberName(a).localeCompare(memberName(b));});
+      memPage=0;
+      renderMemPage();
+    };
+    renderMemPage();
+
   } else if(type==="inventory"){
     var total=DB.books.length;
     var avail=DB.books.filter(function(b){return b.status==="available";}).length;
@@ -2764,10 +2972,20 @@ function showReport(type){
       var dates=Object.keys(volData[vol]).sort(function(a,b){return b.localeCompare(a);});
       if(filterDate) dates=dates.filter(function(d){return d===filterDate;});
       if(dates.length===0) return "<div style='padding:8px 0;font-size:12px;color:var(--mt)'>No activity on this date.</div>";
-      var tbl="<table><thead><tr><th>Date</th><th>Action</th><th>Book ID</th><th>Book</th><th>Member</th><th>Block / Flat</th></tr></thead><tbody>";
+      // Collect all txns then limit to last 30 (unless date filter active)
+      var allRows=[];
       dates.forEach(function(date){
-        var txns=volData[vol][date];
-        txns.forEach(function(t,idx){
+        volData[vol][date].forEach(function(t){allRows.push({date:date,t:t});});
+      });
+      var limited=!filterDate&&allRows.length>30;
+      var rows=filterDate?allRows:allRows.slice(0,30);
+      // Rebuild dates from limited rows
+      var seenDates={};
+      var tbl="<table><thead><tr><th>Date</th><th>Action</th><th>Book ID</th><th>Book</th><th>Member</th><th>Block / Flat</th></tr></thead><tbody>";
+      rows.forEach(function(row){
+        var date=row.date,t=row.t,idx=seenDates[date]?1:0;
+        seenDates[date]=true;
+        (function(t,idx){
           var m=DB.members.find(function(x){return x.id===t.memberId;});
           var b=DB.books.find(function(x){return x.id===t.bookId;});
           var blockFlat=m?([(m.block||""),(m.flatNo?"Flat "+m.flatNo:"")].filter(Boolean).join(" — ")||"-"):"-";
@@ -2781,8 +2999,9 @@ function showReport(type){
             "<td style='font-size:12px;color:var(--mt)'>"+(m?m.fname+" "+m.lname:t.memberId||"")+"</td>"+
             "<td style='font-size:12px;color:var(--mt)'>"+blockFlat+"</td>"+
           "</tr>";
-        });
+        })(t,idx);
       });
+      if(limited) tbl+="<tr><td colspan='6' style='padding:8px 12px;font-size:11px;color:var(--mt);font-style:italic'>Showing last 30 transactions — use date filter to see older records.</td></tr>";
       return tbl+"</tbody></table>";
     }
 
@@ -3786,10 +4005,25 @@ function getTopReaders(){
   };
 }
 
+function getGenuineIssues(){
+  // Exclude issues where the book was returned on the same date (browse/mistake)
+  var sameDayReturns={};
+  DB.transactions.forEach(function(t){
+    if(t.type==="return"){
+      var key=(t.bookId||"")+"_"+(t.memberId||"")+"_"+(t.returnDate||t.date||"");
+      sameDayReturns[key]=true;
+    }
+  });
+  return DB.transactions.filter(function(t){
+    if(t.type!=="issue") return false;
+    var key=(t.bookId||"")+"_"+(t.memberId||"")+"_"+(t.date||"");
+    return !sameDayReturns[key];
+  });
+}
 function getAllTimeTopReaders(){
   var counts={};
-  DB.transactions.forEach(function(t){
-    if(t.type==="issue") counts[t.memberId]=(counts[t.memberId]||0)+1;
+  getGenuineIssues().forEach(function(t){
+    counts[t.memberId]=(counts[t.memberId]||0)+1;
   });
   var sorted=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).slice(0,20);
   return sorted.map(function(mid){
@@ -3812,8 +4046,8 @@ function renderPubTopReaders(){
   var yearPfx=String(cy)+"-";
   var medals=["🥇","🥈","🥉"];
   var curCounts={},yearCounts={};
-  DB.transactions.forEach(function(t){
-    if(t.type!=="issue"||!t.date)return;
+  getGenuineIssues().forEach(function(t){
+    if(!t.date)return;
     var d=t.date.slice(0,7);
     if(d===curMonthStr) curCounts[t.memberId]=(curCounts[t.memberId]||0)+1;
     if(d.indexOf(yearPfx)===0) yearCounts[t.memberId]=(yearCounts[t.memberId]||0)+1;
@@ -3825,8 +4059,8 @@ function renderPubTopReaders(){
   var yearPfxFinal=String(yearLabel)+"-";
   if(isJan){
     yearCounts={};
-    DB.transactions.forEach(function(t){
-      if(t.type!=="issue"||!t.date)return;
+    getGenuineIssues().forEach(function(t){
+      if(!t.date)return;
       if(t.date.indexOf(yearPfxFinal)===0) yearCounts[t.memberId]=(yearCounts[t.memberId]||0)+1;
     });
   }
@@ -5540,12 +5774,33 @@ function showBookInfo(bid){
     ageWarn.style.display="none";
   }
 }
+function fuzzyMatch(str, query){
+  if(!query) return true;
+  // Strip articles and normalise
+  function norm(s){
+    return s.toLowerCase()
+      .replace(/^(the|a|an)\s+/i,"")
+      .replace(/[^a-z0-9\s]/g,"")
+      .trim();
+  }
+  var s=norm(str), q=norm(query);
+  // Direct contains
+  if(s.indexOf(q)>=0) return true;
+  // Word overlap — check what % of query words appear in title
+  var qWords=q.split(/\s+/).filter(function(w){return w.length>2;});
+  if(!qWords.length) return s.indexOf(q)>=0;
+  var sWords=s.split(/\s+/);
+  var matched=qWords.filter(function(w){
+    return sWords.some(function(sw){return sw.indexOf(w)>=0||w.indexOf(sw)>=0;});
+  }).length;
+  return matched/qWords.length>=0.8;
+}
 function filterBookDropdown(){
   var q=(document.getElementById("iss-book-search").value||"").toLowerCase();
   var dd=document.getElementById("book-dropdown");
   dd.innerHTML="";
   var hits=DB.books.filter(function(b){
-    return b.status==="available" && (!q || b.title.toLowerCase().indexOf(q)>=0 || b.author.toLowerCase().indexOf(q)>=0 || (b.isbn&&b.isbn.indexOf(q)>=0) || (b.id&&b.id.toLowerCase().indexOf(q)>=0));
+    return b.status==="available" && (!q || fuzzyMatch(b.title,q) || b.author.toLowerCase().indexOf(q)>=0 || (b.isbn&&b.isbn.indexOf(q)>=0) || (b.id&&b.id.toLowerCase().indexOf(q)>=0));
   }).slice(0,10);
   if(hits.length===0){
     dd.innerHTML="<div style='padding:10px 14px;font-size:13px;color:var(--mt)'>No available books found</div>";
