@@ -745,6 +745,8 @@ tr:hover td{background:#fafaf8;}
         <div class="stat-card blue"><div class="sn" id="d-members">0</div><div class="sl">Members</div></div>
         <div class="stat-card amber"><div class="sn" id="d-issued">0</div><div class="sl">Books issued</div></div>
         <div class="stat-card red"><div class="sn" id="d-overdue">0</div><div class="sl">Overdue</div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="showSection('p-reports');showReport('barcode')" title="Click to view barcode report"><div class="sn" id="d-barcoded" style="color:#7B3CB8">0</div><div class="sl">Books with barcode <span style="display:block;font-size:10px;color:#C0392B" id="d-barcode-pending"></span></div></div>
+        <div class="stat-card" style="cursor:pointer;border-color:#F5C6C6" onclick="showSection('p-reports');showReport('overlimit')" title="Click to view over-limit report"><div class="sn" id="d-overlimit" style="color:#C0392B">0</div><div class="sl">Over limit <span style="display:block;font-size:10px;color:var(--mt)" id="d-overlimit-sub"></span></div></div>
       </div>
       <div id="dash-top-readers" style="display:none;margin-bottom:1.5rem">
         <h3 style="font-size:15px;font-weight:700;margin-bottom:.75rem">&#x1F3C6; Top readers</h3>
@@ -1038,6 +1040,16 @@ tr:hover td{background:#fafaf8;}
           <div style="font-size:22px;margin-bottom:6px">📋</div>
           <div style="font-weight:700;font-size:13px;color:#7B3CB8">Duplicate books</div>
           <div style="font-size:11px;color:#7B3CB8;margin-top:2px">Titles with multiple copies</div>
+        </button>
+        <button id="rpt-btn-barcode" onclick="showReport('barcode')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #F5C6C6;background:linear-gradient(135deg,#fff5f5,#fceaea);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(192,57,43,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:22px;margin-bottom:6px">🏷️</div>
+          <div style="font-weight:700;font-size:13px;color:#7B1A1A">No barcode label</div>
+          <div style="font-size:11px;color:#C0392B;margin-top:2px">Not yet scanned</div>
+        </button>
+        <button id="rpt-btn-overlimit" onclick="showReport('overlimit')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #F5C6C6;background:linear-gradient(135deg,#fff5f5,#fceaea);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(192,57,43,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:22px;margin-bottom:6px">⚠️</div>
+          <div style="font-weight:700;font-size:13px;color:#7B1A1A">Over limit</div>
+          <div style="font-size:11px;color:#C0392B;margin-top:2px">Members &amp; flats exceeding limits</div>
         </button>
       </div>
       <div id="report-out"></div>
@@ -1675,6 +1687,20 @@ function refreshDashboard(){
   el=document.getElementById("d-members");if(el)el.textContent=DB.members.length;
   el=document.getElementById("d-issued");if(el)el.textContent=issued.length;
   el=document.getElementById("d-overdue");if(el)el.textContent=overdue.length;
+  var barcoded=DB.books.filter(function(b){return b.qrPrinted;}).length;
+  var barcodePending=DB.books.length-barcoded;
+  el=document.getElementById("d-barcoded");if(el)el.textContent=barcoded;
+  el=document.getElementById("d-barcode-pending");if(el)el.textContent=barcodePending>0?barcodePending+" still pending":"✅ All done!";
+  var memberOverLimit=DB.members.filter(function(m){return DB.books.filter(function(b){return b.issuedTo===m.id&&b.status==="checked";}).length>1;});
+  var flatMap2={};
+  DB.books.filter(function(b){return b.status==="checked"&&b.issuedTo;}).forEach(function(b){
+    var m=DB.members.find(function(x){return x.id===b.issuedTo;});
+    if(m&&m.block&&m.flatNo){var k=m.block+"|"+m.flatNo;flatMap2[k]=(flatMap2[k]||0)+1;}
+  });
+  var flatOverLimit=Object.keys(flatMap2).filter(function(k){return flatMap2[k]>2;}).length;
+  var totalViolations=memberOverLimit.length+flatOverLimit;
+  el=document.getElementById("d-overlimit");if(el)el.textContent=totalViolations;
+  el=document.getElementById("d-overlimit-sub");if(el)el.textContent=totalViolations===0?"✅ All within limits":memberOverLimit.length+" member"+(memberOverLimit.length!==1?"s":"")+", "+flatOverLimit+" flat"+(flatOverLimit!==1?"s":"")+" over";
   el=document.getElementById("pub-total");if(el)el.textContent=DB.books.length;
   renderNewArrivals();
   renderPopularBooks();
@@ -2146,7 +2172,7 @@ function showReport(type){
   var today=todayStr();
   var out=document.getElementById("report-out");
   out.innerHTML="";
-  ["issued","overdue","members","inventory","wishlist","popular","inactive","volunteers","history"].forEach(function(t){
+  ["issued","overdue","members","inventory","wishlist","popular","inactive","volunteers","history","duplicates","barcode","overlimit"].forEach(function(t){
     var btn=document.getElementById("rpt-btn-"+t);
     if(!btn)return;
     if(t===type){
@@ -2481,6 +2507,89 @@ function showReport(type){
       "<div id='dup-list'></div>";
     renderDupReport();
     }, 50);
+    return;
+
+  } else if(type==="barcode"){
+    var noBarcode=DB.books.filter(function(b){return !b.qrPrinted;});
+    var withBarcode=DB.books.filter(function(b){return b.qrPrinted;});
+    var pct=DB.books.length?Math.round((withBarcode.length/DB.books.length)*100):0;
+    var bhtml="<h3 style='font-size:16px;font-weight:700;margin-bottom:.5rem'>🏷️ Barcode label status</h3>";
+    bhtml+="<div class='stat-grid' style='margin-bottom:1.25rem'>";
+    bhtml+="<div class='stat-card green'><div class='sn'>"+withBarcode.length+"</div><div class='sl'>Labels confirmed</div></div>";
+    bhtml+="<div class='stat-card red'><div class='sn'>"+noBarcode.length+"</div><div class='sl'>Still pending</div></div>";
+    bhtml+="<div class='stat-card blue'><div class='sn'>"+pct+"%</div><div class='sl'>Completion</div></div>";
+    bhtml+="</div>";
+    bhtml+="<div style='background:var(--bg2);border-radius:10px;height:12px;margin-bottom:1.25rem;overflow:hidden'><div style='height:100%;width:"+pct+"%;background:#0F6E56;border-radius:10px;transition:width .4s'></div></div>";
+    if(noBarcode.length===0){
+      bhtml+="<div class='empty'>✅ All books have been scanned and confirmed!</div>";
+      out.innerHTML=bhtml; return;
+    }
+    bhtml+="<p style='font-size:12px;color:var(--mt);margin-bottom:.75rem'>These "+noBarcode.length+" books have never been scanned.</p>";
+    bhtml+="<input type='text' id='barcode-rpt-search' placeholder='Search by Book ID or title…' oninput='filterBarcodeReport()' style='width:100%;max-width:360px;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;background:var(--bg);color:var(--tx);margin-bottom:.75rem;box-sizing:border-box'>";
+    bhtml+="<div class='tbl-wrap'><table><thead><tr><th>Book ID</th><th>Title</th><th>Author</th><th>Age group</th><th>Genre</th><th>Status</th></tr></thead><tbody id='barcode-rpt-tbody'></tbody></table></div>";
+    out.innerHTML=bhtml;
+    window._barcodeNoPrint=noBarcode.slice().sort(function(a,b){return a.id.localeCompare(b.id);});
+    window.filterBarcodeReport=function(){
+      var q=(document.getElementById("barcode-rpt-search").value||"").toLowerCase();
+      var rows=window._barcodeNoPrint.filter(function(b){return !q||b.id.toLowerCase().indexOf(q)>=0||b.title.toLowerCase().indexOf(q)>=0;});
+      var tbody=document.getElementById("barcode-rpt-tbody");
+      if(!tbody) return;
+      tbody.innerHTML=rows.map(function(b){
+        return "<tr><td><span class='badge b-gray'>"+b.id+"</span></td><td style='font-weight:600'>"+b.title+"</td><td style='color:var(--mt);font-size:12px'>"+b.author+"</td><td style='font-size:12px;color:var(--mt)'>"+b.age+"</td><td style='font-size:12px;color:var(--mt)'>"+b.genre+"</td><td><span class='badge "+(b.status==="checked"?"b-amber":"b-green")+"'>"+b.status+"</span></td></tr>";
+      }).join("");
+      if(!rows.length) tbody.innerHTML="<tr><td colspan='6' style='text-align:center;color:var(--mt);padding:1rem'>No matching books</td></tr>";
+    };
+    window.filterBarcodeReport();
+    return;
+
+  } else if(type==="overlimit"){
+    var memViol=[];
+    DB.members.forEach(function(m){
+      var mbooks=DB.books.filter(function(b){return b.issuedTo===m.id&&b.status==="checked";});
+      if(mbooks.length>1) memViol.push({member:m,books:mbooks});
+    });
+    var fmap={};
+    DB.books.filter(function(b){return b.status==="checked"&&b.issuedTo;}).forEach(function(b){
+      var m=DB.members.find(function(x){return x.id===b.issuedTo;});
+      if(m&&m.block&&m.flatNo){
+        var k=m.block+"|"+m.flatNo;
+        if(!fmap[k]) fmap[k]={block:m.block,flatNo:m.flatNo,books:[],members:[]};
+        fmap[k].books.push(b);
+        if(fmap[k].members.indexOf(m.fname+" "+m.lname)<0) fmap[k].members.push(m.fname+" "+m.lname);
+      }
+    });
+    var flatViol=Object.values(fmap).filter(function(f){return f.books.length>2;});
+    var ohtml="<h3 style='font-size:16px;font-weight:700;margin-bottom:.5rem'>⚠️ Over-limit report</h3>";
+    ohtml+="<p style='font-size:12px;color:var(--mt);margin-bottom:1rem'>Rules: max 1 book per member · max 2 books per flat</p>";
+    ohtml+="<div class='stat-grid' style='margin-bottom:1.25rem'>";
+    ohtml+="<div class='stat-card "+(memViol.length>0?"red":"green")+"'><div class='sn'>"+memViol.length+"</div><div class='sl'>Members over limit</div></div>";
+    ohtml+="<div class='stat-card "+(flatViol.length>0?"red":"green")+"'><div class='sn'>"+flatViol.length+"</div><div class='sl'>Flats over limit</div></div>";
+    ohtml+="</div>";
+    if(memViol.length===0&&flatViol.length===0){
+      ohtml+="<div class='empty'>✅ All members and flats are within borrowing limits.</div>";
+      out.innerHTML=ohtml; return;
+    }
+    if(memViol.length>0){
+      ohtml+="<h4 style='font-size:14px;font-weight:700;margin-bottom:.6rem;color:#7B1A1A'>Members with more than 1 book</h4>";
+      ohtml+="<div class='tbl-wrap' style='margin-bottom:1.5rem'><table><thead><tr><th>Member</th><th>Card no.</th><th>Flat</th><th>Count</th><th>Titles on loan</th></tr></thead><tbody>";
+      memViol.forEach(function(v){
+        var m=v.member;
+        var flatStr=(m.block||"")+(m.flatNo?" — Flat "+m.flatNo:"");
+        var titles=v.books.map(function(b){return b.title+" <span style='color:var(--mt)'>("+b.id+")</span>";}).join(", ");
+        ohtml+="<tr><td style='font-weight:600'>"+m.fname+" "+m.lname+"</td><td><span class='badge b-gray'>"+m.id+"</span></td><td style='font-size:12px;color:var(--mt)'>"+flatStr+"</td><td><span class='badge b-red'>"+v.books.length+"</span></td><td style='font-size:12px'>"+titles+"</td></tr>";
+      });
+      ohtml+="</tbody></table></div>";
+    }
+    if(flatViol.length>0){
+      ohtml+="<h4 style='font-size:14px;font-weight:700;margin-bottom:.6rem;color:#7B1A1A'>Flats with more than 2 books</h4>";
+      ohtml+="<div class='tbl-wrap'><table><thead><tr><th>Flat</th><th>Count</th><th>Members</th><th>Titles on loan</th></tr></thead><tbody>";
+      flatViol.forEach(function(f){
+        var titles=f.books.map(function(b){return b.title+" <span style='color:var(--mt)'>("+b.id+")</span>";}).join(", ");
+        ohtml+="<tr><td style='font-weight:600'>"+f.block+" — Flat "+f.flatNo+"</td><td><span class='badge b-red'>"+f.books.length+"</span></td><td style='font-size:12px;color:var(--mt)'>"+f.members.join(", ")+"</td><td style='font-size:12px'>"+titles+"</td></tr>";
+      });
+      ohtml+="</tbody></table></div>";
+    }
+    out.innerHTML=ohtml;
     return;
 
     } else if(type==="members"){
@@ -5149,6 +5258,11 @@ function startScanner(){
               document.getElementById("scanner-book-info").textContent = bk ? bk.title+(bk.author?" · "+bk.author:"") : "Book not found in library";
               document.getElementById("scanner-use-btn").style.display = "inline-block";
               scannedISBN = text;
+              if(bk && !bk.qrPrinted){
+                supaFetch("books?id=eq."+encodeURIComponent(bk.id),"PATCH",{qr_printed:true})
+                  .then(function(){bk.qrPrinted=true;refreshDashboard();renderBooks();})
+                  .catch(function(e){console.warn("qr_printed update failed",e);});
+              }
               if(typeof scannerCallback === "function"){ scannerCallback(text); }
             } else if(isISBN){
               scannedISBN = text;
@@ -5370,12 +5484,6 @@ function useScannedISBN(){
       var ibi=document.getElementById("iss-book-id");if(ibi)ibi.value=foundBook.id;
       document.getElementById("book-dropdown").style.display="none";
       showBookInfo(foundBook.id);
-      // Auto-mark barcode label as complete on first scan
-      if(!foundBook.qrPrinted){
-        supaFetch("books?id=eq."+encodeURIComponent(foundBook.id),"PATCH",{qr_printed:true})
-          .then(function(){foundBook.qrPrinted=true;})
-          .catch(function(e){console.warn("qr_printed update failed",e);});
-      }
     } else {
       var anyBook=DB.books.find(function(b){return b.barcode===scannedISBN||b.isbn===scannedISBN;});
       if(anyBook){
@@ -5395,12 +5503,6 @@ function useScannedISBN(){
       document.getElementById("ret-book-search").value=retBook.title;
       var rbi=document.getElementById("ret-book-id");if(rbi)rbi.value=retBook.id;
       document.getElementById("return-dropdown").style.display="none";
-      // Auto-mark barcode label as complete on first scan
-      if(!retBook.qrPrinted){
-        supaFetch("books?id=eq."+encodeURIComponent(retBook.id),"PATCH",{qr_printed:true})
-          .then(function(){retBook.qrPrinted=true;})
-          .catch(function(e){console.warn("qr_printed update failed",e);});
-      }
       if(retBook.issuedTo){
         var m=DB.members.find(function(x){return x.id===retBook.issuedTo;});
         if(m){
