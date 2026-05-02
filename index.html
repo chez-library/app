@@ -744,7 +744,9 @@ tr:hover td{background:#fafaf8;}
         <div class="stat-card green"><div class="sn" id="d-books">0</div><div class="sl">Total books</div></div>
         <div class="stat-card blue"><div class="sn" id="d-members">0</div><div class="sl">Members</div></div>
         <div class="stat-card amber"><div class="sn" id="d-issued">0</div><div class="sl">Books issued</div></div>
-        <div class="stat-card red"><div class="sn" id="d-overdue">0</div><div class="sl">Overdue</div></div>
+        <div class="stat-card red" style="cursor:pointer" onclick="showSection('p-reports');showReport('overdue')" title="Click to view overdue report"><div class="sn" id="d-overdue">0</div><div class="sl">Overdue</div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="showSection('p-reports');showReport('barcode')" title="Click to view barcode report"><div class="sn" id="d-barcoded" style="color:#7B3CB8">0</div><div class="sl">Books with barcode <span style="display:block;font-size:10px;color:#C0392B" id="d-barcode-pending"></span></div></div>
+        <div class="stat-card" style="cursor:pointer;border-color:#F5C6C6" onclick="showSection('p-reports');showReport('overlimit')" title="Click to view over-limit report"><div class="sn" id="d-overlimit" style="color:#C0392B">0</div><div class="sl">Over limit <span style="display:block;font-size:10px;color:var(--mt)" id="d-overlimit-sub"></span></div></div>
       </div>
       <div id="dash-top-readers" style="display:none;margin-bottom:1.5rem">
         <h3 style="font-size:15px;font-weight:700;margin-bottom:.75rem">&#x1F3C6; Top readers</h3>
@@ -988,56 +990,77 @@ tr:hover td{background:#fafaf8;}
     <!-- REPORTS -->
     <div class="panel" id="p-reports">
       <div class="panel-hdr"><h2>Reports</h2></div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:1.75rem">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#0F6E56;flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888">Books &amp; inventory</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px">
         <button id="rpt-btn-issued" onclick="showReport('issued')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #D0EDE6;background:linear-gradient(135deg,#f0faf6,#e6f4f0);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(15,110,86,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">📚</div>
+          <div style="font-size:20px;margin-bottom:6px">📗</div>
           <div style="font-weight:700;font-size:13px;color:#0F3D2E">Books issued</div>
           <div style="font-size:11px;color:#0F6E56;margin-top:2px">Currently on loan</div>
         </button>
         <button id="rpt-btn-overdue" onclick="showReport('overdue')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #F5C6C6;background:linear-gradient(135deg,#fff5f5,#fceaea);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(192,57,43,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">⚠️</div>
+          <div style="font-size:20px;margin-bottom:6px">⏰</div>
           <div style="font-weight:700;font-size:13px;color:#7B1A1A">Overdue books</div>
           <div style="font-size:11px;color:#C0392B;margin-top:2px">Past due date</div>
         </button>
-        <button id="rpt-btn-members" onclick="showReport('members')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #C8D8F5;background:linear-gradient(135deg,#f0f5ff,#e6eefa);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(24,95,165,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">👥</div>
-          <div style="font-weight:700;font-size:13px;color:#0D2B5E">Member activity</div>
-          <div style="font-size:11px;color:#185FA5;margin-top:2px">Borrowing summary</div>
-        </button>
         <button id="rpt-btn-inventory" onclick="showReport('inventory')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #E8DEFA;background:linear-gradient(135deg,#f7f4ff,#eeedf9);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(83,74,183,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">📋</div>
+          <div style="font-size:20px;margin-bottom:6px">📦</div>
           <div style="font-weight:700;font-size:13px;color:#2D2460">Inventory</div>
           <div style="font-size:11px;color:#534AB7;margin-top:2px">Stock by genre</div>
         </button>
+        <button id="rpt-btn-popular" onclick="showReport('popular')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #FFE5B0;background:linear-gradient(135deg,#fffbf0,#fef3d0);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(133,79,11,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:20px;margin-bottom:6px">🔥</div>
+          <div style="font-weight:700;font-size:13px;color:#4A2D00">Popular books</div>
+          <div style="font-size:11px;color:#854F0B;margin-top:2px">Top borrowed &amp; insights</div>
+        </button>
+        <button id="rpt-btn-duplicates" onclick="showReport('duplicates')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #E8D5F5;background:linear-gradient(135deg,#fdf5ff,#f5eaff);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(120,60,180,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:20px;margin-bottom:6px">📋</div>
+          <div style="font-weight:700;font-size:13px;color:#7B3CB8">Duplicate books</div>
+          <div style="font-size:11px;color:#7B3CB8;margin-top:2px">Multiple copies</div>
+        </button>
+        <button id="rpt-btn-barcode" onclick="showReport('barcode')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #F5C6C6;background:linear-gradient(135deg,#fff5f5,#fceaea);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(192,57,43,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:20px;margin-bottom:6px">🏷️</div>
+          <div style="font-weight:700;font-size:13px;color:#7B1A1A">No barcode label</div>
+          <div style="font-size:11px;color:#C0392B;margin-top:2px">Not yet scanned</div>
+        </button>
+        <button id="rpt-btn-history" onclick="showReport('history')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #B5D4F4;background:linear-gradient(135deg,#f0f7ff,#e6f1fb);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(24,95,165,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:20px;margin-bottom:6px">📚</div>
+          <div style="font-weight:700;font-size:13px;color:#185FA5">Borrowing history</div>
+          <div style="font-size:11px;color:#185FA5;margin-top:2px">Datewise transactions</div>
+        </button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#185FA5;flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888">Members &amp; volunteers</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:1.75rem">
+        <button id="rpt-btn-members" onclick="showReport('members')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #C8D8F5;background:linear-gradient(135deg,#f0f5ff,#e6eefa);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(24,95,165,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:20px;margin-bottom:6px">👥</div>
+          <div style="font-weight:700;font-size:13px;color:#0D2B5E">Member activity</div>
+          <div style="font-size:11px;color:#185FA5;margin-top:2px">Borrowing summary</div>
+        </button>
         <button id="rpt-btn-wishlist" onclick="showReport('wishlist')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #FAE0D0;background:linear-gradient(135deg,#fff8f4,#fceee6);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(153,60,29,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">💛</div>
+          <div style="font-size:20px;margin-bottom:6px">💛</div>
           <div style="font-weight:700;font-size:13px;color:#5C2010">Member wishlist</div>
           <div style="font-size:11px;color:#993C1D;margin-top:2px">Requested books</div>
         </button>
-        <button id="rpt-btn-popular" onclick="showReport('popular')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #FFE5B0;background:linear-gradient(135deg,#fffbf0,#fef3d0);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(133,79,11,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">🔥</div>
-          <div style="font-weight:700;font-size:13px;color:#4A2D00">Popular books</div>
-          <div style="font-size:11px;color:#854F0B;margin-top:2px">Top borrowed & insights</div>
-        </button>
         <button id="rpt-btn-inactive" onclick="showReport('inactive')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #E0E0E0;background:linear-gradient(135deg,#f9f9f7,#f1f0ec);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">😴</div>
+          <div style="font-size:20px;margin-bottom:6px">😴</div>
           <div style="font-weight:700;font-size:13px;color:#3A3A3A">Inactive members</div>
           <div style="font-size:11px;color:#888;margin-top:2px">No activity in 3+ months</div>
         </button>
         <button id="rpt-btn-volunteers" onclick="showReport('volunteers')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #C8F0DA;background:linear-gradient(135deg,#f0fdf4,#e6faf0);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(15,110,86,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">🙋</div>
+          <div style="font-size:20px;margin-bottom:6px">🙋</div>
           <div style="font-weight:700;font-size:13px;color:#0F3D2E">Volunteer activity</div>
           <div style="font-size:11px;color:#0F6E56;margin-top:2px">Datewise transactions</div>
         </button>
-        <button id="rpt-btn-history" onclick="showReport('history')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #B5D4F4;background:linear-gradient(135deg,#f0f7ff,#e6f1fb);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(24,95,165,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">📚</div>
-          <div style="font-weight:700;font-size:13px;color:#185FA5">Borrowing history</div>
-          <div style="font-size:11px;color:#185FA5;margin-top:2px">Last 10 returns per book</div>
-        </button>
-        <button id="rpt-btn-duplicates" onclick="showReport('duplicates')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #E8D5F5;background:linear-gradient(135deg,#fdf5ff,#f5eaff);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(120,60,180,.15)'" onmouseout="this.style.boxShadow=''">
-          <div style="font-size:22px;margin-bottom:6px">📋</div>
-          <div style="font-weight:700;font-size:13px;color:#7B3CB8">Duplicate books</div>
-          <div style="font-size:11px;color:#7B3CB8;margin-top:2px">Titles with multiple copies</div>
+        <button id="rpt-btn-overlimit" onclick="showReport('overlimit')" style="text-align:left;padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #F5C6C6;background:linear-gradient(135deg,#fff5f5,#fceaea);cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(192,57,43,.15)'" onmouseout="this.style.boxShadow=''">
+          <div style="font-size:20px;margin-bottom:6px">⚠️</div>
+          <div style="font-weight:700;font-size:13px;color:#7B1A1A">Over limit</div>
+          <div style="font-size:11px;color:#C0392B;margin-top:2px">Members &amp; flats exceeding</div>
         </button>
       </div>
       <div id="report-out"></div>
@@ -1675,6 +1698,20 @@ function refreshDashboard(){
   el=document.getElementById("d-members");if(el)el.textContent=DB.members.length;
   el=document.getElementById("d-issued");if(el)el.textContent=issued.length;
   el=document.getElementById("d-overdue");if(el)el.textContent=overdue.length;
+  var barcoded=DB.books.filter(function(b){return b.qrPrinted;}).length;
+  var barcodePending=DB.books.length-barcoded;
+  el=document.getElementById("d-barcoded");if(el)el.textContent=barcoded;
+  el=document.getElementById("d-barcode-pending");if(el)el.textContent=barcodePending>0?barcodePending+" still pending":"✅ All done!";
+  var memberOverLimit=DB.members.filter(function(m){return DB.books.filter(function(b){return b.issuedTo===m.id&&b.status==="checked";}).length>1;});
+  var flatMap2={};
+  DB.books.filter(function(b){return b.status==="checked"&&b.issuedTo;}).forEach(function(b){
+    var m=DB.members.find(function(x){return x.id===b.issuedTo;});
+    if(m&&m.block&&m.flatNo){var k=m.block+"|"+m.flatNo;flatMap2[k]=(flatMap2[k]||0)+1;}
+  });
+  var flatOverLimit=Object.keys(flatMap2).filter(function(k){return flatMap2[k]>2;}).length;
+  var totalViolations=memberOverLimit.length+flatOverLimit;
+  el=document.getElementById("d-overlimit");if(el)el.textContent=totalViolations;
+  el=document.getElementById("d-overlimit-sub");if(el)el.textContent=totalViolations===0?"✅ All within limits":memberOverLimit.length+" member"+(memberOverLimit.length!==1?"s":"")+", "+flatOverLimit+" flat"+(flatOverLimit!==1?"s":"")+" over";
   el=document.getElementById("pub-total");if(el)el.textContent=DB.books.length;
   renderNewArrivals();
   renderPopularBooks();
@@ -2146,7 +2183,7 @@ function showReport(type){
   var today=todayStr();
   var out=document.getElementById("report-out");
   out.innerHTML="";
-  ["issued","overdue","members","inventory","wishlist","popular","inactive","volunteers","history"].forEach(function(t){
+  ["issued","overdue","members","inventory","wishlist","popular","inactive","volunteers","history","duplicates","barcode","overlimit"].forEach(function(t){
     var btn=document.getElementById("rpt-btn-"+t);
     if(!btn)return;
     if(t===type){
@@ -2481,6 +2518,74 @@ function showReport(type){
       "<div id='dup-list'></div>";
     renderDupReport();
     }, 50);
+    return;
+
+  } else if(type==="barcode"){
+    var noBarcode=DB.books.filter(function(b){return !b.qrPrinted;});
+    var withBarcode=DB.books.filter(function(b){return b.qrPrinted;});
+    var pct=DB.books.length?Math.round((withBarcode.length/DB.books.length)*100):0;
+    var bhtml="<h3 style='font-size:16px;font-weight:700;margin-bottom:.5rem'>🏷️ Barcode label status</h3>";
+    bhtml+="<div class='stat-grid' style='margin-bottom:1.25rem'>";
+    bhtml+="<div class='stat-card green'><div class='sn'>"+withBarcode.length+"</div><div class='sl'>Labels confirmed</div></div>";
+    bhtml+="<div class='stat-card red'><div class='sn'>"+noBarcode.length+"</div><div class='sl'>Still pending</div></div>";
+    bhtml+="<div class='stat-card blue'><div class='sn'>"+pct+"%</div><div class='sl'>Completion</div></div>";
+    bhtml+="</div>";
+    bhtml+="<div style='background:var(--bg2);border-radius:10px;height:12px;margin-bottom:1.25rem;overflow:hidden'><div style='height:100%;width:"+pct+"%;background:#0F6E56;border-radius:10px;transition:width .4s'></div></div>";
+    if(noBarcode.length===0){bhtml+="<div class='empty'>✅ All books have been scanned!</div>";out.innerHTML=bhtml;return;}
+    bhtml+="<p style='font-size:12px;color:var(--mt);margin-bottom:.75rem'>These "+noBarcode.length+" books have never been scanned.</p>";
+    bhtml+="<input type='text' id='barcode-rpt-search' placeholder='Search by Book ID or title…' oninput='filterBarcodeReport()' style='width:100%;max-width:360px;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;background:var(--bg);color:var(--tx);margin-bottom:.75rem;box-sizing:border-box'>";
+    bhtml+="<div class='tbl-wrap'><table><thead><tr><th>Book ID</th><th>Title</th><th>Author</th><th>Age group</th><th>Genre</th><th>Status</th></tr></thead><tbody id='barcode-rpt-tbody'></tbody></table></div>";
+    out.innerHTML=bhtml;
+    window._barcodeNoPrint=noBarcode.slice().sort(function(a,b){return a.id.localeCompare(b.id);});
+    window.filterBarcodeReport=function(){
+      var q=(document.getElementById("barcode-rpt-search").value||"").toLowerCase();
+      var rows=window._barcodeNoPrint.filter(function(b){return !q||b.id.toLowerCase().indexOf(q)>=0||b.title.toLowerCase().indexOf(q)>=0;});
+      var tbody=document.getElementById("barcode-rpt-tbody");if(!tbody)return;
+      tbody.innerHTML=rows.map(function(b){return "<tr><td><span class='badge b-gray'>"+b.id+"</span></td><td style='font-weight:600'>"+b.title+"</td><td style='color:var(--mt);font-size:12px'>"+b.author+"</td><td style='font-size:12px;color:var(--mt)'>"+b.age+"</td><td style='font-size:12px;color:var(--mt)'>"+b.genre+"</td><td><span class='badge "+(b.status==="checked"?"b-amber":"b-green")+"'>"+b.status+"</span></td></tr>";}).join("");
+      if(!rows.length)tbody.innerHTML="<tr><td colspan='6' style='text-align:center;color:var(--mt);padding:1rem'>No matching books</td></tr>";
+    };
+    window.filterBarcodeReport();
+    return;
+
+  } else if(type==="overlimit"){
+    var memViol=[];
+    DB.members.forEach(function(m){
+      var mbooks=DB.books.filter(function(b){return b.issuedTo===m.id&&b.status==="checked";});
+      if(mbooks.length>1)memViol.push({member:m,books:mbooks});
+    });
+    var fmap={};
+    DB.books.filter(function(b){return b.status==="checked"&&b.issuedTo;}).forEach(function(b){
+      var m=DB.members.find(function(x){return x.id===b.issuedTo;});
+      if(m&&m.block&&m.flatNo){var k=m.block+"|"+m.flatNo;if(!fmap[k])fmap[k]={block:m.block,flatNo:m.flatNo,books:[],members:[]};fmap[k].books.push(b);if(fmap[k].members.indexOf(m.fname+" "+m.lname)<0)fmap[k].members.push(m.fname+" "+m.lname);}
+    });
+    var flatViol=Object.values(fmap).filter(function(f){return f.books.length>2;});
+    var ohtml="<h3 style='font-size:16px;font-weight:700;margin-bottom:.5rem'>⚠️ Over-limit report</h3>";
+    ohtml+="<p style='font-size:12px;color:var(--mt);margin-bottom:1rem'>Rules: max 1 book per member · max 2 books per flat</p>";
+    ohtml+="<div class='stat-grid' style='margin-bottom:1.25rem'>";
+    ohtml+="<div class='stat-card "+(memViol.length>0?"red":"green")+"'><div class='sn'>"+memViol.length+"</div><div class='sl'>Members over limit</div></div>";
+    ohtml+="<div class='stat-card "+(flatViol.length>0?"red":"green")+"'><div class='sn'>"+flatViol.length+"</div><div class='sl'>Flats over limit</div></div>";
+    ohtml+="</div>";
+    if(memViol.length===0&&flatViol.length===0){ohtml+="<div class='empty'>✅ All within limits.</div>";out.innerHTML=ohtml;return;}
+    if(memViol.length>0){
+      ohtml+="<h4 style='font-size:14px;font-weight:700;margin-bottom:.6rem;color:#7B1A1A'>Members with more than 1 book</h4>";
+      ohtml+="<div class='tbl-wrap' style='margin-bottom:1.5rem'><table><thead><tr><th>Member</th><th>Card no.</th><th>Flat</th><th>Count</th><th>Titles on loan</th></tr></thead><tbody>";
+      memViol.forEach(function(v){
+        var m=v.member;var flatStr=(m.block||"")+(m.flatNo?" — Flat "+m.flatNo:"");
+        var titles=v.books.map(function(b){return b.title+" <span style='color:var(--mt)'>("+b.id+")</span>";}).join(", ");
+        ohtml+="<tr><td style='font-weight:600'>"+m.fname+" "+m.lname+"</td><td><span class='badge b-gray'>"+m.id+"</span></td><td style='font-size:12px;color:var(--mt)'>"+flatStr+"</td><td><span class='badge b-red'>"+v.books.length+"</span></td><td style='font-size:12px'>"+titles+"</td></tr>";
+      });
+      ohtml+="</tbody></table></div>";
+    }
+    if(flatViol.length>0){
+      ohtml+="<h4 style='font-size:14px;font-weight:700;margin-bottom:.6rem;color:#7B1A1A'>Flats with more than 2 books</h4>";
+      ohtml+="<div class='tbl-wrap'><table><thead><tr><th>Flat</th><th>Count</th><th>Members</th><th>Titles on loan</th></tr></thead><tbody>";
+      flatViol.forEach(function(f){
+        var titles=f.books.map(function(b){return b.title+" <span style='color:var(--mt)'>("+b.id+")</span>";}).join(", ");
+        ohtml+="<tr><td style='font-weight:600'>"+f.block+" — Flat "+f.flatNo+"</td><td><span class='badge b-red'>"+f.books.length+"</span></td><td style='font-size:12px;color:var(--mt)'>"+f.members.join(", ")+"</td><td style='font-size:12px'>"+titles+"</td></tr>";
+      });
+      ohtml+="</tbody></table></div>";
+    }
+    out.innerHTML=ohtml;
     return;
 
     } else if(type==="members"){
@@ -5149,6 +5254,11 @@ function startScanner(){
               document.getElementById("scanner-book-info").textContent = bk ? bk.title+(bk.author?" · "+bk.author:"") : "Book not found in library";
               document.getElementById("scanner-use-btn").style.display = "inline-block";
               scannedISBN = text;
+              if(bk && !bk.qrPrinted){
+                supaFetch("books?id=eq."+encodeURIComponent(bk.id),"PATCH",{qr_printed:true})
+                  .then(function(){bk.qrPrinted=true;refreshDashboard();renderBooks();})
+                  .catch(function(e){console.warn("qr_printed update failed",e);});
+              }
               if(typeof scannerCallback === "function"){ scannerCallback(text); }
             } else if(isISBN){
               scannedISBN = text;
