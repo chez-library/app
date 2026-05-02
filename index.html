@@ -1936,7 +1936,8 @@ function renderMembers(){
   }
   var q=(document.getElementById("mb-search").value||"").toLowerCase();
   var list=DB.members.filter(function(m){
-    return !q||m.fname.toLowerCase().indexOf(q)>=0||m.lname.toLowerCase().indexOf(q)>=0||m.id.toLowerCase().indexOf(q)>=0||(m.email&&m.email.toLowerCase().indexOf(q)>=0);
+    var fullName=(m.fname+" "+m.lname).toLowerCase();
+    return !q||fullName.indexOf(q)>=0||m.fname.toLowerCase().indexOf(q)>=0||m.lname.toLowerCase().indexOf(q)>=0||m.id.toLowerCase().indexOf(q)>=0||(m.email&&m.email.toLowerCase().indexOf(q)>=0);
   });
   var tbody=document.getElementById("members-tbody");tbody.innerHTML="";
   if(list.length===0){tbody.innerHTML="<tr><td colspan='9' class='empty'>No members found</td></tr>";return;}
@@ -4072,7 +4073,7 @@ function getTopReaders(){
     periodStr=prevYear+"-";
     label="Top readers of "+prevYear;
     DB.transactions.forEach(function(t){
-      if(t.type==="issue"&&t.date&&t.date.indexOf(prevYear+"-")===0){
+      if(t.type==="return"&&t.date&&t.date.indexOf(prevYear+"-")===0){
         counts[t.memberId]=(counts[t.memberId]||0)+1;
       }
     });
@@ -4082,7 +4083,7 @@ function getTopReaders(){
     var monthStr=targetYear+"-"+String(targetMonth+1).padStart(2,"0");
     label=months[targetMonth]+" "+targetYear;
     DB.transactions.forEach(function(t){
-      if(t.type==="issue"&&t.date&&t.date.indexOf(monthStr)===0){
+      if(t.type==="return"&&t.date&&t.date.indexOf(monthStr)===0){
         counts[t.memberId]=(counts[t.memberId]||0)+1;
       }
     });
@@ -4146,15 +4147,10 @@ function renderPubTopReaders(){
   var yearPfx=String(cy)+"-";
   var medals=["🥇","🥈","🥉"];
   var curCounts={},yearCounts={};
-  // curCounts = returns this month only
+  // curCounts = returns this month; yearCounts = returns this year
   DB.transactions.filter(function(t){return t.type==="return"&&t.date;}).forEach(function(t){
     var d=t.date.slice(0,7);
     if(d===curMonthStr) curCounts[t.memberId]=(curCounts[t.memberId]||0)+1;
-  });
-  // yearCounts = genuine issues for the year
-  getGenuineIssues().forEach(function(t){
-    if(!t.date)return;
-    var d=t.date.slice(0,7);
     if(d.indexOf(yearPfx)===0) yearCounts[t.memberId]=(yearCounts[t.memberId]||0)+1;
   });
   var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
